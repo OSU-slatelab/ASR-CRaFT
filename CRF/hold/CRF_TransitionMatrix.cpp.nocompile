@@ -1,0 +1,73 @@
+#include "CRF_TransitionMatrix.h"
+
+CRF_TransitionMatrix::CRF_TransitionMatrix(CRF_Model* crf_in, double* arr_in, QNUInt32 arr_len)
+	: CRF_BaseMatrix(crf_in, arr_in, arr_len)
+{
+	this->numRows=crf_in->getNLabs();
+	this->numCols=this->numRows;
+	this->numComponents=this->numRows*this->numCols;
+	this->array = new double[this->numComponents];
+	if (arr_in != NULL) {
+		this->fromDoubleArray(arr_in,arr_len);
+	}
+	
+}
+
+CRF_TransitionMatrix::~CRF_TransitionMatrix()
+{
+}
+
+double CRF_TransitionMatrix::get(QNUInt32 row, QNUInt32 col)
+{
+	return this->array[row*this->numCols+col];
+}
+
+void CRF_TransitionMatrix::set(QNUInt32 row, QNUInt32 col, double val)
+{
+	this->array[row*this->numCols+col]=val;
+}
+
+CRF_TransitionMatrix* CRF_TransitionMatrix::componentMult(CRF_TransitionMatrix* mult, CRF_TransitionMatrix* result)
+{
+	if (result == NULL) {
+		result = new CRF_TransitionMatrix(this->crf);
+	}
+	for (QNUInt32 i=0; i<this->numCols*this->numRows; i++) {
+		result->array[i]=this->array[i]*mult->array[i];
+	}
+	return result;	
+}
+
+CRF_StateVector* CRF_TransitionMatrix::alphaMult(CRF_StateVector* alpha, CRF_StateVector* result)
+{
+	double* res_ptr;
+	if (result == NULL) {
+		result = new CRF_StateVector(this->crf);
+	}
+	res_ptr=result->toDoubleArray();
+	double* alpha_ptr=alpha->toDoubleArray();
+	
+	// cblas_sgemm(Row|Column, TransA?, TransB?, M, N, K, scale_A, A, lda, B, ldb, scale_B, C, ldc)
+	// Where M is the rows of A (if TransA?==no)
+	//       N is the columns of B (if TransB?==no)
+	//       K is the columns of A and the rows of B (if TransA?==no && TransB? == no)
+	//       lda is the linear depth of A (how many elements you must stride to get to the end of a row
+	//       ldb is the linear depth of B
+	//       ldc is the linear depth of C
+	
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 1, this->numCols, this->numRows, 1.0f, alpha_ptr, this->numRows, this->array, this->numCols, 1.0f, res_ptr,this->numRows);
+	return result;
+}
+
+CRF_StateVector* CRF_TransitionMatrix::betaMult(CRF_StateVector* beta, CRF_StateVector* result)
+{
+	double* res_ptr;
+	if (result == NULL) {
+		result = new CRF_StateVector(this->crf);
+	}
+	res_ptr=result->toDoubleArray();
+	double* beta_ptr=beta->toDoubleArray();
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, this->numCols, 1, this->numCols, 1.0f, this->array, this->numRows, beta_ptr, this->numRows, 1.0f, res_ptr,1);
+	
+	return result;
+}

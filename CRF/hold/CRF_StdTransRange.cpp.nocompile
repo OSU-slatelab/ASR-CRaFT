@@ -1,0 +1,29 @@
+#include "CRF_StdTransRange.h"
+
+CRF_StdTransRange::CRF_StdTransRange(QNUInt32 nl, QNUInt32 nf)
+	: CRF_StdRange(nl,nf)
+{
+	//this->transRangeArray = new QNUInt32[nf];
+	for (QNUInt32 i=0; i<nf; i++) {
+		//this->transRangeArray[i]=new CRF_RangeNode(0,this->nFeas-1,1);
+		//this->transRangeArray[i]=i;
+		this->transRangeVector.push_back(i);
+	}
+}
+
+CRF_StdTransRange::~CRF_StdTransRange()
+{
+	//delete[] this->transRangeArray;
+}
+
+vector<QNUInt32> CRF_StdTransRange::getRange(QNUInt32 prev_lab, QNUInt32 cur_lab) {
+	//return this->transRangeArray[prev_lab*this->nLabs+cur_lab];
+	//return this->transRangeArray;
+	return this->transRangeVector;
+}
+
+QNUInt32 CRF_StdTransRange::getNumFtrs()
+{
+	// Standard feature count is numLabs*numFeas + numLabs (bias) + numlabs*numlabs*numFeas + numlabs*numLabs (transition bias)
+	return (this->nLabs*this->nFeas + this->nLabs + this->nLabs*this->nLabs*this->nFeas + this->nLabs*this->nLabs);
+}

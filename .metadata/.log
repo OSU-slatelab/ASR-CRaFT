@@ -1,0 +1,676 @@
+!SESSION 2008-12-22 13:33:40.946 -----------------------------------------------
+eclipse.buildId=M20070212-1330
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.266
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRF. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.276
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFDecode. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.279
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFFstAlign. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.282
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFFstDecode. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.286
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFFstTest. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.290
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFGatherStats. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.294
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFLocalPosteriors. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.298
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFLogMathTest. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.302
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFTrain. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+
+!ENTRY org.eclipse.core.resources 2 1 2008-12-22 13:41:17.306
+!MESSAGE Skipping builder org.eclipse.cdt.managedbuilder.core.genmakebuilder for project CRFVectorTest. Either the builder is missing from the install, or it belongs to a project nature that is missing or disabled.
+!SESSION 2008-12-22 13:59:18.651 -----------------------------------------------
+eclipse.buildId=M20080911-1700
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.ui 4 0 2008-12-22 13:59:39.768
+!MESSAGE Problems occurred restoring workbench.
+!SUBENTRY 1 org.eclipse.ui 0 0 2008-12-22 13:59:39.768
+!MESSAGE 
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 13:59:39.768
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 13:59:39.769
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 13:59:39.769
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.ui 4 0 2008-12-22 13:59:39.769
+!MESSAGE Unable to restore perspective: Workspace - Java.
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.769
+!MESSAGE Problems occurred restoring perspective.
+!SUBENTRY 3 org.eclipse.ui 0 0 2008-12-22 13:59:39.769
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.769
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.769
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.770
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 13:59:39.770
+!MESSAGE Could not create view: org.eclipse.jdt.ui.PackageExplorer
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.PackageExplorer
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 13:59:39.771
+!MESSAGE Could not create view: org.eclipse.jdt.ui.PackageExplorer
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 13:59:39.772
+!MESSAGE Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 13:59:39.772
+!MESSAGE Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 13:59:39.772
+!MESSAGE Could not create view: org.eclipse.jdt.ui.JavadocView
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.JavadocView
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not create view: org.eclipse.jdt.ui.JavadocView
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 13:59:39.773
+!MESSAGE Could not create view: org.eclipse.jdt.ui.SourceView
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.SourceView
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not create view: org.eclipse.jdt.ui.SourceView
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.773
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.773
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.773
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 13:59:39.773
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not find view: org.eclipse.jdt.ui.PackageExplorer
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not find view: org.eclipse.jdt.ui.TypeHierarchy
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not find view: org.eclipse.jdt.ui.JavadocView
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 13:59:39.773
+!MESSAGE Could not find view: org.eclipse.jdt.ui.SourceView
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 13:59:39.774
+!MESSAGE OK
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:03:36.683
+!MESSAGE Indexed 'CRF' (35 sources, 343 headers) in 30.85 sec: 34,197 declarations; 79,841 references; 0 unresolved inclusions; 0 syntax errors; 3,552 unresolved names (3.02%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:03:37.845
+!MESSAGE Indexed 'CRFDecode' (1 sources, 30 headers) in 0.85 sec: 2,265 declarations; 1,208 references; 0 unresolved inclusions; 0 syntax errors; 1 unresolved names (0.03%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:03:41.284
+!MESSAGE Indexed 'CRFFstAlign' (1 sources, 29 headers) in 1.09 sec: 747 declarations; 937 references; 0 unresolved inclusions; 0 syntax errors; 11 unresolved names (0.65%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:03:48.026
+!MESSAGE Indexed 'CRFFstDecode' (1 sources, 30 headers) in 0.88 sec: 831 declarations; 1,148 references; 0 unresolved inclusions; 0 syntax errors; 11 unresolved names (0.55%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:04:02.890
+!MESSAGE Indexed 'CRFFstTest' (1 sources, 29 headers) in 0.67 sec: 741 declarations; 935 references; 0 unresolved inclusions; 0 syntax errors; 14 unresolved names (0.83%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:04:18.764
+!MESSAGE Indexed 'CRFGatherStats' (1 sources, 28 headers) in 0.82 sec: 712 declarations; 844 references; 1 unresolved inclusions; 0 syntax errors; 1 unresolved names (0.06%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:04:19.633
+!MESSAGE Indexed 'CRFLocalPosteriors' (1 sources, 33 headers) in 0.62 sec: 897 declarations; 1,045 references; 0 unresolved inclusions; 0 syntax errors; 1 unresolved names (0.05%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:04:39.816
+!MESSAGE Indexed 'CRFLogMathTest' (1 sources, 163 headers) in 7.13 sec: 14,213 declarations; 29,347 references; 0 unresolved inclusions; 0 syntax errors; 605 unresolved names (1.37%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:04:40.800
+!MESSAGE Indexed 'CRFTrain' (1 sources, 33 headers) in 0.62 sec: 867 declarations; 1,080 references; 0 unresolved inclusions; 0 syntax errors; 1 unresolved names (0.05%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2008-12-22 14:06:26.391
+!MESSAGE Indexed 'CRFVectorTest' (1 sources, 153 headers) in 6.29 sec: 14,234 declarations; 29,492 references; 0 unresolved inclusions; 0 syntax errors; 912 unresolved names (2.04%)
+!SESSION 2008-12-22 14:16:06.996 -----------------------------------------------
+eclipse.buildId=M20080911-1700
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.core.resources 2 10035 2008-12-22 14:16:37.258
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY org.eclipse.ui 4 0 2008-12-22 14:16:54.073
+!MESSAGE Problems occurred restoring workbench.
+!SUBENTRY 1 org.eclipse.ui 0 0 2008-12-22 14:16:54.073
+!MESSAGE 
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 14:16:54.073
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 14:16:54.073
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 14:16:54.073
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.ui 4 0 2008-12-22 14:16:54.073
+!MESSAGE Unable to restore perspective: Workspace - Java.
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.073
+!MESSAGE Problems occurred restoring perspective.
+!SUBENTRY 3 org.eclipse.ui 0 0 2008-12-22 14:16:54.073
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.074
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.074
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.075
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 14:16:54.075
+!MESSAGE Could not create view: org.eclipse.jdt.ui.PackageExplorer
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.PackageExplorer
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 14:16:54.077
+!MESSAGE Could not create view: org.eclipse.jdt.ui.PackageExplorer
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 14:16:54.077
+!MESSAGE Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 14:16:54.077
+!MESSAGE Could not create view: org.eclipse.jdt.ui.TypeHierarchy
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 14:16:54.078
+!MESSAGE Could not create view: org.eclipse.jdt.ui.JavadocView
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.JavadocView
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 14:16:54.078
+!MESSAGE Could not create view: org.eclipse.jdt.ui.JavadocView
+!SUBENTRY 2 org.eclipse.ui 4 4 2008-12-22 14:16:54.078
+!MESSAGE Could not create view: org.eclipse.jdt.ui.SourceView
+!STACK 1
+org.eclipse.ui.PartInitException: Could not create view: org.eclipse.jdt.ui.SourceView
+	at org.eclipse.ui.internal.ViewFactory.createView(ViewFactory.java:157)
+	at org.eclipse.ui.internal.Perspective.createReferences(Perspective.java:1173)
+	at org.eclipse.ui.internal.Perspective.restoreState(Perspective.java:1143)
+	at org.eclipse.ui.internal.WorkbenchPage$16.runWithException(WorkbenchPage.java:3168)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.application.WorkbenchAdvisor.openWindows(WorkbenchAdvisor.java:803)
+	at org.eclipse.ui.internal.Workbench$27.runWithException(Workbench.java:1361)
+	at org.eclipse.ui.internal.StartupThreading$StartupRunnable.run(StartupThreading.java:31)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:133)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:3378)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3036)
+	at org.eclipse.ui.internal.Workbench.runUI(Workbench.java:2293)
+	at org.eclipse.ui.internal.Workbench.access$4(Workbench.java:2198)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:493)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:288)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:488)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:113)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:193)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:386)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:549)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:504)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1236)
+!SUBENTRY 3 org.eclipse.ui 4 0 2008-12-22 14:16:54.079
+!MESSAGE Could not create view: org.eclipse.jdt.ui.SourceView
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.079
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.079
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.079
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 0 0 2008-12-22 14:16:54.079
+!MESSAGE 
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 14:16:54.079
+!MESSAGE Could not find view: org.eclipse.jdt.ui.PackageExplorer
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 14:16:54.079
+!MESSAGE Could not find view: org.eclipse.jdt.ui.TypeHierarchy
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 14:16:54.079
+!MESSAGE Could not find view: org.eclipse.jdt.ui.JavadocView
+!SUBENTRY 2 org.eclipse.ui 4 0 2008-12-22 14:16:54.080
+!MESSAGE Could not find view: org.eclipse.jdt.ui.SourceView
+!SUBENTRY 1 org.eclipse.core.runtime 0 0 2008-12-22 14:16:54.080
+!MESSAGE OK
+!SESSION 2009-02-02 16:35:32.873 -----------------------------------------------
+eclipse.buildId=M20080911-1700
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.cdt.core 4 4 2009-02-04 11:00:35.716
+!MESSAGE Error while parsing /u/morrijer/workspaces/CRF_cpp_new/CRFFstDecode/src/Main.cpp.:Error while parsing /u/drspeech/opt/OpenFst-beta-20080422/OpenFst/fst/lib/connect.h.
+!STACK 0
+java.lang.ArrayIndexOutOfBoundsException: 0
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPClassTemplatePartialSpecialization.getArgumentMap(PDOMCPPClassTemplatePartialSpecialization.java:224)
+	at org.eclipse.cdt.internal.core.index.composite.cpp.TemplateInstanceUtil.getArgumentMap(TemplateInstanceUtil.java:38)
+	at org.eclipse.cdt.internal.core.index.composite.cpp.CompositeCPPClassTemplatePartialSpecialization.getArgumentMap(CompositeCPPClassTemplatePartialSpecialization.java:36)
+	at org.eclipse.cdt.internal.core.index.IndexCPPSignatureUtil.getTemplateArgString(IndexCPPSignatureUtil.java:126)
+	at org.eclipse.cdt.internal.core.index.IndexCPPSignatureUtil.getSignature(IndexCPPSignatureUtil.java:59)
+	at org.eclipse.cdt.internal.core.index.IndexCPPSignatureUtil.getSignatureHash(IndexCPPSignatureUtil.java:206)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.CPPFindBinding.findBinding(CPPFindBinding.java:138)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.doAdaptBinding(PDOMCPPLinkage.java:674)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.adaptBinding(PDOMCPPLinkage.java:649)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:249)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:802)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMQualifierType.<init>(PDOMQualifierType.java:62)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMLinkage.addType(PDOMLinkage.java:171)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:822)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPReferenceType.<init>(PDOMCPPReferenceType.java:55)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:811)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPParameter.<init>(PDOMCPPParameter.java:88)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunctionSpecialization.<init>(PDOMCPPFunctionSpecialization.java:98)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPMethodSpecialization.<init>(PDOMCPPMethodSpecialization.java:54)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPConstructorSpecialization.<init>(PDOMCPPConstructorSpecialization.java:35)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.createSpecializationBinding(PDOMCPPLinkage.java:458)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.createBinding(PDOMCPPLinkage.java:323)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:255)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addConstructors(PDOMCPPLinkage.java:282)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:263)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:802)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMQualifierType.<init>(PDOMQualifierType.java:62)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMLinkage.addType(PDOMLinkage.java:171)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:822)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPReferenceType.<init>(PDOMCPPReferenceType.java:55)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:811)
+	at org.eclipse.cdt.internal.core.pdom.dom.c.PDOMCFunctionType.<init>(PDOMCFunctionType.java:72)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunctionType.<init>(PDOMCPPFunctionType.java:46)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:799)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunctionSpecialization.<init>(PDOMCPPFunctionSpecialization.java:78)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPMethodSpecialization.<init>(PDOMCPPMethodSpecialization.java:54)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPConstructorSpecialization.<init>(PDOMCPPConstructorSpecialization.java:35)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.createSpecializationBinding(PDOMCPPLinkage.java:458)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.createBinding(PDOMCPPLinkage.java:323)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:255)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addConstructors(PDOMCPPLinkage.java:282)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:263)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:802)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMPointerType.<init>(PDOMPointerType.java:61)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMLinkage.addType(PDOMLinkage.java:167)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:822)
+	at org.eclipse.cdt.internal.core.pdom.dom.c.PDOMCFunctionType.<init>(PDOMCFunctionType.java:72)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunctionType.<init>(PDOMCPPFunctionType.java:46)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addType(PDOMCPPLinkage.java:799)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunction.setType(PDOMCPPFunction.java:142)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunction.initData(PDOMCPPFunction.java:98)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPFunction.<init>(PDOMCPPFunction.java:89)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPMethod.<init>(PDOMCPPMethod.java:65)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPConstructor.<init>(PDOMCPPConstructor.java:25)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.createBinding(PDOMCPPLinkage.java:352)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:255)
+	at org.eclipse.cdt.internal.core.pdom.dom.cpp.PDOMCPPLinkage.addBinding(PDOMCPPLinkage.java:218)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMFile.createPDOMName(PDOMFile.java:316)
+	at org.eclipse.cdt.internal.core.pdom.dom.PDOMFile.addNames(PDOMFile.java:281)
+	at org.eclipse.cdt.internal.core.pdom.WritablePDOM.addFileContent(WritablePDOM.java:67)
+	at org.eclipse.cdt.internal.core.index.WritableCIndex.setFileContent(WritableCIndex.java:75)
+	at org.eclipse.cdt.internal.core.pdom.PDOMWriter.storeFileInIndex(PDOMWriter.java:463)
+	at org.eclipse.cdt.internal.core.pdom.PDOMWriter.storeSymbolsInIndex(PDOMWriter.java:197)
+	at org.eclipse.cdt.internal.core.pdom.PDOMWriter.addSymbols(PDOMWriter.java:153)
+	at org.eclipse.cdt.internal.core.pdom.AbstractIndexerTask.writeToIndex(AbstractIndexerTask.java:646)
+	at org.eclipse.cdt.internal.core.pdom.AbstractIndexerTask.parseFile(AbstractIndexerTask.java:606)
+	at org.eclipse.cdt.internal.core.pdom.AbstractIndexerTask.parseLinkage(AbstractIndexerTask.java:492)
+	at org.eclipse.cdt.internal.core.pdom.AbstractIndexerTask.runTask(AbstractIndexerTask.java:239)
+	at org.eclipse.cdt.internal.core.pdom.indexer.PDOMIndexerTask.run(PDOMIndexerTask.java:111)
+	at org.eclipse.cdt.internal.core.pdom.PDOMIndexerJob.run(PDOMIndexerJob.java:94)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SESSION 2009-06-15 09:42:09.114 -----------------------------------------------
+eclipse.buildId=M20080911-1700
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.cdt.core 4 4 2009-06-15 09:44:55.108
+!MESSAGE Error
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException: Resource is out of sync with the file system: '/CRFDecode/.cdtproject'.
+	at org.eclipse.core.internal.localstore.FileSystemResourceManager.read(FileSystemResourceManager.java:639)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:298)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:287)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getSharedProperty(CProjectDescriptionManager.java:1931)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.readOldCDTProjectFile(CProjectDescriptionManager.java:1737)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.loadProjectDescriptionFromOldstyleStorage(CProjectDescriptionManager.java:652)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getConvertedDescription(CProjectDescriptionManager.java:664)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:550)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:518)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:510)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener.isProjectCreationComplete(CProjectDescriptionListener.java:87)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener$1.postponeIndexerSetup(CProjectDescriptionListener.java:39)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager.postponeSetup(PDOMManager.java:1326)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager$3.run(PDOMManager.java:688)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SUBENTRY 1 org.eclipse.core.resources 4 274 2009-06-15 09:44:55.112
+!MESSAGE Resource is out of sync with the file system: '/CRFDecode/.cdtproject'.
+
+!ENTRY org.eclipse.cdt.core 4 4 2009-06-15 09:45:15.069
+!MESSAGE Error
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException: Resource is out of sync with the file system: '/CRFLogMathTest/.cdtproject'.
+	at org.eclipse.core.internal.localstore.FileSystemResourceManager.read(FileSystemResourceManager.java:639)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:298)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:287)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getSharedProperty(CProjectDescriptionManager.java:1931)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.readOldCDTProjectFile(CProjectDescriptionManager.java:1737)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.loadProjectDescriptionFromOldstyleStorage(CProjectDescriptionManager.java:652)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getConvertedDescription(CProjectDescriptionManager.java:664)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:550)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:518)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:510)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener.isProjectCreationComplete(CProjectDescriptionListener.java:87)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener$1.postponeIndexerSetup(CProjectDescriptionListener.java:39)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager.postponeSetup(PDOMManager.java:1326)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager$3.run(PDOMManager.java:688)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SUBENTRY 1 org.eclipse.core.resources 4 274 2009-06-15 09:45:15.070
+!MESSAGE Resource is out of sync with the file system: '/CRFLogMathTest/.cdtproject'.
+
+!ENTRY org.eclipse.cdt.core 4 4 2009-06-15 09:45:15.130
+!MESSAGE Error
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException: Resource is out of sync with the file system: '/CRFTrain/.cdtproject'.
+	at org.eclipse.core.internal.localstore.FileSystemResourceManager.read(FileSystemResourceManager.java:639)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:298)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:287)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getSharedProperty(CProjectDescriptionManager.java:1931)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.readOldCDTProjectFile(CProjectDescriptionManager.java:1737)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.loadProjectDescriptionFromOldstyleStorage(CProjectDescriptionManager.java:652)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getConvertedDescription(CProjectDescriptionManager.java:664)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:550)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:518)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:510)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener.isProjectCreationComplete(CProjectDescriptionListener.java:87)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener$1.postponeIndexerSetup(CProjectDescriptionListener.java:39)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager.postponeSetup(PDOMManager.java:1326)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager$3.run(PDOMManager.java:688)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SUBENTRY 1 org.eclipse.core.resources 4 274 2009-06-15 09:45:15.130
+!MESSAGE Resource is out of sync with the file system: '/CRFTrain/.cdtproject'.
+
+!ENTRY org.eclipse.cdt.core 4 4 2009-06-15 09:45:17.179
+!MESSAGE Error
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException: Resource is out of sync with the file system: '/CRFVectorTest/.cdtproject'.
+	at org.eclipse.core.internal.localstore.FileSystemResourceManager.read(FileSystemResourceManager.java:639)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:298)
+	at org.eclipse.core.internal.resources.File.getContents(File.java:287)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getSharedProperty(CProjectDescriptionManager.java:1931)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.readOldCDTProjectFile(CProjectDescriptionManager.java:1737)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.loadProjectDescriptionFromOldstyleStorage(CProjectDescriptionManager.java:652)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getConvertedDescription(CProjectDescriptionManager.java:664)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:550)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:518)
+	at org.eclipse.cdt.internal.core.settings.model.CProjectDescriptionManager.getProjectDescription(CProjectDescriptionManager.java:510)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener.isProjectCreationComplete(CProjectDescriptionListener.java:87)
+	at org.eclipse.cdt.internal.core.pdom.CProjectDescriptionListener$1.postponeIndexerSetup(CProjectDescriptionListener.java:39)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager.postponeSetup(PDOMManager.java:1326)
+	at org.eclipse.cdt.internal.core.pdom.PDOMManager$3.run(PDOMManager.java:688)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+!SUBENTRY 1 org.eclipse.core.resources 4 274 2009-06-15 09:45:17.181
+!MESSAGE Resource is out of sync with the file system: '/CRFVectorTest/.cdtproject'.
+!SESSION 2009-06-15 10:43:49.882 -----------------------------------------------
+eclipse.buildId=M20080911-1700
+java.version=1.5.0_05
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.core.resources 2 10035 2009-06-15 10:43:56.475
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.

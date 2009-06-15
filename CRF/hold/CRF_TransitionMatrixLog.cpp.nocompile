@@ -1,0 +1,77 @@
+#include "CRF_TransitionMatrixLog.h"
+
+CRF_TransitionMatrixLog::CRF_TransitionMatrixLog(CRF_Model* crf_in, double* arr_in, QNUInt32 arr_len)
+	: CRF_TransitionMatrix(crf_in, arr_in, arr_len)
+{
+	this->logAddAcc = new double[this->numComponents];
+}
+
+CRF_TransitionMatrixLog::~CRF_TransitionMatrixLog()
+{
+}
+
+CRF_TransitionMatrixLog* CRF_TransitionMatrixLog::componentMult(CRF_TransitionMatrixLog* mult, CRF_TransitionMatrixLog* result)
+{
+	if (result == NULL) {
+		result = new CRF_TransitionMatrixLog(this->crf);
+	}
+	for (QNUInt32 i=0; i<this->numCols*this->numRows; i++) {
+		result->array[i]=logAdd(this->array[i],mult->array[i]);
+	}
+	return result;	
+}
+
+CRF_StateVectorLog* CRF_TransitionMatrixLog::alphaMult(CRF_StateVectorLog* alpha, CRF_StateVectorLog* result)
+{
+	double* res_ptr;
+	if (result == NULL) {
+		result = new CRF_StateVectorLog(this->crf);
+	}
+	res_ptr=result->toDoubleArray();
+	double* alpha_ptr=alpha->toDoubleArray();
+	
+	// cblas_sgemm(Row|Column, TransA?, TransB?, M, N, K, scale_A, A, lda, B, ldb, scale_B, C, ldc)
+	// Where M is the rows of A (if TransA?==no)
+	//       N is the columns of B (if TransB?==no)
+	//       K is the columns of A and the rows of B (if TransA?==no && TransB? == no)
+	//       lda is the linear depth of A (how many elements you must stride to get to the end of a row
+	//       ldb is the linear depth of B
+	//       ldc is the linear depth of C
+	
+	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 1, this->numCols, this->numRows, 1.0f, alpha_ptr, this->numRows, this->array, this->numCols, 1.0f, res_ptr,this->numRows);
+	for (QNUInt32 clab=0; clab<this->numCols; clab++) {
+	
+		this->logAddAcc[0]=alpha_ptr[0]+this->array[0+clab];
+		double maxv=this->logAddAcc[0];
+		for (QNUInt32 plab=1; plab<this->numRows; plab++) {
+			//this->logAddAcc[plab]=alpha[plab]+Mtrans[plab*this->num_labs+clab];
+			this->logAddAcc[plab]=alpha_ptr[plab]+this->array[plab*this->numCols+clab];
+	 		if (this->logAddAcc[plab]>maxv) {
+	 			maxv=logAddAcc[plab];
+	 		}
+	 	}
+	 	try {
+	 		res_ptr[clab]=logAdd(this->logAddAcc,maxv,this->numRows);
+	 	}
+	 	catch (exception &e) {
+	 		string errstr="CRF_TransitionMatrixLog::alphaMult caught exception: "+string(e.what())+" while computing alpha";
+			throw runtime_error(errstr);
+			return NULL;
+	 	}
+	}
+	
+	return result;
+}
+
+CRF_StateVectorLog* CRF_TransitionMatrixLog::betaMult(CRF_StateVectorLog* beta, CRF_StateVectorLog* result)
+{
+	double* res_ptr;
+	if (result == NULL) {
+		result = new CRF_StateVectorLog(this->crf);
+	}
+	res_ptr=result->toDoubleArray();
+	double* beta_ptr=beta->toDoubleArray();
+	cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, this->numCols, 1, this->numCols, 1.0f, this->array, this->numRows, beta_ptr, this->numRows, 1.0f, res_ptr,1);
+	
+	return result;
+}

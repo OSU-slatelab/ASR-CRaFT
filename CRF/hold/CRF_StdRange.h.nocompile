@@ -1,0 +1,26 @@
+#ifndef CRF_STDRANGE_H_
+#define CRF_STDRANGE_H_
+
+#include "QuickNet.h"
+#include "CRF_Range.h"
+
+using namespace std;
+
+class CRF_StdRange : public CRF_Range
+{
+protected:
+	QNUInt32 nLabs;
+	QNUInt32 nFeas;
+	//CRF_RangeNode** rangeArray;
+	//QNUInt32* rangeArray;
+	vector<QNUInt32> rangeVector;
+	QNUInt32 numFtrs;
+public:
+	CRF_StdRange(QNUInt32, QNUInt32);
+	virtual ~CRF_StdRange();
+	virtual vector<QNUInt32> getRange(QNUInt32);
+	virtual vector<QNUInt32> getRange(QNUInt32, QNUInt32);
+	virtual QNUInt32 getNumFtrs();
+};
+
+#endif /*CRF_STDRANGE_H_*/

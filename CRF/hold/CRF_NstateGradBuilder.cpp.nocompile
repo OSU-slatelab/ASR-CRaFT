@@ -1,0 +1,281 @@
+#include "CRF_NstateGradBuilder.h"
+
+CRF_NstateGradBuilder::CRF_NstateGradBuilder(CRF_Model* crf_in)
+	: CRF_StdGradBuilder(crf_in)
+{
+}
+
+CRF_NstateGradBuilder::~CRF_NstateGradBuilder()
+{
+}
+
+double CRF_NstateGradBuilder::computeTransMatrixLog(CRF_Seq* seq_ptr)
+{
+	double tmp=0.0;
+	
+	float* ftr_buff = seq_ptr->getFtr();
+	QNUInt32 nLabs = this->crf->getNLabs();
+	double* Mtrans = seq_ptr->getMtrans();
+	double* Mstate = seq_ptr->getMstate();
+	for (QNUInt32 i=0; i<nLabs; i++) {
+		Mstate[i]=LOG0;
+		for (QNUInt32 j=0; j<nLabs; j++) {
+			Mtrans[j*nLabs+i]=LOG0;
+		}
+	}
+	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
+	double* lambda = this->crf->getLambda();
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+	for (QNUInt32 clab=0; clab<nLabs; clab++) {
+		double value=0.0;
+		Mstate[clab]=this->crf->getFeatureMap()->computeRi(ftr_buff,lambda,lc,clab);
+		if (clab % nStates == 0) {
+			// We're in a start state.  The only transitions we should accept are from ourself and
+			// from all of the possible end states.
+			for (QNUInt32 plab=nStates-1; plab<nLabs; plab+=nStates) {
+				QNUInt32 idx=plab*nLabs+clab;
+				Mtrans[idx]=this->crf->getFeatureMap()->computeMij(ftr_buff,lambda,lc,plab,clab);
+			}
+			if (nStates>1) {
+				// Accept a self transition - this won't happen in the loop above as long as we have more
+				// than one state per metalabel (e.g. a situation where a start state is an end state)
+				QNUInt32 idx=clab*nLabs+clab;
+				Mtrans[idx]=this->crf->getFeatureMap()->computeMij(ftr_buff,lambda,lc,clab,clab);
+			}
+		}
+		else {
+			// We're in a mid or end state.  The only transitions we should accept are from ourself and
+			// from our immediate previous label
+			QNUInt32 idx=(clab-1)*nLabs+clab; // Previous label
+			Mtrans[idx]=this->crf->getFeatureMap()->computeMij(ftr_buff,lambda,lc,clab-1,clab);
+			idx=clab*nLabs+clab; // Self transition
+			Mtrans[idx]=this->crf->getFeatureMap()->computeMij(ftr_buff,lambda,lc,clab,clab);
+		}
+	}
+	return tmp;
+}
+
+double CRF_NstateGradBuilder::computeAlpha(CRF_Seq* cur_seq, CRF_Seq* prev_seq)
+{
+	double* Mtrans=cur_seq->getMtrans();
+	double* Mstate=cur_seq->getMstate();
+	double* alpha;
+	double scale=0.0;
+		
+	if (prev_seq == NULL) {
+		alpha = this->alpha_base; // alpha_tmp = 1
+	}
+	else {
+		alpha=prev_seq->getAlpha(); // alpha_tmp = alpha[i-1]
+	}
+	double* new_alpha=cur_seq->getAlpha();  // alpha[i] = 0
+	
+				
+	// cblas_sgemm(Row|Column, TransA?, TransB?, M, N, K, scale_A, A, lda, B, ldb, scale_B, C, ldc)
+	// Where M is the rows of A (if TransA?==no)
+	//       N is the columns of B (if TransB?==no)
+	//       K is the columns of A and the rows of B (if TransA?==no && TransB? == no)
+	//       lda is the linear depth of A (how many elements you must stride to get to the end of a row
+	//       ldb is the linear depth of B
+	//       ldc is the linear depth of C
+	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 1, this->num_labs, this->num_labs, 1.0f, alpha, this->num_labs, M, this->num_labs, 1.0f, new_alpha,this->num_labs);
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+	
+	for (QNUInt32 clab=0; clab<this->num_labs; clab++) {	
+	 	if (clab % nStates == 0) {
+			// We're in a start state.  The only transitions we should accept are from ourself and
+			// from all of the possible end states.
+			for (QNUInt32 plab=nStates-1; plab<this->num_labs; plab+=nStates) {
+				QNUInt32 idx=plab*this->num_labs+clab;
+				new_alpha[clab]+=alpha[plab]*Mtrans[idx];
+			}
+			if (nStates>1) {
+				// Accept a self transition - this won't happen in the loop above as long as we have more
+				// than one state per metalabel (e.g. a situation where a start state is an end state)
+				QNUInt32 idx=clab*this->num_labs+clab;
+				new_alpha[clab]+=alpha[clab]*Mtrans[idx];
+			}
+		}
+		else {
+			// We're in a mid or end state.  The only transitions we should accept are from ourself and
+			// from our immediate previous label
+			QNUInt32 idx=(clab-1)*this->num_labs+clab; // Previous label
+			new_alpha[clab]+=alpha[clab-1]*Mtrans[idx];
+			idx=clab*this->num_labs+clab; // Self transition
+			new_alpha[clab]+=alpha[clab]*Mtrans[idx];
+		}
+	 }
+	 	
+	for (QNUInt32 i=0; i<this->num_labs; i++) {
+		new_alpha[i]=new_alpha[i]*Mstate[i];
+		scale=scale+new_alpha[i];
+	}
+				
+	if ( (scale<1.0) && (scale>-1.0)) scale=1.0; //Don't inflate scores
+		cur_seq->setScale(scale);
+	for (QNUInt32 i=0; i<this->num_labs; i++) {
+		new_alpha[i]=new_alpha[i]/scale;
+	}
+	
+	return scale;
+}
+
+double CRF_NstateGradBuilder::computeBeta(CRF_Seq* cur_seq, CRF_Seq* next_seq)
+{
+	double scale=cur_seq->getScale();
+	double* Mtrans;
+	double* Mstate;
+	double* new_beta;
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+		
+	// Logic desired:
+	//	* Compute beta_i[size of alpha[]+1] to be all 1s
+	//	* Multiply M_i[current] by beta_i[current+1] to get beta_i[current]
+		
+	if (next_seq == NULL) {
+		new_beta = cur_seq->getBeta();
+		for (QNUInt32 i=0; i<this->num_labs; i++) {
+			new_beta[i]=1.0/scale;
+			//beta[i]=1.0;
+		}
+	}
+	else {
+		Mtrans=cur_seq->getNext()->getMtrans();
+		Mstate=cur_seq->getNext()->getMstate();
+		
+		double* beta=next_seq->getBeta();
+		new_beta=cur_seq->getBeta();
+			
+		for (QNUInt32 i=0; i<this->num_labs; i++) {
+			this->tmp_beta[i]=(beta[i]*Mstate[i])/scale;
+		}
+		
+		for (QNUInt32 clab=0; clab<this->num_labs; clab++) {	
+	 		if (clab % nStates == 0) {
+			// We're in a start state.  The only transitions we should accept are from ourself and
+			// from all of the possible end states.
+				for (QNUInt32 plab=nStates-1; plab<this->num_labs; plab+=nStates) {
+					QNUInt32 idx=plab*this->num_labs+clab;
+					new_beta[plab]+=Mtrans[idx]*tmp_beta[clab];
+				}
+				if (nStates>1) {
+					// Accept a self transition - this won't happen in the loop above as long as we have more
+					// than one state per metalabel (e.g. a situation where a start state is an end state)
+					QNUInt32 idx=clab*this->num_labs+clab;
+					new_beta[clab]+=Mtrans[idx]*tmp_beta[clab];
+				}
+			}
+			else {
+				// We're in a mid or end state.  The only transitions we should accept are from ourself and
+				// from our immediate previous label
+				QNUInt32 idx=(clab-1)*this->num_labs+clab; // Previous label
+				new_beta[clab-1]+=Mtrans[idx]*tmp_beta[clab];
+				idx=clab*this->num_labs+clab; // Self transition
+				new_beta[clab]+=Mtrans[idx]*tmp_beta[clab];
+			}
+	 	}
+		
+		
+		//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, this->num_labs, 1, this->num_labs, 1.0f, M, this->num_labs, this->tmp_beta, this->num_labs, 1.0f, new_beta,1);
+	}
+	return scale;
+}
+
+double CRF_NstateGradBuilder::computeExpF(CRF_Seq* cur_seq, double* grad, double Zx)
+{
+	double logLi=0.0;
+	double alpha_beta;
+	QNUInt32 cur_lab=cur_seq->getLab();
+	double* cur_alpha=cur_seq->getAlpha();
+	double* prev_alpha;
+	double prev_scale;
+	QNUInt32 prev_lab;
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+	
+	if (cur_seq->getPrev() != NULL) {
+		prev_lab=cur_seq->getPrev()->getLab();
+		prev_alpha=cur_seq->getPrev()->getAlpha();
+		prev_scale=cur_seq->getPrev()->getScale();
+	}
+	else {
+		prev_lab=this->num_labs+1;
+		prev_alpha=this->alpha_base;
+		prev_scale=this->num_labs;
+	}
+	double* Mtrans=cur_seq->getMtrans();
+	double* Mstate=cur_seq->getMstate();
+	double* new_beta=cur_seq->getBeta();
+	float* ftr_buff = cur_seq->getFtr();
+	double scale=cur_seq->getScale();
+	
+	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
+	double* lambda = this->crf->getLambda();
+	double alpha_beta_tot = 0.0;
+	double alpha_beta_trans_tot=0.0;
+		
+	for (QNUInt32 clab=0; clab<this->num_labs; clab++) {
+		alpha_beta=cur_alpha[clab]*new_beta[clab]*scale/Zx;
+		alpha_beta_tot += alpha_beta;
+		bool match=(clab==cur_lab);
+		logLi+=this->crf->getFeatureMap()->computeExpFState(ftr_buff,lambda,lc,this->ExpF,grad,alpha_beta,match,clab);
+		if (clab % nStates == 0) {
+			// We're in a start state.  The only transitions we should accept are from ourself and
+			// from all of the possible end states.
+				for (QNUInt32 plab=nStates-1; plab<this->num_labs; plab+=nStates) {
+					QNUInt32 idx=plab*this->num_labs+clab;
+					alpha_beta=prev_alpha[plab]*Mtrans[idx]*Mstate[clab]*new_beta[clab]/Zx;
+					alpha_beta_trans_tot+=alpha_beta;
+					match=((clab==cur_lab)&&(plab==prev_lab));
+					logLi+=this->crf->getFeatureMap()->computeExpFTrans(ftr_buff,lambda,lc,this->ExpF,grad,alpha_beta,match,plab,clab);
+				}
+				if (nStates>1) {
+					// Accept a self transition - this won't happen in the loop above as long as we have more
+					// than one state per metalabel (e.g. a situation where a start state is an end state)
+					QNUInt32 idx=clab*this->num_labs+clab;
+					alpha_beta=prev_alpha[clab]*Mtrans[idx]*Mstate[clab]*new_beta[clab]/Zx;
+					alpha_beta_trans_tot+=alpha_beta;
+					match=((clab==cur_lab)&&(clab==prev_lab));
+					logLi+=this->crf->getFeatureMap()->computeExpFTrans(ftr_buff,lambda,lc,this->ExpF,grad,alpha_beta,match,clab,clab);
+				}
+		}
+		else {
+				// We're in a mid or end state.  The only transitions we should accept are from ourself and
+				// from our immediate previous label
+				QNUInt32 idx=(clab-1)*this->num_labs+clab; // Previous label
+				alpha_beta=prev_alpha[clab-1]*Mtrans[idx]*Mstate[clab]*new_beta[clab]/Zx;
+				alpha_beta_trans_tot+=alpha_beta;
+				match=((clab==cur_lab)&&((clab-1)==prev_lab));
+				logLi+=this->crf->getFeatureMap()->computeExpFTrans(ftr_buff,lambda,lc,this->ExpF,grad,alpha_beta,match,clab-1,clab);
+				
+				idx=clab*this->num_labs+clab; // Self transition
+				alpha_beta=prev_alpha[clab]*Mtrans[idx]*Mstate[clab]*new_beta[clab]/Zx;
+				alpha_beta_trans_tot+=alpha_beta;
+				match=((clab==cur_lab)&&(clab==prev_lab));
+				logLi+=this->crf->getFeatureMap()->computeExpFTrans(ftr_buff,lambda,lc,this->ExpF,grad,alpha_beta,match,clab,clab);
+		}
+		
+	}
+	
+	// NOTE:  The error blocks below should be reworked to throw exceptions
+			
+	if ((alpha_beta_tot >1.1))  {
+		cout << "ERROR: Probability sums greater than 1.0 " << alpha_beta_tot << endl;
+		exit(-1);
+	}
+	if (alpha_beta_tot < 0.9) {
+		cout << "ERROR: Probability sums less than 1.0 " << alpha_beta_tot << endl;
+		exit(-1);			
+	} 
+	if (alpha_beta_trans_tot > 1.1) {
+		cout << "ERROR: Trans Probability sums greater than 1.0 " << alpha_beta_trans_tot << endl;
+		exit(-1);
+	}
+	if (alpha_beta_trans_tot < 0.9) {
+		cout << "ERROR: Trans Probability sums less than 1.0 " << alpha_beta_trans_tot << endl;
+		exit(-1);			
+	}
+	return logLi; 
+}
+
+
+

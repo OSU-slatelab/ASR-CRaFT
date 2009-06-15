@@ -1,0 +1,24 @@
+#ifndef CRF_TRANSITIONMATRIX_H_
+#define CRF_TRANSITIONMATRIX_H_
+
+#include "CRF.h"
+#include "CRF_Model.h"
+#include "CRF_StateVector.h"
+#include "CRF_BaseMatrix.h"
+
+class CRF_TransitionMatrix : public CRF_BaseMatrix
+{
+protected:
+	QNUInt32 numRows;
+	QNUInt32 numCols;
+public:
+	CRF_TransitionMatrix(CRF_Model* crf_in, double* arr_in=NULL, QNUInt32 arr_len=0);
+	virtual ~CRF_TransitionMatrix();
+	virtual double get(QNUInt32 row, QNUInt32 col);
+	virtual void set(QNUInt32 row, QNUInt32 col, double val);
+	virtual CRF_TransitionMatrix* componentMult(CRF_TransitionMatrix* mult, CRF_TransitionMatrix* result);
+	virtual CRF_StateVector* alphaMult(CRF_StateVector* alpha, CRF_StateVector* result);
+	virtual CRF_StateVector* betaMult(CRF_StateVector* beta, CRF_StateVector* result);
+};
+
+#endif /*CRF_TRANSITIONMATRIX_H_*/

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="TestProject.cdt.managedbuild.target.gnu.lib.48032142" name="Static Library (Gnu)" projectType="cdt.managedbuild.target.gnu.lib">
+<configuration artifactExtension="a" artifactName="CRF" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.lib.debug.368787323" name="Debug" parent="cdt.managedbuild.config.gnu.lib.debug">
+<toolChain id="cdt.managedbuild.toolchain.gnu.lib.debug.177396159" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.lib.debug">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug">
+<option id="gnu.cpp.compiler.option.include.paths.1225916736" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080317/"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+</option>
+<option id="gnu.cpp.compiler.lib.debug.option.optimization.level.1105136463" superClass="gnu.cpp.compiler.lib.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.lib.debug.118966243" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.lib.debug">
+<option id="gnu.c.compiler.option.include.paths.1381896173" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080317/"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+</option>
+<option id="gnu.c.compiler.lib.debug.option.optimization.level.2090255480" superClass="gnu.c.compiler.lib.debug.option.optimization.level" value="gnu.c.optimization.level.most" valueType="enumerated"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.archiver.lib.debug.2080034038" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.lib.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.lib.debug.122945592" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.lib.debug"/>
+<macros/>
+</toolChain>
+</configuration>
+<configuration artifactExtension="a" artifactName="TestProject" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.lib.release.267275596" name="Release" parent="cdt.managedbuild.config.gnu.lib.release">
+<toolChain id="cdt.managedbuild.toolchain.gnu.lib.release.1972389913" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.lib.release">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.lib.release.1162152784" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.lib.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.lib.release.420625786" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.lib.release"/>
+<tool id="cdt.managedbuild.tool.gnu.archiver.lib.release.2055608946" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.lib.release"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.lib.release.844071685" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.lib.release"/>
+</toolChain>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>
