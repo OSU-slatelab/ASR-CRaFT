@@ -242,3 +242,47 @@ QNUInt32 CRF_StdFeatureMap::recalc()
 	return this->numFtrFuncs;
 }
 
+string CRF_StdFeatureMap::getMapDescriptor(QNUInt32 lambdaNum) {
+	std::stringstream ss;
+	QNUInt32 stateOffset=((this->useStateFtrs)?numFeas:0)+
+						 ((this->useStateBias)?1:0)+
+					     ((this->useTransFtrs)?numFeas*numLabs:0)+
+					     ((this->useTransBias)?numLabs:0);
+	QNUInt32 stateNum=lambdaNum/stateOffset;
+	QNUInt32 remainder=lambdaNum-(stateNum*stateOffset);
+	if (this->useStateFtrs) {
+		if (remainder < numFeas) {
+			ss<< "State" << stateNum << ":ftr" << remainder;
+			return ss.str();
+		} else {
+			remainder-=numFeas;
+		}
+	}
+	if (this->useStateBias) {
+		if (remainder == 0) {
+			ss << "StateBias" << stateNum;
+			return ss.str();
+		} else {
+			remainder--;
+		}
+	}
+	// not sure about this!
+	if (this->useTransFtrs) {
+		if (remainder < numFeas*numLabs) {
+			QNInt32 fromState=remainder/numFeas;
+			QNInt32 ftr=remainder-(fromState*numFeas);
+			ss << "Trans" << fromState << ">" << stateNum << ":ftr" << ftr;
+			return ss.str();
+		} else {
+			remainder-=(numFeas*numLabs);
+		}
+	}
+	if (this->useTransBias) {
+		ss << "TransBias" << remainder << ">" << stateNum;
+		return ss.str();
+	}
+
+	return string("Out of range");
+}
+
+

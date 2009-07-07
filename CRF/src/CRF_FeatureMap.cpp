@@ -65,3 +65,8 @@ QNUInt32 CRF_FeatureMap::recalc()
 {
 	return 0;
 }
+
+string CRF_FeatureMap::getMapDescriptor(QNUInt32 lambdaNum)
+{
+	return string("");
+}
