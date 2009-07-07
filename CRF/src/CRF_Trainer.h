@@ -4,6 +4,7 @@
 #include "CRF.h"
 #include "CRF_Model.h"
 #include "CRF_FeatureStream.h"
+#include <string.h>
 
 class CRF_Trainer
 {

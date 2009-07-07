@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/CRF_GradBuilder.cpp \
 ../src/CRF_InFtrStream_RandPresent.cpp \
 ../src/CRF_InLabStream_RandPresent.cpp \
+../src/CRF_LBFGSTrainer.cpp \
 ../src/CRF_LabelPath.cpp \
 ../src/CRF_LatticeBuilder.cpp \
 ../src/CRF_LocalPosteriorBuilder.cpp \
@@ -40,6 +41,9 @@ CPP_SRCS += \
 ../src/CRF_StdTransFeatureMap.cpp \
 ../src/CRF_Trainer.cpp 
 
+C_SRCS += \
+../src/lbfgs.c 
+
 OBJS += \
 ./src/CRF_FeatureMap.o \
 ./src/CRF_FeatureStream.o \
@@ -47,6 +51,7 @@ OBJS += \
 ./src/CRF_GradBuilder.o \
 ./src/CRF_InFtrStream_RandPresent.o \
 ./src/CRF_InLabStream_RandPresent.o \
+./src/CRF_LBFGSTrainer.o \
 ./src/CRF_LabelPath.o \
 ./src/CRF_LatticeBuilder.o \
 ./src/CRF_LocalPosteriorBuilder.o \
@@ -75,7 +80,11 @@ OBJS += \
 ./src/CRF_StdStateVector.o \
 ./src/CRF_StdStateVectorLog.o \
 ./src/CRF_StdTransFeatureMap.o \
-./src/CRF_Trainer.o 
+./src/CRF_Trainer.o \
+./src/lbfgs.o 
+
+C_DEPS += \
+./src/lbfgs.d 
 
 CPP_DEPS += \
 ./src/CRF_FeatureMap.d \
@@ -84,6 +93,7 @@ CPP_DEPS += \
 ./src/CRF_GradBuilder.d \
 ./src/CRF_InFtrStream_RandPresent.d \
 ./src/CRF_InLabStream_RandPresent.d \
+./src/CRF_LBFGSTrainer.d \
 ./src/CRF_LabelPath.d \
 ./src/CRF_LatticeBuilder.d \
 ./src/CRF_LocalPosteriorBuilder.d \
@@ -119,7 +129,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I/u/drspeech/src/quicknet-v3_20/H-i586-linux -I/u/drspeech/opt/OpenFst-beta-20080317/ -I/u/drspeech/src/quicknet-v3_20 -I/u/drspeech/src/ATLAS-3.7.8/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -I/u/drspeech/src/quicknet-v3_20/H-i586-linux -I/u/drspeech/src/liblbfgs-1.7/include -I/u/drspeech/opt/OpenFst-beta-20080317/ -I/u/drspeech/src/quicknet-v3_20 -I/u/drspeech/src/ATLAS-3.7.8/include -O3 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+src/%.o: ../src/%.c
+	@echo 'Building file: $<'
+	@echo 'Invoking: GCC C Compiler'
+	gcc -DUSE_SSE -DHAVE_EMMINTRIN_H -I/u/drspeech/src/quicknet-v3_20/H-i586-linux -I/u/drspeech/opt/OpenFst-beta-20080317/ -I/u/drspeech/src/ATLAS-3.7.8/include -I/u/drspeech/src/quicknet-v3_20 -O3 -Wall -c -fmessage-length=0 -msse2 -ffast-math -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
