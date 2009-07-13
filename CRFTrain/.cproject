@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?fileVersion 4.0.0?>
 
 <cproject>
@@ -27,9 +27,14 @@
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/liblbfgs-1.7/include"/>
 </option>
 <option id="gnu.cpp.compiler.exe.debug.option.optimization.level.276833589" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
-<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1505150222" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.1505150222" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+<option id="gnu.cpp.compiler.option.preprocessor.def.1810285372" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="USE_SSE"/>
+</option>
+<option id="gnu.cpp.compiler.option.other.other.2056735756" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -msse2 -ffast-math" valueType="string"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1658839366" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
@@ -40,13 +45,14 @@
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
 </option>
 <option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.647051285" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" value="gnu.c.optimization.level.most" valueType="enumerated"/>
-<option id="gnu.c.compiler.exe.debug.option.debugging.level.237390200" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.237390200" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.539295476" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1460803118" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.2044526535" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 <option id="gnu.cpp.link.option.libs.664786329" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="CRF"/>
+<listOptionValue builtIn="false" value="pthread"/>
 <listOptionValue builtIn="false" value="quicknet3"/>
 <listOptionValue builtIn="false" value="cblas"/>
 <listOptionValue builtIn="false" value="atlas"/>
@@ -58,6 +64,7 @@
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/Debug}&quot;"/>
 </option>
+<option id="gnu.cpp.link.option.flags.2054593730" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-g3" valueType="string"/>
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.464762575" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
 <option id="gnu.both.asm.option.include.paths.696937556" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
@@ -70,6 +77,24 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.432073709" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 </toolChain>
 </folderInfo>
+<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1999664734.1842070597" name="Main.cpp" rcbsApplicability="disable" resourcePath="src/Main.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645.961920428">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645.961920428" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645">
+<option id="gnu.cpp.compiler.option.include.paths.755390188" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080317/"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+</option>
+<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1977027359" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+</tool>
+<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.1129553049" name="Resource Custom Build Step">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.390906473" name="Resource Custom Build Step Input Type">
+<additionalInput kind="additionalinputdependency" paths=""/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1073360272" name="Resource Custom Build Step Output Type"/>
+</tool>
+</fileInfo>
 </configuration>
 </storageModule>
 <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
@@ -158,8 +183,8 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
-<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972;cdt.managedbuild.tool.gnu.c.compiler.input.539295476">
-<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1842070597;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645.961920428;cdt.managedbuild.tool.gnu.cpp.compiler.input.1977027359">
+<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
 <openAction enabled="true" filePath=""/>
@@ -243,6 +268,89 @@
 </scannerConfigBuildInfo>
 <scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645;cdt.managedbuild.tool.gnu.cpp.compiler.input.1658839366">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="makefileGenerator">
+<runAction arguments="-f ${project_name}_scd.mk" command="make" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfileCPP">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfileC">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+</scannerConfigBuildInfo>
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972;cdt.managedbuild.tool.gnu.c.compiler.input.539295476">
+<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
 <openAction enabled="true" filePath=""/>
@@ -454,8 +562,8 @@
 <parser enabled="true"/>
 </scannerInfoProvider>
 </profile>
-<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972;cdt.managedbuild.tool.gnu.c.compiler.input.539295476">
-<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1842070597;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645.961920428;cdt.managedbuild.tool.gnu.cpp.compiler.input.1977027359">
+<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
 <openAction enabled="true" filePath=""/>
@@ -539,6 +647,89 @@
 </scannerConfigBuildInfo>
 <scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645;cdt.managedbuild.tool.gnu.cpp.compiler.input.1658839366">
 <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="makefileGenerator">
+<runAction arguments="-f ${project_name}_scd.mk" command="make" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfile">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfileCPP">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.cpp" command="g++" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+<profile id="org.eclipse.cdt.managedbuilder.core.GCCWinManagedMakePerProjectProfileC">
+<buildOutputProvider>
+<openAction enabled="true" filePath=""/>
+<parser enabled="true"/>
+</buildOutputProvider>
+<scannerInfoProvider id="specsFile">
+<runAction arguments="-E -P -v -dD ${plugin_state_location}/specs.c" command="gcc" useDefault="true"/>
+<parser enabled="true"/>
+</scannerInfoProvider>
+</profile>
+</scannerConfigBuildInfo>
+<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1999664734;cdt.managedbuild.config.gnu.exe.debug.1999664734.1333875941;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972;cdt.managedbuild.tool.gnu.c.compiler.input.539295476">
+<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 <profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 <buildOutputProvider>
 <openAction enabled="true" filePath=""/>
