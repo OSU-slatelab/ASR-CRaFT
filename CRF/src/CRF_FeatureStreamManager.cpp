@@ -8,7 +8,8 @@ CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 									size_t win_ext, size_t win_off, size_t win_len,
 									int delta_o, int delta_w,
 									char* trn_rng, char* cv_rng,
-									FILE* nfile, int n_mode, double n_am, double n_av, seqtype ts, QNUInt32 rseed)
+									FILE* nfile, int n_mode, double n_am, double n_av, seqtype ts,
+									QNUInt32 rseed, size_t n_threads)
 	:debug(dbg),
 	 dbgname(dname),
 	 filename(fname),
@@ -30,14 +31,22 @@ CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 	 norm_am(n_am),
 	 norm_av(n_av),
 	 train_seq_type(ts),
-	 rseed(rseed)
+	 rseed(rseed),
+	 nthreads(n_threads)
 {
+	childnum=0;
 	this->create();
 }
 
 
 CRF_FeatureStreamManager::~CRF_FeatureStreamManager()
 {
+	if (children) {
+		for(int i=0;i<nthreads;i++) {
+			delete children[i];
+		}
+		delete children;
+	}
 }
 
 // Modify this so that we can:
@@ -50,6 +59,14 @@ void CRF_FeatureStreamManager::create()
 	QN_InFtrStream* ftr_str = NULL;     // Temporary stream holder.
     int index = 1;                      // training always requires indexed
     int buffer_frames = 500;
+    QNUInt32 nseg;
+
+    if (nthreads<=1) {
+    	children=NULL;
+    } else {
+    	children=new CRF_FeatureStreamManager *[nthreads];
+    	// do initiaization later
+    }
 
     ftr_str = QN_build_ftrstream(this->debug, this->dbgname, this->filename, this->format,
                               this->width, index, this->normfile,
@@ -72,7 +89,7 @@ void CRF_FeatureStreamManager::create()
                 	                          0);
 		QN_InFtrStream_Cut* train_ftr_str_cut = (QN_InFtrStream_Cut*)fwd_ftr_str;
 		train_ftr_str = (QN_InFtrStream*) train_ftr_str_cut;
-		cv_ftr_str=NULL;          	                          
+		cv_ftr_str=NULL;
     }
     else {
     	QN_InFtrStream_CutRange* fwd_ftr_str
@@ -82,13 +99,15 @@ void CRF_FeatureStreamManager::create()
     	QN_InFtrStream_Cut* train_ftr_str_cut = (QN_InFtrStream_Cut*)fwd_ftr_str;
     	cv_ftr_str = (QN_InFtrStream*) new QN_InFtrStream_Cut2(*train_ftr_str_cut);
     	train_ftr_str = (QN_InFtrStream*) train_ftr_str_cut;
-    }   
-    
+    }
+
+    nseg=train_ftr_str->num_segs();
+
     // Create training and CV windows.
     size_t bot_margin = this->window_extent - this->window_offset - this->window_len;
 	QN_InFtrStream_SeqWindow* train_winftr_str;
 	CRF_InFtrStream_RandPresent* train_randftr_str = NULL;
-	
+
 	switch ( this->train_seq_type )
 	{
 		case RANDOM_NO_REPLACE:
@@ -116,10 +135,10 @@ void CRF_FeatureStreamManager::create()
    		default:
    			cerr << "Invalid training sequence type! ABORT!" << endl;
    			exit(-1);
-	}            
+	}
 
    QN_InFtrStream_SeqWindow* cv_winftr_str;
-                                      
+
 	if (cv_ftr_str != NULL ) {
     cv_winftr_str =
         new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
@@ -134,7 +153,7 @@ void CRF_FeatureStreamManager::create()
 //    this->trn_stream = train_winftr_str;
  //   this->cv_stream = cv_winftr_str;
 
-    
+
     // Create Label Streams
     QN_InLabStream_SeqWindow* cv_winlab_str=NULL;
     QN_InLabStream_SeqWindow* train_winlab_str=NULL;
@@ -142,17 +161,17 @@ void CRF_FeatureStreamManager::create()
     	FILE* hardtarget_fp=NULL;
 		enum { LABFILE_BUF_SIZE = 0x8000 };
 		hardtarget_fp = QN_open(this->hardtarget_filename, "r", LABFILE_BUF_SIZE,"hardtarget_file");
-    
-    
+
+
     	QN_InLabStream_ILab* lab_str = new QN_InLabStream_ILab(this->debug,this->dbgname,
     														hardtarget_fp, 1);
-    
-    
+
+
 
    		// Create training and cross-validation streams.
     	QN_InLabStream* train_lab_str = NULL;
     	QN_InLabStream* cv_lab_str = NULL;
-    
+
     	if (cv_winftr_str != NULL) {
     		// Using range strings
     		QN_InLabStream_CutRange* fwd_lab_str
@@ -215,8 +234,8 @@ void CRF_FeatureStreamManager::create()
    			default:
    				cerr << "Invalid training sequence type! ABORT!" << endl;
    				exit(-1);
-		}            
-    	                                  
+		}
+
 		if (cv_lab_str != NULL ) {
 //    		cv_winlab_str =
 //        		new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
@@ -245,7 +264,43 @@ void CRF_FeatureStreamManager::create()
 	}
 	else {
 		this->cv_stream = NULL;
-	} 
+	}
+
+	// now initialize children, if any
+	if (nthreads>1) {
+		QNUInt32 nseg_per_child=nseg/nthreads;
+		//cout << "nseg=" << nseg << " nseg_per_child=" << nseg_per_child << endl;
+		for(size_t i=0;i<nthreads;i++) {
+			if (this->normfile) {
+				if(fseek(this->normfile,0L,SEEK_SET)<0) {
+					cerr << "Can't rewind normfile in setting up threads" << endl;
+					exit(1);
+				}
+			}
+			children[i]=new CRF_FeatureStreamManager(this->debug, this->dbgname, this->filename,
+													 this->format, this->hardtarget_filename,
+													 this->hardtarget_window_offset,
+													 this->width, this->first_ftr, this->num_ftrs,
+													 this->window_extent,this->window_offset, this->window_len,
+													 this->delta_order, this->delta_win, this->train_sent_range,
+													 this->cv_sent_range,
+													 this->normfile, // WARNING needs rewinding
+													 this->norm_mode,this->norm_am, this->norm_av,
+													 this->train_seq_type, this->rseed, 1);
+			children[i]->childnum=i;
+
+			// the stuff below doesn't work because the streams aren't indexed
+			// need to modify crf_featurestream instead
+
+
+			// make each child cover a portion of the stream
+			//cout << "stream " << i << " view " << (i*nseg_per_child) << " " << ((i==nthreads-1)?QN_ALL:nseg_per_child) << endl;
+			children[i]->trn_stream->view(i*nseg_per_child,(i==nthreads-1)?QN_ALL:nseg_per_child);
+
+		}
+
+	}
+
     QN_OUTPUT("End of Stream Creation");
 }
 
@@ -253,6 +308,18 @@ void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 	this->trn_stream = this->trn_stream->join(instr->trn_stream);
 	if (this->cv_stream != NULL) {
 		this->cv_stream = this->cv_stream->join(instr->cv_stream);
+	}
+	if (this->nthreads>1 || instr->nthreads>1) {
+		if (this->nthreads != instr->nthreads) {
+			cerr << "Tried to join streams with different number of threads! " << this->nthreads << "!=" << instr->nthreads << endl;
+			exit(1);
+		}
+		for(size_t i=0;i<this->nthreads;i++) {
+			this->children[i]->trn_stream = this->children[i]->trn_stream->join(instr->children[i]->trn_stream);
+			if (this->children[i]->cv_stream != NULL) {
+				this->children[i]->cv_stream = this->children[i]->cv_stream->join(instr->children[i]->cv_stream);
+			}
+		}
 	}
 }
 
@@ -310,7 +377,7 @@ void CRF_FeatureStreamManager::setWindow(size_t window_extent, size_t window_off
 void CRF_FeatureStreamManager::setDeltas(int delta_order, int delta_win)
 {
 	this->delta_order=delta_order;
-	this->delta_win=delta_win;	
+	this->delta_win=delta_win;
 }
 
 

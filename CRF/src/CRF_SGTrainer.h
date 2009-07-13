@@ -19,7 +19,7 @@ class CRF_SGTrainer: public CRF_Trainer
 protected:
 	int logspaceTrain;
 public:
-	CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStream* ftr_str, char* wt_fname);
+	CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname);
 	void train();
 };
 

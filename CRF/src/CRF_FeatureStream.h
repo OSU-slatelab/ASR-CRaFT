@@ -9,10 +9,14 @@
 
 class CRF_FeatureStream
 {
+	friend class CRF_FeatureStreamManager;
 protected:
 	QN_InFtrStream* ftr_stream;
 	QN_InLabStream* lab_stream;
 	int debug;
+	QNUInt32 start_offset;
+	QNUInt32 numsegs;
+	QN_SegID segid;
 
 public:
 	CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg=0);
@@ -27,6 +31,7 @@ public:
 	virtual void set_pos(QNUInt32 segno, QNUInt32 frmno);
 	virtual QNUInt32 num_segs();
 	virtual void display();
+	virtual void view(QNUInt32 startseg,QNUInt32 nsegs);
 };
 
 #endif /*CRF_FEATURESTREAM2_H_*/

@@ -26,6 +26,8 @@ public:
 	virtual double computeTransMatrix(CRF_Seq*);
 	virtual double computeTransMatrixLog(CRF_Seq*);
 	virtual void setNodeList(CRF_StateVector* nl);
+	// factory method
+	static CRF_GradBuilder *create(CRF_Model *crf_ptr, bool useLogspace,int nStates);
 };
 
 #endif /*CRF_GRADBUILDER_H_*/

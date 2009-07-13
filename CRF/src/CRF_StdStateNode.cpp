@@ -20,6 +20,7 @@ CRF_StdStateNode::~CRF_StdStateNode()
 	delete [] this->transMatrix;
 	delete [] this->alphaArray;
 	delete [] this->betaArray;
+	delete [] this->alphaBetaArray;
 	delete [] this->tempBeta;
 }
 

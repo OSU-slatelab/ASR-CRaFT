@@ -4,12 +4,16 @@
 #include "CRF.h"
 #include "CRF_Trainer.h"
 
-#include "CRF_NewGradBuilder.h"
+#include "CRF_GradBuilder.h"
+#include "CRF_Pthread_GradAccumulator.h"
+#include "CRF_GradAccumulator.h"
+/*#include "CRF_NewGradBuilder.h"
 #include "CRF_NewGradBuilderLog.h"
 #include "CRF_StdStateVector.h"
 #include "CRF_StdStateVectorLog.h"
 #include "CRF_StdNStateVector.h"
 #include "CRF_StdNStateVectorLog.h"
+*/
 //#include "CRF_StdGradBuilder.h"
 //#include "CRF_NstateGradBuilder.h"
 //#include "CRF_StdGradBuilderLog.h"
@@ -24,10 +28,11 @@ protected:
 	double invSquareVar;
 	int iCounter;
 	CRF_GradBuilder* gbuild;
+	CRF_GradAccumulator* gaccum;
 	double *grad;
 
 public:
-	CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStream* ftr_str, char* wt_fname);
+	CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str, char* wt_fname);
 	void train();
 	lbfgsfloatval_t evaluateGradient(const lbfgsfloatval_t *myLambda,lbfgsfloatval_t *gradient, const int lambdaLen, const lbfgsfloatval_t step);
 	static lbfgsfloatval_t _evaluateGradient(void *instance, const lbfgsfloatval_t *x, lbfgsfloatval_t *g, const int n,const lbfgsfloatval_t step);

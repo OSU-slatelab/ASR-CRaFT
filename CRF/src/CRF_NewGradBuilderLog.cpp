@@ -6,11 +6,23 @@ CRF_NewGradBuilderLog::CRF_NewGradBuilderLog(CRF_Model* crf_in)
 	for (QNUInt32 i=0; i<this->num_labs; i++) {
 		this->alpha_base[i]=0.0;
 	}
+	// nodelist may come from base constructor
+	if (this->nodeList) {
+		delete this->nodeList;
+	}
 	this->nodeList = new CRF_StdStateVectorLog();
 }
 
 CRF_NewGradBuilderLog::~CRF_NewGradBuilderLog()
 {
+	cerr << "newgradbuilderlog destructor" << endl;
+	if (this->nodeList != NULL) {
+		while(!this->nodeList->empty()) {
+			CRF_StateNode *s=this->nodeList->back();
+			delete s;
+			this->nodeList->pop_back();
+		}
+	}
 }
 
 double CRF_NewGradBuilderLog::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)
@@ -127,6 +139,7 @@ double CRF_NewGradBuilderLog::buildGradient(CRF_FeatureStream* ftr_strm, double*
 	//logLi-=Zx;
 
 
+	//this->nodeList->clear();
 	//nodeList.clear();
 	return logLi;
 }

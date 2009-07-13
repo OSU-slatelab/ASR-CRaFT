@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/CRF_FeatureMap.cpp \
 ../src/CRF_FeatureStream.cpp \
 ../src/CRF_FeatureStreamManager.cpp \
+../src/CRF_GradAccumulator.cpp \
 ../src/CRF_GradBuilder.cpp \
 ../src/CRF_InFtrStream_RandPresent.cpp \
 ../src/CRF_InLabStream_RandPresent.cpp \
@@ -21,6 +22,7 @@ CPP_SRCS += \
 ../src/CRF_NewGradBuilderSparseLog.cpp \
 ../src/CRF_NewLocalPosteriorBuilder.cpp \
 ../src/CRF_NewViterbi.cpp \
+../src/CRF_Pthread_GradAccumulator.cpp \
 ../src/CRF_SGTrainer.cpp \
 ../src/CRF_Seq.cpp \
 ../src/CRF_SparseFeatureMap.cpp \
@@ -48,6 +50,7 @@ OBJS += \
 ./src/CRF_FeatureMap.o \
 ./src/CRF_FeatureStream.o \
 ./src/CRF_FeatureStreamManager.o \
+./src/CRF_GradAccumulator.o \
 ./src/CRF_GradBuilder.o \
 ./src/CRF_InFtrStream_RandPresent.o \
 ./src/CRF_InLabStream_RandPresent.o \
@@ -62,6 +65,7 @@ OBJS += \
 ./src/CRF_NewGradBuilderSparseLog.o \
 ./src/CRF_NewLocalPosteriorBuilder.o \
 ./src/CRF_NewViterbi.o \
+./src/CRF_Pthread_GradAccumulator.o \
 ./src/CRF_SGTrainer.o \
 ./src/CRF_Seq.o \
 ./src/CRF_SparseFeatureMap.o \
@@ -90,6 +94,7 @@ CPP_DEPS += \
 ./src/CRF_FeatureMap.d \
 ./src/CRF_FeatureStream.d \
 ./src/CRF_FeatureStreamManager.d \
+./src/CRF_GradAccumulator.d \
 ./src/CRF_GradBuilder.d \
 ./src/CRF_InFtrStream_RandPresent.d \
 ./src/CRF_InLabStream_RandPresent.d \
@@ -104,6 +109,7 @@ CPP_DEPS += \
 ./src/CRF_NewGradBuilderSparseLog.d \
 ./src/CRF_NewLocalPosteriorBuilder.d \
 ./src/CRF_NewViterbi.d \
+./src/CRF_Pthread_GradAccumulator.d \
 ./src/CRF_SGTrainer.d \
 ./src/CRF_Seq.d \
 ./src/CRF_SparseFeatureMap.d \

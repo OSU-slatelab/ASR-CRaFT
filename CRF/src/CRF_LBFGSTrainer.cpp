@@ -1,7 +1,7 @@
 #include "CRF_LBFGSTrainer.h"
 
-CRF_LBFGSTrainer::CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStream* ftr_str, char* wt_fname)
-	: CRF_Trainer(crf_in, ftr_str, wt_fname)
+CRF_LBFGSTrainer::CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
+	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
 }
 
@@ -9,28 +9,15 @@ void CRF_LBFGSTrainer::train()
 {
 	ofstream ofile;
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
-	if (this->useLogspace) {
-		if (nStates==1) {
-			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVectorLog());
-			cout << "Using Logspace training..." << endl;
-		}
-		else {
-			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVectorLog());
-		}
-	}
-	else{
-		if (nStates==1) {
-			gbuild=new CRF_NewGradBuilder(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVector());
-			cout << "Using normal space training..." << endl;
-		}
-		else {
-			gbuild=new CRF_NewGradBuilder(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVector());
-		}
-	}
+
+	if (true)
+		gaccum = new CRF_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
+	else
+		gaccum = new CRF_Pthread_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
+	this->gaccum->setUttReport(this->uttRpt);
+
+	//	gbuild = CRF_GradBuilder::create(this->crf_ptr,this->useLogspace,nStates);
+
 
 	double* lambda=this->crf_ptr->getLambda();
 	QNUInt32 lambdaLen = this->crf_ptr->getLambdaLen();
@@ -59,19 +46,20 @@ void CRF_LBFGSTrainer::train()
 	//lbfgs_params.linesearch=LBFGS_LINESEARCH_BACKTRACKING;
 
 	// Start a lbfgs loop.  Callback to gradient evaluator
-	int ret=lbfgs(lambdaLen,lambdaCoef,&logLikelihood,_evaluateGradient,NULL,this,NULL);
+	int ret=lbfgs(lambdaLen,lambdaCoef,&logLikelihood,_evaluateGradient,_progress,this,NULL);
 
 	if (ret==0) {
 		cout << "Writing Final Iteration weights to file " << this->weight_fname << endl;
 		this->crf_ptr->writeToFile(this->weight_fname);
 	} else {
 		cerr << "LBFGS returned error: " << ret << endl;
-		exit(-1);
+		//exit(-1);
 	}
 
 	lbfgs_free(lambdaCoef);
-	delete gbuild;
-	delete grad;
+	//delete gbuild;
+	delete gaccum;
+	delete[] grad;
 }
 
 
@@ -82,35 +70,36 @@ lbfgsfloatval_t CRF_LBFGSTrainer::evaluateGradient(const lbfgsfloatval_t *lambda
         const lbfgsfloatval_t step
         ) {
 
+	//QN_SegID segid = QN_SEGID_BAD;
+	//CRF_FeatureStream *ftr_str=this->ftr_strm_mgr->trn_stream;
 
-	// Rewind the stream
-	this->ftr_strm->rewind();
-	QN_SegID segid = this->ftr_strm->nextseg();
+	/*
+	if (this->gbuild) {
+		// Rewind the stream
 
-	// SHOULD CODE BETTER TO THROW EXCEPTION
-	if (segid == QN_SEGID_BAD) {
-		cerr << "Feature stream contains no utterances!" << endl;
-		exit(1);
+		ftr_str->rewind();
+		segid = ftr_str->nextseg();
+
+		// SHOULD CODE BETTER TO THROW EXCEPTION
+		if (segid == QN_SEGID_BAD) {
+			cerr << "Feature stream contains no utterances!" << endl;
+			exit(1);
+		}
 	}
+	*/
 
     time_t rawtime;
     double totLogLi=0.0;
     unsigned int uCounter=0;
-    double tmp_Zx;
+    //double tmp_Zx;
 
-	//if (sizeof(lbfgsfloatval_t)==sizeof(double)) {
-	//	this->crf_ptr->setLambda((double *)lambda,lambdaLen);
-	//	memset(&(gradient[0]),0,lambdaLen*sizeof(double));
-	//} else {
-		// set gradient to zero, copy lambda to current lambda
-		for (QNUInt32 i=0; i<lambdaLen; i++) {
-			//cout << i << ":" << lambda[i] << " ";
-			(this->crf_ptr->getLambda())[i]=lambda[i];
-			//gradient[i]=0.0;
-			this->grad[i]=0.0;
-		}
-	//}
-    //cout << endl;
+    //double *crflambda=this->crf_ptr->getLambda();
+
+    for (QNUInt32 i=0; i<lambdaLen; i++) {
+    	(this->crf_ptr->getLambda())[i]=(double)(lambda[i]);
+    	this->grad[i]=0.0;
+    }
+
 
 	// Only write previous iteration's weights if this is not first iteration
 	if (this->start) {
@@ -129,60 +118,74 @@ lbfgsfloatval_t CRF_LBFGSTrainer::evaluateGradient(const lbfgsfloatval_t *lambda
 	}
 
 	iCounter++;
-	//if (this->start) {
-		cout << "Iteration: " << this->iCounter  << endl;
-	//	start=false;
-	//}
-	if (uCounter % this->uttRpt == 0) {
-		time(&rawtime);
-		char* time = ctime(&rawtime);
-		time[strlen(time)-1]='\0';
-		cout << time << " Beginning Utt: " << uCounter << " SegID: " << segid <<  endl;
+	cout << "Iteration: " << this->iCounter  << endl;
+
+	/*
+	if (this->gbuild) {
+		// now loop over all utterances
+		do {
+			double tmpLogLi=this->gbuild->buildGradient(ftr_str,this->grad,&tmp_Zx);
+			double logLi=tmpLogLi - tmp_Zx;
+			totLogLi += logLi;
+
+			if (uCounter % this->uttRpt == 0) {
+				time(&rawtime);
+				char* time = ctime(&rawtime);
+				time[strlen(time)-1]='\0';
+				cout << time << " Finished Utt: " << uCounter << " logLi: " << logLi;
+				cout << " Avg LogLi: " << totLogLi/(uCounter+1) << " Zx: " << tmp_Zx;
+				cout << " Numerator: " << tmpLogLi << endl;
+			}
+			uCounter++;
+
+
+			segid = ftr_str->nextseg();
+		} while (segid != QN_SEGID_BAD);
+		for (QNUInt32 i=0; i<lambdaLen; i++) {
+			// note: lbfgs wants to minimize, so we invert sign to maximize
+			gradient[i]=-(lbfgsfloatval_t)(this->grad[i]);
+		}
+
+		for (QNUInt32 i=0; i<lambdaLen; i++) {
+			if (this->useGvar) {
+				// add penalty term (because of inversion)
+				gradient[i]+=lambda[i]*invSquareVar;
+				totLogLi-=((lambda[i]*lambda[i])*invSquareVar)/2;
+			}
+			cout << this->crf_ptr->getFeatureMap()->getMapDescriptor(i) << ":" << gradient[i] << ":" << this->grad[i] << ":" << i << endl;
+		}
+
+	} else {
+	*/
+	//totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,this->ftr_strm_mgr->getNThreads(),this->grad,&uCounter);
+	totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,1,this->grad,&uCounter);
+
+	// invert gradient for use in lbfgs
+	if (this->useGvar) {
+		for (QNUInt32 i=0; i<lambdaLen; i++) {
+			// add penalty term (because of inversion)
+			gradient[i]=(lbfgsfloatval_t)(-this->grad[i]+lambda[i]*invSquareVar);
+			totLogLi-=((lambda[i]*lambda[i])*invSquareVar)/2;
+		}
+		//cout << this->crf_ptr->getFeatureMap()->getMapDescriptor(i) << ":" << gradient[i] << ":" << this->grad[i] << ":" << i << endl;
+	} else {
+		for (QNUInt32 i=0; i<lambdaLen; i++) {
+			gradient[i]=(lbfgsfloatval_t)(-this->grad[i]);
+		}
 	}
-
-    // now loop over all utterances
-    do {
-    	double tmpLogLi=this->gbuild->buildGradient(this->ftr_strm,this->grad,&tmp_Zx);
-    	double logLi=tmpLogLi - tmp_Zx;
-    	totLogLi += logLi;
-
-    	if (uCounter % this->uttRpt == 0) {
-    		time(&rawtime);
-    		char* time = ctime(&rawtime);
-    		time[strlen(time)-1]='\0';
-    		cout << time << " Finished Utt: " << uCounter << " logLi: " << logLi;
-    		cout << " Avg LogLi: " << totLogLi/(uCounter+1) << " Zx: " << tmp_Zx;
-    		cout << " Numerator: " << tmpLogLi << endl;
-    	}
-    	uCounter++;
-
-    	for (QNUInt32 i=0; i<lambdaLen; i++) {
-    		// note: lbfgs wants to minimize, so we invert sign to maximize
-    		gradient[i]=-(lbfgsfloatval_t)(this->grad[i]);
-    	}
-    	segid = this->ftr_strm->nextseg();
-    } while (segid != QN_SEGID_BAD);
-
-
-    for (QNUInt32 i=0; i<lambdaLen; i++) {
-    	if (this->useGvar) {
-    		// add penalty term (because of inversion)
-    		gradient[i]+=lambda[i]*invSquareVar;
-    		totLogLi-=((lambda[i]*lambda[i])*invSquareVar)/2;
-    	}
-    	cout << this->crf_ptr->getFeatureMap()->getMapDescriptor(i) << ":" << gradient[i] << ":" << this->grad[i] << ":" << i << endl;
-    }
-
+/*}*/
 
     time(&rawtime);
     char* time = ctime(&rawtime);
     time[strlen(time)-1]='\0';
     cout << time << " End iteration: " << iCounter << " totLogLi: " << totLogLi;
-    cout << " Avg LogLi: " << totLogLi/(uCounter) << endl;
+    cout << " Avg LogLi: " << totLogLi/(uCounter) << " ucounter: " << uCounter << endl;
 
-    // clean up stream
-    this->ftr_strm->rewind();
-	this->ftr_strm->nextseg();
+    /*if (this->gbuild) {
+    	// clean up stream
+    	ftr_str->rewind();
+    	ftr_str->nextseg();
+    }*/
 
 	// return the negative log likelihood, which wants to be minimized by lbfgs
     return -totLogLi;
@@ -214,6 +217,7 @@ int CRF_LBFGSTrainer::progress(
         )
     {
 
+	cout << "PROGRESS called" << endl;
 	cout << "Iteration: " << this->iCounter << " ending" << endl;
 	cout << "Iteration: " << this->iCounter << " applying lambda updates" << endl;
 
