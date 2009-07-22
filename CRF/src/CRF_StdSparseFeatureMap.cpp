@@ -1,20 +1,8 @@
 #include "CRF_StdSparseFeatureMap.h"
 
 CRF_StdSparseFeatureMap::CRF_StdSparseFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas)
-	: CRF_FeatureMap(nlabs,nfeas),
-	  numLabs(nlabs),
-	  numFeas(nfeas)
+	: CRF_StdFeatureMap(nlabs,nfeas)
 {
-	//this->numFtrFuncs=nlabs*nfeas + nlabs + nlabs*nlabs;
-	this->useStateBias=true;
-	this->useTransBias=true;
-	this->useStateFtrs=true;
-	this->useTransFtrs=false;
-	this->stateFidxStart=0;
-	this->stateFidxEnd=nfeas-1;
-	this->transFidxEnd=nlabs+1;
-	this->transFidxStart=0;
-	this->numStates=1;
 	this->recalc();
 }
 
@@ -78,6 +66,57 @@ double CRF_StdSparseFeatureMap::computeMij(float* ftr_buf, double* lambda, QNUIn
 	}
 	lc+=this->numTransFuncs;
 	return Mi;
+}
+
+double CRF_StdSparseFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda, QNUInt32 clab)
+{
+	double stateValue=0.0;
+	QNUInt32 lc=this->stateFeatureIdxCache[clab];
+	//QNUInt32 tmp_lc;
+	if (this->useStateFtrs) {
+		for (QNUInt32 fidx=0; fidx<this->numFeas; fidx=fidx+2)
+		{
+			QNUInt32 new_idx=(QNUInt32) ftr_buf[fidx];
+			if ((new_idx >= this->stateFidxStart) && (new_idx <= this->stateFidxEnd)) {
+				//tmp_lc=lc+new_idx;
+				//cout << "S: Computing for new_idx: " << new_idx << " value " << ftr_buf[fidx+1] << " tmp_lc " << tmp_lc << endl;
+				stateValue+=ftr_buf[fidx+1]*lambda[lc+new_idx];
+			}
+		}
+	}
+	if (this->useStateBias) {
+		//tmp_lc=lc+this->numStateFuncs-1;
+		//cout << "SB: Computing for new_idx: XX" << " value " << 1 << " tmp_lc " << tmp_lc << " C: " << clab << endl;
+		//lc=clab*(this->numStateFuncs+this->numTransFuncs)+this->numStateFuncs-1; //Advance to end of state functions, then backup
+		stateValue+=lambda[lc+this->numStateFuncs-1];
+	}
+	return stateValue;
+}
+
+double CRF_StdSparseFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda, QNUInt32 plab, QNUInt32 clab)
+{
+	// Here, lc is the start of the trans feature weights for the combination of plab,clab
+	double transMatrixValue=0.0;
+	QNUInt32 lc=this->transFeatureIdxCache[plab*this->numLabs+clab];
+	if (this->useTransFtrs) {
+		for (QNUInt32 fidx=0; fidx<this->numFeas; fidx=fidx+2)
+		{
+			QNUInt32 new_idx=(QNUInt32) ftr_buf[fidx];
+			if ((new_idx >= this->transFidxStart) && (new_idx<=this->transFidxEnd)) {
+				//cout << "T: Computing for new_idx: " << new_idx << " value " << ftr_buf[fidx+1] << " tmp_lc " << tmp_lc << endl;
+				//lc=clab*(this->numStateFuncs+this->numTransFuncs)+this->numStateFuncs+plab*this->numTransFuncs+new_idx;
+				transMatrixValue+=ftr_buf[fidx+1]*lambda[lc+new_idx];
+				//lc++;
+			}
+		}
+	}
+	if (this->useTransBias) {
+		//lc=clab*(this->numStateFuncs+this->numTransFuncs)+this->numStateFuncs+(plab+1)*this->numTransFuncs-1;
+		//cout << "TB: Computing for new_idx: XX"  << " value " << 1 << " tmp_lc " << tmp_lc << " P: " << plab << " C: "<< clab << endl;
+		transMatrixValue+=lambda[lc+this->numTransFuncs-1];
+		//lc++;
+	}
+	return transMatrixValue;
 }
 
 double CRF_StdSparseFeatureMap::computeExpFState(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 clab)
@@ -148,101 +187,84 @@ double CRF_StdSparseFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda,
 	return logLi;
 }
 
-void CRF_StdSparseFeatureMap::setStateFtrRange(QNUInt32 st, QNUInt32 end)
+double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_clab, QNUInt32 clab)
 {
-	this->stateFidxStart=st;
-	this->stateFidxEnd=end;
-	if (this->stateFidxEnd - this->stateFidxStart +1 >0 ) {
-		this->useStateFtrs=true;
+	double logLi=0.0;
+	QNUInt32 lc = this->stateFeatureIdxCache[clab];
+	QNUInt32 tmp_lc;
+	if (this->useStateFtrs) {
+		for (QNUInt32 fidx=0; fidx<this->numFeas; fidx=fidx+2)
+		{
+			QNUInt32 new_idx=(QNUInt32) ftr_buf[fidx];
+			if ((new_idx >= this->stateFidxStart) && (new_idx <= this->stateFidxEnd)) {
+				tmp_lc=lc+new_idx;
+				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
+				if (t_clab == clab) {
+					grad[tmp_lc]+=ftr_buf[fidx+1];
+					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
+				}
+			}
+		}
 	}
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setTransFtrRange(QNUInt32 st, QNUInt32 end)
-{
-	this->transFidxStart=st;
-	this->transFidxEnd=end;
-	if (this->transFidxEnd - this->transFidxStart +1 > 0) {
-		this->useTransFtrs=true;
+	if (this->useStateBias) {
+		tmp_lc=lc+this->numStateFuncs-1;
+		ExpF[tmp_lc]+=alpha_beta;
+		if (t_clab==clab) {
+			grad[tmp_lc]+=1;
+			logLi += lambda[tmp_lc];
+		}
 	}
-	this->recalc();
+	return logLi;
 }
 
-
-void CRF_StdSparseFeatureMap::setNumStates(QNUInt32 ns)
+double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_plab, QNUInt32 t_clab, QNUInt32 plab, QNUInt32 clab)
 {
-	this->numStates=ns;
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setUseStateBias(bool useState)
-{
-	this->useStateBias=useState;
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setUseTransBias(bool useTrans)
-{
-	this->useTransBias=useTrans;
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setUseStateFtrs(bool useState)
-{
-	this->useStateFtrs = useState;
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setUseTransFtrs(bool useTrans)
-{
-	this->useTransFtrs = useTrans;
-	if (this->transFidxEnd == this->numLabs+1) { // By default if it isn't set, use the same features as the state features
-		this->transFidxStart=this->stateFidxStart;
-		this->transFidxEnd=this->stateFidxEnd;
+	double logLi=0.0;
+	QNUInt32 lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
+	QNUInt32 tmp_lc;
+	if (this->useTransFtrs) {
+		for (QNUInt32 fidx=0; fidx<this->numFeas; fidx=fidx+2)
+		{
+			QNUInt32 new_idx=(QNUInt32) ftr_buf[fidx];
+			if ((new_idx >= this->transFidxStart) && (new_idx<=this->transFidxEnd)) {
+				tmp_lc=lc+new_idx;
+				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
+				if ((clab==t_clab) && (plab==t_plab)) {
+					grad[tmp_lc]+=ftr_buf[fidx+1];
+					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
+				}
+				//lc++;
+			}
+		}
 	}
-	this->recalc();
-}
-
-void CRF_StdSparseFeatureMap::setStateBiasVal(double stateBias)
-{
-	this->stateBiasVal=stateBias;
-}
-
-void CRF_StdSparseFeatureMap::setTransBiasVal(double transBias)
-{
-	this->transBiasVal=transBias;
-}
-
-QNUInt32 CRF_StdSparseFeatureMap::getNumStateFuncs(QNUInt32 clab)
-{
-	return this->numStateFuncs;
-}
-
-QNUInt32 CRF_StdSparseFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
-{
-	return this->numTransFuncs;
+	if (this->useTransBias) {
+		//lc=clab*(this->numStateFuncs+this->numTransFuncs)+this->numStateFuncs+(plab+1)*this->numTransFuncs-1;
+		tmp_lc=lc+this->numTransFuncs-1;
+		ExpF[tmp_lc] += alpha_beta;
+		if ((clab==t_clab) && (plab==t_plab)) {
+			grad[tmp_lc]+=1;
+			logLi+=lambda[tmp_lc];
+		}
+	}
+	return logLi;
 }
 
 
-QNUInt32 CRF_StdSparseFeatureMap::getNumStates()
+// Below removed because it is now exactly the same as the code in StdFeatureMap
+/*QNUInt32 CRF_StdSparseFeatureMap::recalc()
 {
-	return this->numStates;
-}
-
-QNUInt32 CRF_StdSparseFeatureMap::recalc()
-{
-	QNUInt32 actualLabels = this->numLabs/this->numStates;
-	cout << "ACTUAL LABELS COMPUTED: " << actualLabels << endl;
-	if (actualLabels * this->numStates != this->numLabs) {
+	this->numActualLabels = this->numLabs/this->numStates;
+	cout << "ACTUAL LABELS COMPUTED: " << this->numActualLabels << endl;
+	if (this->numActualLabels * this->numStates != this->numLabs) {
 		string errstr="CRF_StdFeatureMap created exception: Invalid state/label combination while computing transitions";
 		throw runtime_error(errstr);
 	}
 	QNUInt32 transMult;
 	if (this->numStates==1) {
-		transMult=actualLabels*actualLabels;
+		this->transMult=this->numActualLabels*this->numActualLabels;
 	}
 	else {
-		transMult = actualLabels*actualLabels+this->numLabs + this->numLabs-actualLabels;
+		this->transMult = this->numActualLabels*this->numActualLabels+this->numLabs + this->numLabs-this->numActualLabels;
 	}
 	// end->start transitions + diagonal self transitions + offDiagonal transitions
 	this->numFtrFuncs=0;
@@ -267,5 +289,5 @@ QNUInt32 CRF_StdSparseFeatureMap::recalc()
 		this->numTransFuncs += 1;
 	}
 	return this->numFtrFuncs;
-}
+}*/
 
