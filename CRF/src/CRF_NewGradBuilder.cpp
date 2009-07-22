@@ -105,9 +105,9 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 
 	double* tmpAlpha=this->nodeList->at(lastNode)->getAlpha();
 	int alpha_size=this->crf->getNLabs();
-	for (int tmp_i=0; tmp_i<alpha_size; tmp_i++) {
+/*	for (int tmp_i=0; tmp_i<alpha_size; tmp_i++) {
 		cout << tmp_i << " :" << tmpAlpha[tmp_i] << endl;
-	}
+	}*/
 
 	bool stop=false;
 	while (!stop) {
