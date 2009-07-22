@@ -16,6 +16,7 @@ CRF_NewGradBuilderLog::CRF_NewGradBuilderLog(CRF_Model* crf_in)
 CRF_NewGradBuilderLog::~CRF_NewGradBuilderLog()
 {
 	cerr << "newgradbuilderlog destructor" << endl;
+#ifdef BUGGY
 	if (this->nodeList != NULL) {
 		while(!this->nodeList->empty()) {
 			CRF_StateNode *s=this->nodeList->back();
@@ -23,6 +24,7 @@ CRF_NewGradBuilderLog::~CRF_NewGradBuilderLog()
 			this->nodeList->pop_back();
 		}
 	}
+#endif
 }
 
 double CRF_NewGradBuilderLog::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)
@@ -138,6 +140,11 @@ double CRF_NewGradBuilderLog::buildGradient(CRF_FeatureStream* ftr_strm, double*
 	*Zx_out=Zx;
 	//logLi-=Zx;
 
+	while(!this->nodeList->empty()) {
+		CRF_StateNode *s=this->nodeList->back();
+		delete s;
+		this->nodeList->pop_back();
+	}
 
 	//this->nodeList->clear();
 	//nodeList.clear();
