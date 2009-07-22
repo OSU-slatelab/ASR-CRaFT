@@ -41,11 +41,22 @@ CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 
 CRF_FeatureStreamManager::~CRF_FeatureStreamManager()
 {
+	if (this->trn_stream) {
+		// the trn_stream feature file is owned by this manager
+		delete this->trn_stream->ftr_stream;
+		delete this->trn_stream->lab_stream;
+		delete this->trn_stream;
+	}
+	if (this->cv_stream) {
+		delete this->cv_stream->ftr_stream;
+		delete this->cv_stream->lab_stream;
+		delete this->cv_stream;
+	}
 	if (children) {
 		for(int i=0;i<nthreads;i++) {
 			delete children[i];
 		}
-		delete children;
+		delete [] children;
 	}
 }
 
