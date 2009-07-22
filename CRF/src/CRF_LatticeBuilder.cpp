@@ -172,17 +172,17 @@ void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamm
 	VectorFst<LogArc> denominator;
 	VectorFst<LogArc> aligner;
 
-	cout << "In getAlignmentGammas" << endl;
+	//cout << "In getAlignmentGammas" << endl;
 	this->buildLattice(&denominator,true,&aligner);
-	cout << "Built lattice" << endl;
+	//cout << "Built lattice" << endl;
 	int nstates=denominator.NumStates()-1;
 	vector<int> positions(nstates+1);
 
 	// do the denominator first
 	if (denominatorStateGamma != NULL) {
-		cout << "Computing gamma for denominator" << endl;
+		//cout << "Computing gamma for denominator" << endl;
 		_computeGamma(denominatorStateGamma,denominatorTransGamma,denominator,nstates);
-		cout << "Done computing gamma" << endl;
+		//cout << "Done computing gamma" << endl;
 	}
 
 	if (numeratorStateGamma) {
@@ -201,16 +201,16 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 	vector<LogWeight> alpha;
 	vector<LogWeight> beta;
 
-	cout << "In computeGamma" << endl;
+	//cout << "In computeGamma" << endl;
 	// when shortest distance is done with log semiring, we get alphas
 	ShortestDistance(fst,&alpha,false);
-	cout << "Got alphas, size " << alpha.size() << endl;
+	//cout << "Got alphas, size " << alpha.size() << endl;
 	//for(int i=0;i<alpha.size();i++) {
 	//	cout << alpha[i] << " ";
 	//}
 	// run it in reverse and you get betas
 	ShortestDistance(fst,&beta,true);
-	cout << "Got betas, size " << beta.size() << endl;
+	//cout << "Got betas, size " << beta.size() << endl;
 	//for(int i=0;i<alpha.size();i++) {
 	//	cout << beta[i] << " ";
 	//}
@@ -224,8 +224,8 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 		transGamma->assign(nstates*this->num_labs*this->num_labs,
 									  CRF_LogMath::LOG0);
 	}
-	cout << "Set up vectors" << endl;
-	cout << "number of states: " << nstates << endl;
+	//cout << "Set up vectors" << endl;
+	//cout << "number of states: " << nstates << endl;
 
 	vector<int> positions(alpha.size(),0);
 
@@ -241,18 +241,25 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 			positions[arc.nextstate]=crfstate+1;
 			double alpha_s=(double)(alpha[s].Value());
 			double beta_next=(double)(beta[arc.nextstate].Value());
-			cout << "state:" << s << " pos:" << positions[s] << " alpha:" << alpha_s << " next:" << arc.nextstate << " beta:" << beta_next << endl;
 
 			double gammaarc=-1*(alpha_s+arc.weight.Value()+beta_next);
+			int label=arc.olabel-1;
 
-			stateGamma->at(stateoffset+arc.olabel)=
-				CRF_LogMath::logAdd(stateGamma->at(stateoffset+arc.olabel),
+			stateGamma->at(stateoffset+label)=
+				CRF_LogMath::logAdd(stateGamma->at(stateoffset+label),
 									gammaarc);
+
+			//cout << "state:" << s << " pos:" << positions[s] << " alpha:" << alpha_s <<
+			//			" weight: " << arc.weight.Value()
+			//			<< " label: " << label
+			//			<< " next:" << arc.nextstate << " beta:" << beta_next
+			//			<< " gammaarc: " << gammaarc << " totalgamma: " << stateGamma->at(stateoffset+arc.olabel)
+			//			<< endl;
 
 			// if there are transition gammas needed, then look over pairs of
 			// labels
 			if (transGamma != NULL) {
-				int transoffset=(stateoffset+arc.olabel)*this->num_labs;
+				int transoffset=(stateoffset+label)*this->num_labs;
 				for (ArcIterator< Fst<LogArc> >  aiter2(fst,arc.nextstate);
 					 !aiter2.Done();
 					 aiter2.Next()) {
@@ -262,24 +269,27 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 											 arc.weight.Value()+
 											 arc2.weight.Value()+
 											 beta[arc2.nextstate].Value());
-					transGamma->at(transoffset+arc2.olabel)=
-						CRF_LogMath::logAdd(transGamma->at(transoffset+arc2.olabel),
+					int label2=arc2.olabel-1;
+					transGamma->at(transoffset+label2)=
+						CRF_LogMath::logAdd(transGamma->at(transoffset+label2),
 											gammatransarc);
 				}
 			}
 
 		}
 	}
-	cout << "computed gammas" << endl;
+	//cout << "computed gammas" << endl;
 	// now normalize to get probability
 	int offset=0;
 	for (int i=0;i<nstates;i++) {
 		double total=CRF_LogMath::LOG0;
 		for (int j=0;j<this->num_labs;j++) {
 			total=CRF_LogMath::logAdd(total,stateGamma->at(offset+j));
+			//cout << "pos: " << i << " label: " << j << " unnormgamma: " << stateGamma->at(offset+j) << endl;
 		}
 		for (int j=0;j<this->num_labs;j++) {
 			stateGamma->at(offset+j)-=total;
+			//cout << "pos: " << i << " label: " << j << " gamma: " << stateGamma->at(offset+j) << endl;
 		}
 
 		if (transGamma != NULL) {
@@ -298,8 +308,9 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 				}
 			}
 		}
+		offset+=this->num_labs;
 	}
-	cout << "normalized gammas" << endl;
+	//cout << "normalized gammas" << endl;
 
 }
 
