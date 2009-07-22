@@ -22,13 +22,20 @@ protected:
 	QNUInt32 bunch_size;
 	QNUInt32 num_ftrs;
 	QNUInt32 num_labs;
+	virtual void _computeGamma(vector<double> *stategamma,vector<double> *transgamma,Fst<LogArc>& fst,int nstates);
 public:
 	CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);
 	virtual ~CRF_LatticeBuilder();
 	virtual StdVectorFst* testBuild();
 	virtual StdVectorFst* buildLattice();
+	template <class Arc> void buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL);
 	virtual StdVectorFst* bestPath(bool align);
+	virtual StdVectorFst* bestPath_old(bool align);
 	virtual StdVectorFst* LMBestPath(bool align, StdFst* lmFst);
+	virtual void getAlignmentGammas(vector<double> *denominatorStateGamma,
+									vector<double> *numeratorStateGamma,
+									vector<double> *denominatorTransGamma,
+									vector<double> *numeratorTransGamma);
 	virtual StdVectorFst* nStateBuildLattice();
 	virtual StdVectorFst* nStateBuildLattice(StdVectorFst* labFst);
 	virtual StdVectorFst* nStateBestPath(bool align);
