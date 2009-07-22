@@ -312,7 +312,7 @@ int main(int argc, const char* argv[]) {
 		exit(-1);
 	}
 
-#ifndef USE_NEW_POSTERIOR_CODE
+#ifdef USE_OLD_POSTERIOR_CODE
 
 	//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
 	CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
@@ -374,17 +374,16 @@ int main(int argc, const char* argv[]) {
 #else // USE_NEW_POSTERIOR_CALC
 	//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
 	//CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
-	cout << "hello1" << endl;
+
 	CRF_LatticeBuilder *lb=new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
-	cout << "hello2" << endl;
 	crf_ftr_str->rewind();
-	cout << "hello3 " << config.crf_output_ftrfile << endl;
+
 	FILE* outl=fopen(config.crf_output_ftrfile,"w+");
 	QNUInt32 len=config.crf_label_size;
 	QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
 	QN_SegID segid = crf_ftr_str->nextseg();
 	int count=0;
-	cout << "hello4" << endl;
+
 	vector<double> denominatorGamma;
 	float ab_f[len];
 	while (segid != QN_SEGID_BAD) {
@@ -402,18 +401,20 @@ int main(int argc, const char* argv[]) {
 		//CRF_Seq* cur_seq=seq_head;
 		//while (cur_seq != NULL) {
 		//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
-		for (QNUInt32 j=0; j<denominatorGamma.size(); j++) {
+		for (QNUInt32 j=0; j<denominatorGamma.size(); j+=len) {
 			//double* ab = cur_seq->getAlphaBeta();
 			//double* ab = posteriorList->at(j)->getAlphaBeta();
 			for (QNUInt32 i=0; i<len; i++) {
 				if (!logftrs) {
 					try {
-						ab_f[i]=(float)(expE(denominatorGamma.at(j*len+i)));
+						ab_f[i]=(float)(expE(denominatorGamma.at(j+i)));
 					}
 					catch (exception& e) {
 						cerr << "Exception: " << e.what() << endl;
 						exit(-1);
 					}
+				} else {
+					ab_f[i]=(float)denominatorGamma.at(j+i);
 				}
 			}
 			ftrout->write_ftrs(1,ab_f);
