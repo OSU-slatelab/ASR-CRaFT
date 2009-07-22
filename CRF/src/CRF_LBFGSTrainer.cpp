@@ -10,7 +10,7 @@ void CRF_LBFGSTrainer::train()
 	ofstream ofile;
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
 
-	if (true)
+	if (false)
 		gaccum = new CRF_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
 	else
 		gaccum = new CRF_Pthread_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
@@ -157,8 +157,8 @@ lbfgsfloatval_t CRF_LBFGSTrainer::evaluateGradient(const lbfgsfloatval_t *lambda
 
 	} else {
 	*/
-	//totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,this->ftr_strm_mgr->getNThreads(),this->grad,&uCounter);
-	totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,1,this->grad,&uCounter);
+	totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,this->ftr_strm_mgr->getNThreads(),this->grad,&uCounter);
+	//totLogLi=this->gaccum->accumulateGradient(this->ftr_strm_mgr,1,this->grad,&uCounter);
 
 	// invert gradient for use in lbfgs
 	if (this->useGvar) {
