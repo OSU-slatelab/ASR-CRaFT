@@ -9,7 +9,7 @@ CRF_StdStateNodeLog::CRF_StdStateNodeLog(float* fb, QNUInt32 sizeof_fb, QNUInt32
 
 CRF_StdStateNodeLog::~CRF_StdStateNodeLog()
 {
-	delete this->logAddAcc;
+	delete [] this->logAddAcc;
 }
 
 double CRF_StdStateNodeLog::computeTransMatrix()
