@@ -79,7 +79,8 @@ double CRF_StdNStateNode::computeTransMatrixLog()
 	double result=0.0;
 	QNUInt32 nLabs = this->crf_ptr->getNLabs();
 
-	for (QNUInt32 clab=0; clab<nLabs; clab++) {
+
+/*	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->stateArray[clab]=0;
 		this->diagTransMatrix[clab]=0;
 		this->offDiagTransMatrix[clab]=0;
@@ -89,13 +90,17 @@ double CRF_StdNStateNode::computeTransMatrixLog()
 			}
 		}
 	}
-	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
+	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...*/
 	double* lambda = this->crf_ptr->getLambda();
+
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
-		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeRi(this->ftrBuf,lambda,lc,clab);
+
+		//this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeRi(this->ftrBuf,lambda,lc,clab);
+		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(this->ftrBuf,lambda,clab);
 
 		// Here we need to work some magic.  All entries on the diagonal get their self transition assigned
-		this->diagTransMatrix[clab]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,clab,clab);
+		//this->diagTransMatrix[clab]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,clab,clab);
+		this->diagTransMatrix[clab]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,clab,clab);
 
 		// Besides the diagonal, we need to update the off-diagonal or the dense transition matrix
 		// dense transition matrix is updated when the current label is a start state (e.g. when the
@@ -106,13 +111,15 @@ double CRF_StdNStateNode::computeTransMatrixLog()
 				QNUInt32 idx=plab*nFullLabs+clab/this->nStates;
 				// And our previous label is actually the end state for the previous "label"
 				QNUInt32 real_plab = plab*nStates+nStates-1;  // real_plab is the end state
-				this->denseTransMatrix[idx]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,real_plab,clab);
+				//this->denseTransMatrix[idx]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,real_plab,clab);
+				this->denseTransMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,real_plab,clab);
 			}
 		}
 		else {
 			// We're on the off-diagonal - clab is not a start  state and the only previous
 			// transition must be from the immediate prior state (e.g. clab-1)
-			this->offDiagTransMatrix[clab-1]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,clab-1,clab);
+			//this->offDiagTransMatrix[clab-1]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,clab-1,clab);
+			this->offDiagTransMatrix[clab-1]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,clab-1,clab);
 		}
 	}
 	return result;
@@ -277,8 +284,9 @@ double CRF_StdNStateNode::computeExpF(double* ExpF, double* grad, double Zx, dou
 		/*cout << "CLAB: " << clab << " Alpha: " << this->alphaArray[clab] << " Beta: " << this->betaArray[clab];
 		cout << " Scale: " << this->alphaScale << " Zx: " << Zx << endl;*/
 		alpha_beta_tot += alpha_beta;
-		bool match=(clab==this->label);
-		logLi+=this->crf_ptr->getFeatureMap()->computeExpFState(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab);
+		//bool match=(clab==this->label);
+		logLi+=this->crf_ptr->getFeatureMap()->computeStateExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,this->label,clab);
+		//logLi+=this->crf_ptr->getFeatureMap()->computeExpFState(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab);
 		// With the new transition matrices, we need to be careful.  The order of this computation needs to
 		// match the computeTransitionMatrix code above
 
@@ -290,18 +298,19 @@ double CRF_StdNStateNode::computeExpF(double* ExpF, double* grad, double Zx, dou
 			// We STILL need to cycle through our "lc" values because of how the FeatureMap code works
 			// Our feature map is expecting us to have lc point at the next input vector
 			//double* tmp_ExpF = new double[this->crf_ptr->getLambdaLen()];
-			for (QNUInt32 plab=0; plab<nLabs; plab++) {
+			/*for (QNUInt32 plab=0; plab<nLabs; plab++) {
 				lc+=this->crf_ptr->getFeatureMap()->getNumTransFuncs(plab,clab);
 				//this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,NULL,lc,tmp_ExpF,NULL,alpha_beta,false,plab,clab);
-			}
+			}*/
 			//delete tmp_ExpF;
 		}
 		else {
 			// First we compute the self transitions
 			alpha_beta=prev_alpha[clab]*this->diagTransMatrix[clab]*this->stateArray[clab]*this->betaArray[clab]/Zx;
 			alpha_beta_trans_tot+=alpha_beta;
-			match=((clab==this->label)&&(clab==prev_lab));
-			logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab,clab);
+			//match=((clab==this->label)&&(clab==prev_lab));
+			logLi+=this->crf_ptr->getFeatureMap()->computeTransExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,prev_lab,this->label,clab,clab);
+			//logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab,clab);
 
 			// Next we check to see if the clab state is an end state or not
 			if (clab % this->nStates == 0) {
@@ -313,16 +322,18 @@ double CRF_StdNStateNode::computeExpF(double* ExpF, double* grad, double Zx, dou
 					QNUInt32 real_plab = plab*nStates+nStates-1;  // real_plab is the end state
 					alpha_beta=prev_alpha[real_plab]*this->denseTransMatrix[idx]*this->stateArray[clab]*this->betaArray[clab]/Zx;
 					alpha_beta_trans_tot+=alpha_beta;
-					match=((clab==this->label)&&(real_plab==prev_lab));
-					logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,real_plab,clab);
+					//match=((clab==this->label)&&(real_plab==prev_lab));
+					logLi+=this->crf_ptr->getFeatureMap()->computeTransExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,prev_lab,this->label,real_plab,clab);
+					//logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,real_plab,clab);
 				}
 			}
 			else {
 				// If not, we only update the lambda values on the offDiagonal
 				alpha_beta=prev_alpha[clab-1]*this->offDiagTransMatrix[clab-1]*this->stateArray[clab]*this->betaArray[clab]/Zx;
 				alpha_beta_trans_tot+=alpha_beta;
-				match=((clab==this->label)&&(clab-1==prev_lab));
-				logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab-1,clab);
+				//match=((clab==this->label)&&(clab-1==prev_lab));
+				logLi+=this->crf_ptr->getFeatureMap()->computeTransExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,prev_lab,this->label,clab-1,clab);
+				//logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab-1,clab);
 			}
 		}
 	}
@@ -360,7 +371,6 @@ double CRF_StdNStateNode::computeAlphaSum()
 
 double CRF_StdNStateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
-	QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	if ((cur_lab % this->nStates == 0) && ((prev_lab+1) % this->nStates == 0)) {
 		QNUInt32 cur_idx = cur_lab/this->nStates;
 		QNUInt32 prev_idx = (prev_lab+1)/this->nStates -1;
@@ -385,7 +395,6 @@ double CRF_StdNStateNode::getStateValue(QNUInt32 cur_lab)
 
 double CRF_StdNStateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
-	QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	if ((cur_lab % this->nStates == 0) && ((prev_lab+1) % this->nStates == 0)) {
 		QNUInt32 cur_idx = cur_lab/this->nStates;
 		QNUInt32 prev_idx = (prev_lab+1)/this->nStates -1;

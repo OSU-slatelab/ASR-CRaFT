@@ -55,19 +55,21 @@ double CRF_StdStateNode::computeTransMatrixLog()
 	double result=0.0;
 	QNUInt32 nLabs = this->crf_ptr->getNLabs();
 
-	for (QNUInt32 clab=0; clab<nLabs; clab++) {
+	/*for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->stateArray[clab]=0;
 		for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			this->transMatrix[plab*nLabs+clab]=0;
 		}
 	}
-	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
+	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...*/
 	double* lambda = this->crf_ptr->getLambda();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
-		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeRi(this->ftrBuf,lambda,lc,clab);
+		//this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeRi(this->ftrBuf,lambda,lc,clab);
+		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(this->ftrBuf,lambda,clab);
 		for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			QNUInt32 idx=plab*nLabs+clab;
-			this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,plab,clab);
+			//this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeMij(this->ftrBuf,lambda,lc,plab,clab);
+			this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,plab,clab);
 		}
 	}
 	return result;
@@ -169,7 +171,7 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 	double alpha_beta=0.0;
 	QNUInt32 nLabs = this->crf_ptr->getNLabs();
 
-	QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
+	//QNUInt32 lc=0;  // Counter for weight position in crf->lambda[] array...
 	double* lambda = this->crf_ptr->getLambda();
 	double alpha_beta_tot = 0.0;
 	double alpha_beta_trans_tot=0.0;
@@ -178,7 +180,8 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 		alpha_beta=this->alphaArray[clab]*this->betaArray[clab]*this->alphaScale/Zx;
 		alpha_beta_tot += alpha_beta;
 		bool match=(clab==this->label);
-		logLi+=this->crf_ptr->getFeatureMap()->computeExpFState(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab);
+		//logLi+=this->crf_ptr->getFeatureMap()->computeExpFState(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab);
+		logLi+=this->crf_ptr->getFeatureMap()->computeStateExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,this->label,clab);
 		if (prev_lab > nLabs) {
 			// if prev_lab > nLabs, we're in the first label frame and there are no previous
 			// transitions - skip the transition calculation in this case
@@ -187,10 +190,10 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 			// We STILL need to cycle through our "lc" values because of how the FeatureMap code works
 			// Our feature map is expecting us to have lc point at the next input vector
 			//double* tmp_ExpF = new double[this->crf_ptr->getLambdaLen()];
-			for (QNUInt32 plab=0; plab<nLabs; plab++) {
+			/*for (QNUInt32 plab=0; plab<nLabs; plab++) {
 				lc+=this->crf_ptr->getFeatureMap()->getNumTransFuncs(plab,clab);
 				//this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,NULL,lc,tmp_ExpF,NULL,alpha_beta,false,plab,clab);
-			}
+			}*/
 			//delete tmp_ExpF;
 		}
 		else {
@@ -201,8 +204,8 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 				alpha_beta=prev_alpha[plab]*this->transMatrix[idx]*this->stateArray[clab]*this->betaArray[clab]/Zx;
 				alpha_beta_trans_tot+=alpha_beta;
 				match=((clab==this->label)&&(plab==prev_lab));
-				//logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,clab,plab);
-				logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,plab,clab);
+				//logLi+=this->crf_ptr->getFeatureMap()->computeExpFTrans(this->ftrBuf,lambda,lc,ExpF,grad,alpha_beta,match,plab,clab);
+				logLi+=this->crf_ptr->getFeatureMap()->computeTransExpF(this->ftrBuf,lambda,ExpF,grad,alpha_beta,prev_lab,this->label,plab,clab);
 			}
 		}
 	}

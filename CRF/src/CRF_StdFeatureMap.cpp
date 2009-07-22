@@ -17,55 +17,161 @@ CRF_StdFeatureMap::CRF_StdFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas)
 	this->numStates=1;
 	this->stateBiasVal=1.0;
 	this->transBiasVal=1.0;
+	this->stateFeatureIdxCache = new QNUInt32[nlabs];
+	this->transFeatureIdxCache = new QNUInt32[nlabs*nlabs];
+
 	this->recalc();
+
 }
 
 CRF_StdFeatureMap::~CRF_StdFeatureMap()
 {
+	delete[] this->stateFeatureIdxCache;
+	delete[] this->transFeatureIdxCache;
 }
 
 double CRF_StdFeatureMap::computeRi(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 clab)
 {
 	double Ri=0.0;
+	QNUInt32 tmp_lc = this->stateFeatureIdxCache[clab];
+//	QNUInt32 tmp_lc = this->getStateFeatureIdx(clab);
 	if (this->useStateFtrs) {
 		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
 		{
-			Ri+=ftr_buf[fidx]*lambda[lc];
+			Ri+=ftr_buf[fidx]*lambda[tmp_lc];
+			tmp_lc++;
+		}
+	}
+	if (this->useStateBias) {
+		Ri+=lambda[tmp_lc]*this->stateBiasVal;
+		tmp_lc++;
+	}
+	lc=tmp_lc;
+	return Ri;
+}
+
+double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda, QNUInt32 clab)
+{
+	double stateValue=0.0;
+	QNUInt32 lc = this->stateFeatureIdxCache[clab];
+	if (this->useStateFtrs) {
+		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
+		{
+			stateValue+=ftr_buf[fidx]*lambda[lc];
 			lc++;
 		}
 	}
 	if (this->useStateBias) {
-		Ri+=lambda[lc]*this->stateBiasVal;
+		stateValue+=lambda[lc]*this->stateBiasVal;
 		lc++;
 	}
-	return Ri;
+	return stateValue;
 }
 
 double CRF_StdFeatureMap::computeMij(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 plab, QNUInt32 clab)
 {
 	double Mi=0.0;
+	QNUInt32 tmp_lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
+	//QNUInt32 tmp_lc = this->getTransFeatureIdx(clab,plab);
 	if (this->useTransFtrs) {
 		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
 		{
-			Mi+=ftr_buf[fidx]*lambda[lc];
+			Mi+=ftr_buf[fidx]*lambda[tmp_lc];
+			tmp_lc++;
+		}
+	}
+	if (this->useTransBias) {
+		Mi+=lambda[tmp_lc]*this->transBiasVal;
+		tmp_lc++;
+	}
+	lc=tmp_lc;
+	return Mi;
+}
+
+double CRF_StdFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda, QNUInt32 plab, QNUInt32 clab)
+{
+	double transMatrixValue=0.0;
+	QNUInt32 lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
+	if (this->useTransFtrs) {
+		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
+		{
+			transMatrixValue+=ftr_buf[fidx]*lambda[lc];
 			lc++;
 		}
 	}
 	if (this->useTransBias) {
-		Mi+=lambda[lc]*this->transBiasVal;
+		transMatrixValue+=lambda[lc]*this->transBiasVal;
 		lc++;
 	}
-	return Mi;
+	return transMatrixValue;
 }
 
 double CRF_StdFeatureMap::computeExpFState(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 clab)
 {
 	double logLi=0.0;
+	QNUInt32 tmp_lc = this->stateFeatureIdxCache[clab];
+	//QNUInt32 tmp_lc = this->getStateFeatureIdx(clab);
+	if (this->useStateFtrs) {
+		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
+		{
+			ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx];
+			if (match) {
+				grad[tmp_lc]+=ftr_buf[fidx];
+				logLi += lambda[tmp_lc]*ftr_buf[fidx];
+			}
+			tmp_lc++;
+		}
+	}
+	if (this->useStateBias) {
+		ExpF[tmp_lc]+=alpha_beta*this->stateBiasVal;
+		if (match) {
+			grad[tmp_lc]+=this->stateBiasVal;
+			logLi += lambda[tmp_lc]*this->stateBiasVal;
+		}
+		tmp_lc++;
+	}
+	lc=tmp_lc;
+	return logLi;
+}
+
+double CRF_StdFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 plab, QNUInt32 clab)
+{
+	double logLi=0.0;
+	QNUInt32 tmp_lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
+	//QNUInt32 tmp_lc = this->getTransFeatureIdx(clab,plab);
+	if (this->useTransFtrs) {
+		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
+		{
+			ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx];
+			if (match) {
+				grad[tmp_lc]+=ftr_buf[fidx];
+				logLi += lambda[tmp_lc]*ftr_buf[fidx];
+			}
+			tmp_lc++;
+		}
+	}
+	if (this->useTransBias) {
+		ExpF[tmp_lc] += alpha_beta*this->transBiasVal;
+		if (match) {
+			grad[tmp_lc]+=this->transBiasVal;
+			logLi+=lambda[tmp_lc]*this->transBiasVal;
+
+		}
+		tmp_lc++;
+	}
+	lc=tmp_lc;
+	return logLi;
+}
+
+double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_clab, QNUInt32 clab)
+{
+	double logLi=0.0;
+	QNUInt32 lc = this->stateFeatureIdxCache[clab];
 	if (this->useStateFtrs) {
 		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
-			if (match) {
+			if (t_clab == clab) {
 				grad[lc]+=ftr_buf[fidx];
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
@@ -74,7 +180,7 @@ double CRF_StdFeatureMap::computeExpFState(float* ftr_buf, double* lambda, QNUIn
 	}
 	if (this->useStateBias) {
 		ExpF[lc]+=alpha_beta*this->stateBiasVal;
-		if (match) {
+		if (t_clab == clab) {
 			grad[lc]+=this->stateBiasVal;
 			logLi += lambda[lc]*this->stateBiasVal;
 		}
@@ -83,14 +189,16 @@ double CRF_StdFeatureMap::computeExpFState(float* ftr_buf, double* lambda, QNUIn
 	return logLi;
 }
 
-double CRF_StdFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 plab, QNUInt32 clab)
+double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_plab, QNUInt32 t_clab, QNUInt32 plab, QNUInt32 clab)
 {
 	double logLi=0.0;
+	QNUInt32 lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
+
 	if (this->useTransFtrs) {
 		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
-			if (match) {
+			if ((clab==t_clab) && (plab==t_plab)) {
 				grad[lc]+=ftr_buf[fidx];
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
@@ -99,13 +207,14 @@ double CRF_StdFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda, QNUIn
 	}
 	if (this->useTransBias) {
 		ExpF[lc] += alpha_beta*this->transBiasVal;
-		if (match) {
+		if ((clab==t_clab) && (plab==t_plab)) {
 			grad[lc]+=this->transBiasVal;
 			logLi+=lambda[lc]*this->transBiasVal;
 
 		}
 		lc++;
 	}
+
 	return logLi;
 }
 
@@ -207,38 +316,102 @@ QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 	return retVal;
 }
 
+QNUInt32 CRF_StdFeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
+{
+	QNUInt32 retVal=0;
+	if (clab == 0) { retVal = fno; }
+	else {
+		if (this->numStates==1) {
+			retVal=clab*(this->numStateFuncs + this->numLabs*this->numTransFuncs);
+		}
+		else {
+			for (QNUInt32 i=0; i<clab; i++) {
+				// For each label, add in the state features
+				retVal+=this->numStateFuncs;
+				// Next, if this is a start state, add in trans features from all previous end
+				// states AND A SELF TRANSITION
+				if (i % this->numStates == 0) {
+					retVal+=this->numActualLabels*this->numTransFuncs + 1;
+				}
+				else {
+					// Otherwise, add in a self transition and a transition from the previous label
+					retVal+=2*this->numTransFuncs;
+				}
+			}
+		}
+	}
+	retVal+=fno;
+	return retVal;
+}
+
+QNUInt32 CRF_StdFeatureMap::getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno)
+{
+	QNUInt32 retVal=0;
+	if (this->numStates == 1) {
+		retVal=clab*(this->numStateFuncs + this->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs + fno;
+	}
+	else {
+		retVal=this->getStateFeatureIdx(clab);
+		retVal+=this->numStateFuncs;
+		// We're now in the right spot if plab == clab.  Otherwise we have to increment
+		if (plab != clab) {
+			retVal+=1; // Increment to the next one
+			//We're now in the right spot if we have a non-start state clab
+			if (clab % this->numStates == 0) {
+				QNUInt32 real_plab = (plab+1)/this->numStates-1;
+				retVal+=real_plab*this->numTransFuncs;
+			}
+		}
+	}
+	retVal+=fno;
+	return retVal;
+}
+
 
 QNUInt32 CRF_StdFeatureMap::recalc()
 {
-	QNUInt32 actualLabels = this->numLabs/this->numStates;
-	cout << "ACTUAL LABELS COMPUTED: " << actualLabels << endl;
-	if (actualLabels * this->numStates != this->numLabs) {
+	this->numActualLabels = this->numLabs/this->numStates;
+	cout << "ACTUAL LABELS COMPUTED: " << this->numActualLabels << endl;
+	if (this->numActualLabels * this->numStates != this->numLabs) {
 		string errstr="CRF_StdFeatureMap created exception: Invalid state/label combination while computing transitions";
 		throw runtime_error(errstr);
 	}
-	QNUInt32 transMult;
 	if (this->numStates==1) {
-		transMult=actualLabels*actualLabels;
+		this->transMult=this->numActualLabels*this->numActualLabels;
 	}
 	else {
-		transMult = actualLabels*actualLabels+this->numLabs + this->numLabs-actualLabels;
+		this->transMult = this->numActualLabels*this->numActualLabels+this->numLabs + this->numLabs-this->numActualLabels;
 	}
 	// end->start transitions + diagonal self transitions + offDiagonal transitions
 	this->numFtrFuncs=0;
+	this->numStateFuncs=0;
+	this->numTransFuncs=0;
 	if (this->useStateFtrs) {
 		this->numFtrFuncs+=(this->stateFidxEnd - this->stateFidxStart + 1 )*this->numLabs; // Count start at zero
+		this->numStateFuncs+=(this->stateFidxEnd - this->stateFidxStart +1 );
 	}
 	if (this->useStateBias) {
 		this->numFtrFuncs += this->numLabs;
+		this->numStateFuncs+=1;
 	}
 	if (this->useTransFtrs) {
 		//this->numFtrFuncs+=(this->transFidxEnd - this->transFidxStart + 1 )*this->numLabs*this->numLabs; //Count still starts at zero
-		this->numFtrFuncs+=(this->transFidxEnd - this->transFidxStart + 1 )*transMult; //Count still starts at zero
+		this->numFtrFuncs+=(this->transFidxEnd - this->transFidxStart + 1 )*this->transMult; //Count still starts at zero
+		this->numTransFuncs+=(this->transFidxEnd - this->transFidxStart +1);
 	}
 	if (this->useTransBias) {
 		//this->numFtrFuncs += this->numLabs*this->numLabs;
-		this->numFtrFuncs += transMult;
+		this->numFtrFuncs += this->transMult;
+		this->numTransFuncs+=1;
 	}
+
+	for (QNUInt32 clab=0; clab<this->numLabs; clab++) {
+		this->stateFeatureIdxCache[clab]=this->getStateFeatureIdx(clab);
+		for (QNUInt32 plab=0; plab<this->numLabs; plab++) {
+			this->transFeatureIdxCache[plab*this->numLabs+clab]=this->getTransFeatureIdx(clab,plab);
+		}
+	}
+
 	return this->numFtrFuncs;
 }
 
