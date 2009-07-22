@@ -290,7 +290,7 @@ QNUInt32 CRF_StdFeatureMap::getNumStates()
 
 QNUInt32 CRF_StdFeatureMap::getNumStateFuncs(QNUInt32 clab)
 {
-	QNUInt32 retVal=0;
+/*	QNUInt32 retVal=0;
 	if (this->useStateFtrs)
 	{
 		retVal+=this->stateFidxEnd - this->stateFidxStart +1;
@@ -299,12 +299,13 @@ QNUInt32 CRF_StdFeatureMap::getNumStateFuncs(QNUInt32 clab)
 	{
 		retVal+=1;
 	}
-	return retVal;
+	return retVal;*/
+	return this->numStateFuncs;
 }
 
 QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 {
-	QNUInt32 retVal=0;
+/*	QNUInt32 retVal=0;
 	if (this->useTransFtrs)
 	{
 		retVal+=this->transFidxEnd - this->transFidxStart +1;
@@ -313,7 +314,8 @@ QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 	{
 		retVal+=1;
 	}
-	return retVal;
+	return retVal;*/
+	return this->numTransFuncs;
 }
 
 QNUInt32 CRF_StdFeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
