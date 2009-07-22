@@ -22,6 +22,13 @@ CRF_StdStateNode::~CRF_StdStateNode()
 	delete [] this->betaArray;
 	delete [] this->alphaBetaArray;
 	delete [] this->tempBeta;
+	// don't double free
+	this->stateArray=NULL;
+	this->alphaArray=NULL;
+	this->transMatrix=NULL;
+	this->betaArray=NULL;
+	this->alphaBetaArray=NULL;
+	this->tempBeta=NULL;
 }
 
 double CRF_StdStateNode::computeTransMatrix()
