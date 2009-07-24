@@ -6,7 +6,7 @@ CRF_StateVector::CRF_StateVector()
 
 CRF_StateVector::~CRF_StateVector()
 {
-	cerr << "in statevector destructor" << endl;
+	//cerr << "in statevector destructor" << endl;
 	// vector destroys objects, but not pointers to objects
 }
 
