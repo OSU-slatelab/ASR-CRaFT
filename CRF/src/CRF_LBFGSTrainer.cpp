@@ -10,7 +10,7 @@ void CRF_LBFGSTrainer::train()
 	ofstream ofile;
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
 
-	if (false)
+	if (this->ftr_strm_mgr->getNThreads()==1)
 		gaccum = new CRF_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
 	else
 		gaccum = new CRF_Pthread_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);

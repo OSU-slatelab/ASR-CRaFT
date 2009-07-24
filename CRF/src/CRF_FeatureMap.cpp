@@ -73,6 +73,10 @@ QNUInt32 CRF_FeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 	return 0;
 }
 
+QNUInt32 CRF_FeatureMap::getTransFeatureIdx(QNUInt32 plab, QNUInt32 clab, QNUInt32 fno)
+{
+	return 0;
+}
 
 QNUInt32 CRF_FeatureMap::getNumFtrFuncs()
 {
@@ -92,4 +96,9 @@ void CRF_FeatureMap::setNumStates(QNUInt32 ns)
 QNUInt32 CRF_FeatureMap::recalc()
 {
 	return 0;
+}
+
+string CRF_FeatureMap::getMapDescriptor(QNUInt32 lambdaNum)
+{
+	return string("");
 }

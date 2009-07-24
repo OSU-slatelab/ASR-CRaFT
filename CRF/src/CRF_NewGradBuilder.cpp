@@ -13,6 +13,8 @@ CRF_NewGradBuilder::CRF_NewGradBuilder(CRF_Model* crf_in)
 
 CRF_NewGradBuilder::~CRF_NewGradBuilder()
 {
+	cerr << "newgradbuilder destructor" << endl;
+	delete [] this->ExpF;
 }
 
 double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)

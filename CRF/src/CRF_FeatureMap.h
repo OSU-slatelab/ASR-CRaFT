@@ -25,9 +25,10 @@ public:
 	virtual QNUInt32 getNumStateFuncs(QNUInt32 clab);
 	virtual QNUInt32 getNumTransFuncs(QNUInt32 plab, QNUInt32 clab);
 	virtual QNUInt32 getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno);
+	virtual QNUInt32 getTransFeatureIdx(QNUInt32 plab, QNUInt32 clab, QNUInt32 fno);
 	virtual void setNumStates(QNUInt32 ns);
 	virtual QNUInt32 recalc();
-
+	virtual string getMapDescriptor(QNUInt32 lambdaNum);
 };
 
 #endif /*CRF_FEATUREMAP_H_*/

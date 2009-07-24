@@ -1,9 +1,9 @@
-#ifndef CRF_STDFEATUREMAP_H_
-#define CRF_STDFEATUREMAP_H_
+#ifndef CRF_STDSPARSEFEATUREMAP_H_
+#define CRF_STDSPARSEFEATUREMAP_H_
 
 #include "CRF_FeatureMap.h"
 
-class CRF_StdFeatureMap : public CRF_FeatureMap
+class CRF_StdSparseFeatureMapOld : public CRF_FeatureMap
 {
 protected:
 	QNUInt32 numLabs;
@@ -11,24 +11,19 @@ protected:
 	QNUInt32 numStates;
 	QNUInt32 numStateFuncs;
 	QNUInt32 numTransFuncs;
-	QNUInt32 numActualLabels;
-	QNUInt32 transMult;
 	bool useStateBias;
 	bool useTransBias;
 	bool useStateFtrs;
 	bool useTransFtrs;
+	double stateBiasVal;
+	double transBiasVal;
 	QNUInt32 stateFidxStart;
 	QNUInt32 stateFidxEnd;
 	QNUInt32 transFidxStart;
 	QNUInt32 transFidxEnd;
-	double stateBiasVal;
-	double transBiasVal;
-	QNUInt32* stateFeatureIdxCache;
-	QNUInt32* transFeatureIdxCache;
-
 public:
-	CRF_StdFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas);
-	virtual ~CRF_StdFeatureMap();
+	CRF_StdSparseFeatureMapOld(QNUInt32 nlabs, QNUInt32 nfeas);
+	virtual ~CRF_StdSparseFeatureMapOld();
 	virtual double computeRi(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 clab);
 	virtual double computeMij(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 plab, QNUInt32 clab);
 	virtual double computeStateArrayValue(float* ftr_buf, double* lambda, QNUInt32 clab);
@@ -52,7 +47,6 @@ public:
 	virtual QNUInt32 getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno=0);
 	virtual QNUInt32 getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno=0);
 	virtual QNUInt32 recalc();
-	virtual string getMapDescriptor(QNUInt32 lambdaNum);
 };
 
 #endif /*CRF_STDFEATUREMAP_H_*/
