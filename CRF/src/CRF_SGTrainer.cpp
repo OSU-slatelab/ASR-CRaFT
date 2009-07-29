@@ -19,6 +19,15 @@ void CRF_SGTrainer::train()
 	CRF_GradBuilder* gbuild;
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
 	if (this->useLogspace) {
+		gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
+		cout << "Using Logspace training..." << endl;
+	}
+	else {
+		gbuild=new CRF_NewGradBuilder(this->crf_ptr);
+		cout << "Using Realspace training..." << endl;
+	}
+	gbuild->setNodeList(new CRF_StateVector());
+	/*if (this->useLogspace) {
 		if (nStates==1) {
 			//gbuild=new CRF_StdGradBuilderLog(this->crf_ptr);
 			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
@@ -46,7 +55,7 @@ void CRF_SGTrainer::train()
 			//exit(-1);
 			//gbuild=new CRF_NstateGradBuilder(this->crf_ptr);
 		}
-	}
+	}*/
 	double* lambda=this->crf_ptr->getLambda();
 	QNUInt32 lambdaLen = this->crf_ptr->getLambdaLen();
 	//double* lambdaAcc=new double[lambdaLen];

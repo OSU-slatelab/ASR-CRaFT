@@ -9,6 +9,7 @@ CRF_Trainer::CRF_Trainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str, c
 	this->useLogspace=0;
 	this->gvar=0.0;
 	this->useGvar=false;
+	this->useLabelMask=false;
 }
 
 CRF_Trainer::~CRF_Trainer()
@@ -45,4 +46,8 @@ void CRF_Trainer::setGaussVar(float gvar_in) {
 	if (this->gvar != 0.0) {
 		this->useGvar=true;
 	}
+}
+
+void CRF_Trainer::setLabelMask(bool useMask) {
+	this->useLabelMask=useMask;
 }
