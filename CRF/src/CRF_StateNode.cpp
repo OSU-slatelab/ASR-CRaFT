@@ -1,10 +1,13 @@
 #include "CRF_StateNode.h"
 
 #include "CRF_StdStateNode.h"
+#include "CRF_StdStateNodeMasked.h"
 #include "CRF_StdStateNodeLog.h"
 #include "CRF_StdStateNodeLogMasked.h"
 #include "CRF_StdNStateNode.h"
+#include "CRF_StdNStateNodeMasked.h"
 #include "CRF_StdNStateNodeLog.h"
+#include "CRF_StdNStateNodeLogMasked.h"
 
 CRF_StateNode::CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in)
 	: ftrBuf(fb),
@@ -127,8 +130,7 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 	if (crf->useLog) {
 		if (crf->getFeatureMap()->getNumStates()>1) {
 			if (crf->useMask) {
-				string errstr="CRF_StdNStateNodeLogMasked not yet implemented";
-				throw runtime_error(errstr);
+				return new CRF_StdNStateNodeLogMasked(fb, sizeof_fb, lab, crf);
 			}
 			else {
 				return new CRF_StdNStateNodeLog(fb, sizeof_fb, lab, crf);
@@ -146,8 +148,7 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 	else {
 		if (crf->getFeatureMap()->getNumStates()>1) {
 			if (crf->useMask) {
-				string errstr="CRF_StdNStateNodeMasked not yet implemented";
-				throw runtime_error(errstr);
+				return new CRF_StdNStateNodeMasked(fb, sizeof_fb, lab,crf);
 			}
 			else {
 				return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
@@ -155,8 +156,7 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 		}
 		else {
 			if (crf->useMask) {
-				string errstr="CRF_StdStateNodeMasked not yet implemented";
-				throw runtime_error(errstr);
+				return new CRF_StdStateNodeMasked(fb, sizeof_fb, lab,crf);
 			}
 			else {
 				return new CRF_StdStateNode(fb,sizeof_fb,lab,crf);
