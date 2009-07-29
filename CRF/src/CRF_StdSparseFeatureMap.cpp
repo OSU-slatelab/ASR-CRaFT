@@ -187,7 +187,7 @@ double CRF_StdSparseFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda,
 	return logLi;
 }
 
-double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_clab, QNUInt32 clab)
+double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_clab, QNUInt32 clab,bool compute_grad)
 {
 	double logLi=0.0;
 	QNUInt32 lc = this->stateFeatureIdxCache[clab];
@@ -200,7 +200,7 @@ double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda,
 				tmp_lc=lc+new_idx;
 				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
 				if (t_clab == clab) {
-					grad[tmp_lc]+=ftr_buf[fidx+1];
+					if (compute_grad) { grad[tmp_lc]+=ftr_buf[fidx+1];}
 					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
 				}
 			}
@@ -210,14 +210,14 @@ double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda,
 		tmp_lc=lc+this->numStateFuncs-1;
 		ExpF[tmp_lc]+=alpha_beta;
 		if (t_clab==clab) {
-			grad[tmp_lc]+=1;
+			if (compute_grad) { grad[tmp_lc]+=1;}
 			logLi += lambda[tmp_lc];
 		}
 	}
 	return logLi;
 }
 
-double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_plab, QNUInt32 t_clab, QNUInt32 plab, QNUInt32 clab)
+double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_plab, QNUInt32 t_clab, QNUInt32 plab, QNUInt32 clab, bool compute_grad)
 {
 	double logLi=0.0;
 	QNUInt32 lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
@@ -230,7 +230,7 @@ double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda,
 				tmp_lc=lc+new_idx;
 				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
 				if ((clab==t_clab) && (plab==t_plab)) {
-					grad[tmp_lc]+=ftr_buf[fidx+1];
+					if (compute_grad) { grad[tmp_lc]+=ftr_buf[fidx+1];}
 					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
 				}
 				//lc++;
@@ -242,7 +242,7 @@ double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda,
 		tmp_lc=lc+this->numTransFuncs-1;
 		ExpF[tmp_lc] += alpha_beta;
 		if ((clab==t_clab) && (plab==t_plab)) {
-			grad[tmp_lc]+=1;
+			if (compute_grad) { grad[tmp_lc]+=1;}
 			logLi+=lambda[tmp_lc];
 		}
 	}

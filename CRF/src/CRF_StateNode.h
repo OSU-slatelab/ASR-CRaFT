@@ -39,6 +39,7 @@ public:
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 	virtual double getStateValue(QNUInt32 cur_lab);
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
+	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 };
 
 #endif /*CRF_STATENODE_H_*/

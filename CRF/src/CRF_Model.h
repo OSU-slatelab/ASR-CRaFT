@@ -13,10 +13,11 @@ protected:
 	QNUInt32 lambda_len; // Holds the size of the lambda vector
 	//CRF_Range* rangeMachine; // Holds the range generating machine for the CRF
 	CRF_FeatureMap* featureMap;
-	bool useLog;
 	QNUInt32 init_present;
 public:
 	CRF_Model(QNUInt32 num_labs);
+	bool useLog;
+	bool useMask;
 	virtual ~CRF_Model();
 	QNUInt32 getNLabs();
 	//virtual void setRangeMachine(CRF_Range*);
@@ -34,6 +35,8 @@ public:
 	virtual bool writeToFile(const char* fname,double* lam, QNUInt32 ll);
 	virtual bool readFromFile(const char* fname);
 	virtual bool readAverageFromFile(const char* fname, int present);
+	virtual void setUseLog(bool isLog);
+	virtual void setUseMask(bool isMasked);
 };
 
 #endif /*CRF_H_*/

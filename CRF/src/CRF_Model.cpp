@@ -6,6 +6,7 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 	: nlabs(num_labs)
 {
 	this->useLog=true;
+	this->useMask=false;
 	this->init_present=0;
 }
 
@@ -160,4 +161,12 @@ bool CRF_Model::readAverageFromFile(const char* fname, int present)
 QNUInt32 CRF_Model::getPresentations()
 {
 	return this->init_present;
+}
+
+void CRF_Model::setUseLog(bool isLog) {
+	this->useLog=isLog;
+}
+
+void CRF_Model::setUseMask(bool isMasked) {
+	this->useMask=isMasked;
 }

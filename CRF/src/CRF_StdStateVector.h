@@ -6,6 +6,10 @@
 
 class CRF_StdStateVector : public CRF_StateVector
 {
+protected:
+	QNUInt32 nStates;
+	bool isLog;
+	bool isMasked;
 public:
 	CRF_StdStateVector();
 	virtual ~CRF_StdStateVector();

@@ -1,5 +1,11 @@
 #include "CRF_StateNode.h"
 
+#include "CRF_StdStateNode.h"
+#include "CRF_StdStateNodeLog.h"
+#include "CRF_StdStateNodeLogMasked.h"
+#include "CRF_StdNStateNode.h"
+#include "CRF_StdNStateNodeLog.h"
+
 CRF_StateNode::CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in)
 	: ftrBuf(fb),
 	  ftrBuf_size(sizeof_fb),
@@ -110,4 +116,51 @@ double CRF_StateNode::getStateValue(QNUInt32 cur_lab)
 double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
 	return 0.0;
+}
+
+// Factory class: This depends on the fact that the StateVector saves its nodes between
+//  each pass.  The calls on this function are bounded by the size of the longest sequence
+//  being examined.
+
+CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf) {
+
+	if (crf->useLog) {
+		if (crf->getFeatureMap()->getNumStates()>1) {
+			if (crf->useMask) {
+				string errstr="CRF_StdNStateNodeLogMasked not yet implemented";
+				throw runtime_error(errstr);
+			}
+			else {
+				return new CRF_StdNStateNodeLog(fb, sizeof_fb, lab, crf);
+			}
+		}
+		else {
+			if (crf->useMask) {
+				return new CRF_StdStateNodeLogMasked(fb, sizeof_fb, lab, crf);
+			}
+			else {
+				return new CRF_StdStateNodeLog(fb, sizeof_fb, lab, crf);
+			}
+		}
+	}
+	else {
+		if (crf->getFeatureMap()->getNumStates()>1) {
+			if (crf->useMask) {
+				string errstr="CRF_StdNStateNodeMasked not yet implemented";
+				throw runtime_error(errstr);
+			}
+			else {
+				return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
+			}
+		}
+		else {
+			if (crf->useMask) {
+				string errstr="CRF_StdStateNodeMasked not yet implemented";
+				throw runtime_error(errstr);
+			}
+			else {
+				return new CRF_StdStateNode(fb,sizeof_fb,lab,crf);
+			}
+		}
+	}
 }
