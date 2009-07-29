@@ -65,6 +65,7 @@ static struct {
 	float crf_lr;
 	int crf_random_seed;
 	int crf_logtrain;
+	int crf_masktrain;
 	char* crf_featuremap;
 	char* crf_featuremap_file;
 	int crf_stateftr_start;
@@ -131,6 +132,7 @@ QN_ArgEntry argtab[] =
 	{ "crf_lr", "Learning rate", QN_ARG_FLOAT, &(config.crf_lr) },
 	{ "crf_random_seed", "Presentation order random seed", QN_ARG_INT, &(config.crf_random_seed) },
 	{ "crf_logtrain", "Use logarithmic space training", QN_ARG_BOOL, &(config.crf_logtrain) },
+	{ "crf_masktrain", "Use masked labels for gradient calculation", QN_ARG_BOOL, &(config.crf_masktrain) },
 	{ "crf_train_method", "CRF training method (sg|lbfgs)", QN_ARG_STR, &(config.crf_train_method) },
 	{ "crf_train_order", "Presentation order of samples for training (seq|random|noreplace)", QN_ARG_STR, &(config.crf_train_order) },
 	{ "crf_featuremap", "Association of inputs to feature functions (stdstate|stdtrans|stdsparse|stdsparsetrans|file)", QN_ARG_STR, &(config.crf_featuremap) },
@@ -197,6 +199,7 @@ static void set_defaults(void) {
 	config.crf_lr=0.008;
 	config.crf_random_seed=0;
 	config.crf_logtrain=0;
+	config.crf_masktrain=0;
 	config.crf_train_method="sg";
 	config.crf_train_order="random";
 	config.crf_featuremap="stdstate";
@@ -275,6 +278,8 @@ int main(int argc, const char* argv[]) {
 
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
+	my_crf.setUseLog(config.crf_logtrain);
+	my_crf.setUseMask(config.crf_masktrain);
 
 	CRF_FeatureMap* my_map;
 	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
