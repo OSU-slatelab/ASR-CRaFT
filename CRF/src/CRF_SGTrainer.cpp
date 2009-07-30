@@ -1,7 +1,7 @@
 #include "CRF_SGTrainer.h"
 
-CRF_SGTrainer::CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStream* ftr_str, char* wt_fname)
-	: CRF_Trainer(crf_in, ftr_str, wt_fname)
+CRF_SGTrainer::CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
+	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
 }
 
@@ -13,11 +13,21 @@ void CRF_SGTrainer::train()
 	double totLogLi = 0.0;
 	int iCounter=0;
 	int uCounter=0;
+	CRF_FeatureStream *ftr_str=this->ftr_strm_mgr->trn_stream;
 	//int uCounter = this->crf_ptr->getPresentations();
 	ofstream ofile;
 	CRF_GradBuilder* gbuild;
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
 	if (this->useLogspace) {
+		gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
+		cout << "Using Logspace training..." << endl;
+	}
+	else {
+		gbuild=new CRF_NewGradBuilder(this->crf_ptr);
+		cout << "Using Realspace training..." << endl;
+	}
+	gbuild->setNodeList(new CRF_StateVector());
+	/*if (this->useLogspace) {
 		if (nStates==1) {
 			//gbuild=new CRF_StdGradBuilderLog(this->crf_ptr);
 			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
@@ -45,7 +55,7 @@ void CRF_SGTrainer::train()
 			//exit(-1);
 			//gbuild=new CRF_NstateGradBuilder(this->crf_ptr);
 		}
-	}
+	}*/
 	double* lambda=this->crf_ptr->getLambda();
 	QNUInt32 lambdaLen = this->crf_ptr->getLambdaLen();
 	//double* lambdaAcc=new double[lambdaLen];
@@ -64,8 +74,8 @@ void CRF_SGTrainer::train()
 		invSquareVar=1/(this->gvar*this->gvar);
 	}
 	//cout << "Iteration: " << iCounter << " starting" << endl;
-	this->ftr_strm->rewind();
-	QN_SegID segid = this->ftr_strm->nextseg();
+	ftr_str->rewind();
+	QN_SegID segid = ftr_str->nextseg();
 
 	//QNUInt32 nSegs = this->ftr_strm->num_segs();
 
@@ -85,7 +95,7 @@ void CRF_SGTrainer::train()
 			cout << time << " Beginning Utt: " << uCounter << " SegID: " << segid <<  endl;
 			//delete time;
 		}
-		tmpLogLi=gbuild->buildGradient(this->ftr_strm,grad,&tmp_Zx);
+		tmpLogLi=gbuild->buildGradient(ftr_str,grad,&tmp_Zx);
 		//tmpLogLi=logLi;
 		logLi=tmpLogLi - tmp_Zx;
 		totLogLi += logLi;
@@ -109,7 +119,7 @@ void CRF_SGTrainer::train()
 		accCnt++;
 		//cout << "Utterance " << uCounter << ": Lambda[0]: " << lambda[0] << endl;
 		//cout << "Utterance " << uCounter << ": Acc Lambda[0]: " << (lambdaAcc[0]/accCnt) << endl;
-		segid = this->ftr_strm->nextseg();
+		segid = ftr_str->nextseg();
 		if (segid == QN_SEGID_BAD) {
 			cout << "Iteration: " << iCounter << " ending" << endl;
 			cout << "Iteration: " << iCounter << " applying lambda updates" << endl;
@@ -137,8 +147,8 @@ void CRF_SGTrainer::train()
 				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
 				exit(-1);
 			}
-			this->ftr_strm->rewind();
-			this->ftr_strm->nextseg();
+			ftr_str->rewind();
+			ftr_str->nextseg();
 			iCounter++;
 			uCounter=0;
 			totLogLi=0.0;

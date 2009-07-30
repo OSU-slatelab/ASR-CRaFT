@@ -8,6 +8,7 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 	this->useLog=true;
 	this->useMask=false;
 	this->init_present=0;
+	this->node_type=STD_STATE;
 }
 
 CRF_Model::~CRF_Model()
@@ -39,6 +40,7 @@ void CRF_Model::setFeatureMap(CRF_FeatureMap* map)
 	this->setLambda(new double[len],len);
 	this->setLambdaAcc(new double[len]);
 	this->resetLambda();
+	this->setNodeType();
 }
 
 
@@ -76,7 +78,7 @@ void CRF_Model::setLambdaAcc(double* lam)
 
 void CRF_Model::resetLambda()
 {
-	for (int i=0; i<this->lambda_len; i++) {
+	for (QNUInt32 i=0; i<this->lambda_len; i++) {
 		this->lambda[i]=0.0;
 		this->lambdaAcc[i]=0.0;
 	}
@@ -165,8 +167,54 @@ QNUInt32 CRF_Model::getPresentations()
 
 void CRF_Model::setUseLog(bool isLog) {
 	this->useLog=isLog;
+	this->setNodeType();
 }
 
 void CRF_Model::setUseMask(bool isMasked) {
 	this->useMask=isMasked;
+	this->setNodeType();
+}
+
+void CRF_Model::setNodeType() {
+	if (this->useLog) {
+		if (this->getFeatureMap()->getNumStates()>1) {
+			if (this->useMask) {
+				this->node_type=STD_NSTATELOGMASKED;
+			}
+			else {
+				this->node_type=STD_NSTATELOG;
+			}
+		}
+		else {
+			if (this->useMask) {
+				this->node_type=STD_STATELOGMASKED;
+			}
+			else {
+				this->node_type=STD_STATELOG;
+			}
+		}
+	}
+	else {
+		if (this->getFeatureMap()->getNumStates()>1) {
+			if (this->useMask) {
+				this->node_type=STD_NSTATEMASKED;
+			}
+			else {
+				this->node_type=STD_NSTATE;
+			}
+		}
+		else {
+			if (this->useMask) {
+				this->node_type=STD_STATEMASKED;
+			}
+			else {
+				this->node_type=STD_STATE;
+			}
+		}
+	}
+
+}
+
+nodetype CRF_Model::getNodeType() {
+	return this->node_type;
 }

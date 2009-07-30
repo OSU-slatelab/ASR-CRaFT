@@ -47,56 +47,52 @@ StdVectorFst* CRF_LatticeBuilder::testBuild()
 
 StdVectorFst* CRF_LatticeBuilder::buildLattice()
 {
-		// Returns the best path through the current segment
+	VectorFst<StdArc> *fst=new StdVectorFst();
+	VectorFst<StdArc> *alignFst=NULL;
+	this->buildLattice(fst,false,alignFst);
+	return fst;
+}
+
+// this version requires you to create fst and labFst
+template <class Arc> void CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
+									  bool align,
+									  VectorFst<Arc>*labFst) {
+	// Returns the best path through the current segment
 	QNUInt32 ftr_count;
-	StdVectorFst* fst = new StdVectorFst();
+
 	int startState=0;
+	int labStartState=0;
+	QNUInt32 curLab=0;
+	int curLabState=labStartState;
+	bool firstLab=true;
 	fst->AddState();   // 1st state will be state 0 (returned by AddState)
 	fst->SetStart(startState);  // arg is state ID
-
+	if (align) {
+		labFst->AddState(); // 1st state will be state 0 (resturned by AddState);
+		labFst->SetStart(labStartState); // arg is stateID
+	}
 
 	int seq_len=0;
 	QNUInt32 nodeCnt=0;
-	//cout << "Starting Viterbi Best Path: " << endl;
+
 	do {
-		// First, read in the next training value from the file
-		//	We can read in a "bunch" at a time, then separate them into individual frames
 		ftr_count=ftr_strm->read(this->bunch_size,ftr_buf,lab_buf);
 
-		//cout << "Feature Count: " << ftr_count << endl;
 		for (QNUInt32 i=0; i<ftr_count; i++) {
-			//cout << "\tLabel: " << lab_buf[i] << "\tFeas:";
-			// Now, separate the bunch into individual frames
 			float* new_buf = new float[this->num_ftrs];
 			for (QNUInt32 j=0; j<this->num_ftrs; j++) {
 				int idx=i*this->num_ftrs+j;
 				new_buf[j]=ftr_buf[idx];
-				//cout << " " << new_buf[j];
 			}
-			//cout << endl;
-			// Store the current frame/label information in a sequence node
-			//	* sequence nodes create a doubly-linked list, with the previous node known at creation time
-			//next_seq = new CRF_Seq(new_buf,this->num_ftrs,lab_buf[i],crf->getNLabs(),cur_seq);
 			this->nodeList->set(nodeCnt,new_buf,num_ftrs,this->lab_buf[i],this->crf);
 			seq_len++;
-			/*seq_len++;
-			if (seq_head == NULL)
-			{
-				seq_head=next_seq;
-			}
-			if (cur_seq != NULL) {
-				cur_seq->setNext(next_seq);
-			}
-			cur_seq=next_seq;*/
-			//float value=this->gb->computeTransMatrix(cur_seq,crf);
-			//float value=this->gb->computeTransMatrixLog(cur_seq);
 			float value=this->nodeList->at(nodeCnt)->computeTransMatrix();
 			if (nodeCnt==startState) {
 				// Add arcs from the startState to each possible label
 				for (int cur_lab=0; cur_lab<this->num_labs; cur_lab++) {
 					float value=-1*this->nodeList->at(nodeCnt)->getStateValue(cur_lab);
 					int cur_state=fst->AddState();
-					fst->AddArc(startState,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+					fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 				}
 			}
 			else {
@@ -106,25 +102,220 @@ StdVectorFst* CRF_LatticeBuilder::buildLattice()
 					for (int prev_lab=0; prev_lab<this->num_labs; prev_lab++) {
 						float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 						int prev_state=(this->num_labs)*(cur_time-2)+(prev_lab+1);
-						fst->AddArc(prev_state,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 					}
 				}
 			}
+			if (align) {
+				QNUInt32 lab=this->nodeList->at(nodeCnt)->getLabel()+1;
+				if (firstLab or (lab != curLab)) {
+					int prevLabState=curLabState;
+					curLabState=labFst->AddState();
+					labFst->AddArc(prevLabState,Arc(lab,lab,0,curLabState));
+					labFst->AddArc(curLabState,Arc(lab,lab,0,curLabState)); // Add self loop
+					firstLab=false;
+					curLab=lab;
+				}
+			}
+
 			nodeCnt++;
 		}
 	} while (ftr_count >= this->bunch_size);
 	int final_state = fst->AddState();
 	for (int prev_lab=0; prev_lab<this->num_labs; prev_lab++) {
 		int prev_state=(this->num_labs)*(nodeCnt-1)+(prev_lab+1);
-		fst->AddArc(prev_state,StdArc(0,0,0,final_state));
+		fst->AddArc(prev_state,Arc(0,0,0,final_state));
 	}
 	fst->SetFinal(final_state,0);
-
-	return fst;
+	if (align) {
+		labFst->SetFinal(curLabState,0);
+	}
 
 }
 
 StdVectorFst* CRF_LatticeBuilder::bestPath(bool align)
+{
+	// Returns the best path through the current segment
+	StdVectorFst* fst = new StdVectorFst();
+	StdVectorFst* labFst = new StdVectorFst();
+	this->buildLattice(fst,align,labFst);
+
+	StdVectorFst* final_result=new StdVectorFst();
+
+	if (align) {
+		StdComposeFst* result=new StdComposeFst(*fst,*labFst);
+		ShortestPath(*result,final_result,1);
+		delete result;
+	}
+	else {
+		ShortestPath(*fst,final_result,1);
+	}
+	Project(final_result,PROJECT_OUTPUT);
+	RmEpsilon(final_result);
+	TopSort(final_result);
+
+	delete fst;
+	delete labFst;
+
+	return final_result;
+
+}
+
+void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma,
+											vector<double> *numeratorStateGamma,
+											vector<double> *denominatorTransGamma,
+											vector<double> *numeratorTransGamma) {
+
+	// normally, you'd want to use StdArc, but we use LogArc so we can get
+	// alphas/betas.  Critically, the aligner is unweighted, so that being
+	// in the LogArc semiring doesn't matter.
+	VectorFst<LogArc> denominator;
+	VectorFst<LogArc> aligner;
+
+	//cout << "In getAlignmentGammas" << endl;
+	this->buildLattice(&denominator,true,&aligner);
+	//cout << "Built lattice" << endl;
+	int nstates=denominator.NumStates()-1;
+	vector<int> positions(nstates+1);
+
+	// do the denominator first
+	if (denominatorStateGamma != NULL) {
+		//cout << "Computing gamma for denominator" << endl;
+		_computeGamma(denominatorStateGamma,denominatorTransGamma,denominator,nstates);
+		//cout << "Done computing gamma" << endl;
+	}
+
+	if (numeratorStateGamma) {
+		ComposeFst<LogArc> numerator(denominator,aligner);
+		//Project(numerator,PROJECT_OUTPUT);
+		//RmEpsilon(numerator);
+		//TopSort(numerator);
+
+		_computeGamma(numeratorStateGamma,numeratorTransGamma,numerator,nstates);
+	}
+
+
+}
+
+void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double> *transGamma, Fst<LogArc> &fst,int nstates) {
+	vector<LogWeight> alpha;
+	vector<LogWeight> beta;
+
+	//cout << "In computeGamma" << endl;
+	// when shortest distance is done with log semiring, we get alphas
+	ShortestDistance(fst,&alpha,false);
+	//cout << "Got alphas, size " << alpha.size() << endl;
+	//for(int i=0;i<alpha.size();i++) {
+	//	cout << alpha[i] << " ";
+	//}
+	// run it in reverse and you get betas
+	ShortestDistance(fst,&beta,true);
+	//cout << "Got betas, size " << beta.size() << endl;
+	//for(int i=0;i<alpha.size();i++) {
+	//	cout << beta[i] << " ";
+	//}
+
+	// set up the vector
+	stateGamma->reserve(nstates*this->num_labs);
+	stateGamma->assign(nstates*this->num_labs,CRF_LogMath::LOG0);
+
+	if (transGamma != NULL) {
+		transGamma->reserve(nstates*this->num_labs*this->num_labs);
+		transGamma->assign(nstates*this->num_labs*this->num_labs,
+									  CRF_LogMath::LOG0);
+	}
+	//cout << "Set up vectors" << endl;
+	//cout << "number of states: " << nstates << endl;
+
+	vector<int> positions(alpha.size(),0);
+
+	for (StateIterator<Fst<LogArc> > siter(fst);!siter.Done(); siter.Next()) {
+
+		LogArc::StateId s=siter.Value();
+		int crfstate=positions[s];
+		int stateoffset=crfstate*this->num_labs;
+
+		for (ArcIterator< Fst<LogArc> > aiter(fst,s);!aiter.Done(); aiter.Next()) {
+			const LogArc &arc = aiter.Value();
+
+			positions[arc.nextstate]=crfstate+1;
+			double alpha_s=(double)(alpha[s].Value());
+			double beta_next=(double)(beta[arc.nextstate].Value());
+
+			double gammaarc=-1*(alpha_s+arc.weight.Value()+beta_next);
+			int label=arc.olabel-1;
+
+			stateGamma->at(stateoffset+label)=
+				CRF_LogMath::logAdd(stateGamma->at(stateoffset+label),
+									gammaarc);
+
+			//cout << "state:" << s << " pos:" << positions[s] << " alpha:" << alpha_s <<
+			//			" weight: " << arc.weight.Value()
+			//			<< " label: " << label
+			//			<< " next:" << arc.nextstate << " beta:" << beta_next
+			//			<< " gammaarc: " << gammaarc << " totalgamma: " << stateGamma->at(stateoffset+arc.olabel)
+			//			<< endl;
+
+			// if there are transition gammas needed, then look over pairs of
+			// labels
+			if (transGamma != NULL) {
+				int transoffset=(stateoffset+label)*this->num_labs;
+				for (ArcIterator< Fst<LogArc> >  aiter2(fst,arc.nextstate);
+					 !aiter2.Done();
+					 aiter2.Next()) {
+					const LogArc &arc2 = aiter2.Value();
+					positions[arc2.nextstate]=crfstate+1;
+					double gammatransarc=-1*(alpha_s+
+											 arc.weight.Value()+
+											 arc2.weight.Value()+
+											 beta[arc2.nextstate].Value());
+					int label2=arc2.olabel-1;
+					transGamma->at(transoffset+label2)=
+						CRF_LogMath::logAdd(transGamma->at(transoffset+label2),
+											gammatransarc);
+				}
+			}
+
+		}
+	}
+	//cout << "computed gammas" << endl;
+	// now normalize to get probability
+	int offset=0;
+	for (int i=0;i<nstates;i++) {
+		double total=CRF_LogMath::LOG0;
+		for (int j=0;j<this->num_labs;j++) {
+			total=CRF_LogMath::logAdd(total,stateGamma->at(offset+j));
+			//cout << "pos: " << i << " label: " << j << " unnormgamma: " << stateGamma->at(offset+j) << endl;
+		}
+		for (int j=0;j<this->num_labs;j++) {
+			stateGamma->at(offset+j)-=total;
+			//cout << "pos: " << i << " label: " << j << " gamma: " << stateGamma->at(offset+j) << endl;
+		}
+
+		if (transGamma != NULL) {
+			total=CRF_LogMath::LOG0;
+			for(int j=0;j<this->num_labs;j++) {
+				int transoffset=(offset+j)*this->num_labs;
+				for(int k=0;k<this->num_labs;k++) {
+					total=CRF_LogMath::logAdd(total,
+										  transGamma->at(transoffset+k));
+				}
+			}
+			for(int j=0;j<this->num_labs;j++) {
+				int transoffset=(offset+j)*this->num_labs;
+				for(int k=0;k<this->num_labs;k++) {
+					transGamma->at(transoffset+k)-=total;
+				}
+			}
+		}
+		offset+=this->num_labs;
+	}
+	//cout << "normalized gammas" << endl;
+
+}
+
+
+StdVectorFst* CRF_LatticeBuilder::bestPath_old(bool align)
 {
 		// Returns the best path through the current segment
 	QNUInt32 ftr_count;

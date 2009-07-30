@@ -170,18 +170,18 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 	if (this->useStateFtrs) {
 		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
 		{
-			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
+			if (compute_grad) { ExpF[lc]+=alpha_beta*ftr_buf[fidx]; }
 			if (t_clab == clab) {
 				if (compute_grad) { grad[lc]+=ftr_buf[fidx]; }
-				logLi += lambda[lc]*ftr_buf[fidx];
+					logLi += lambda[lc]*ftr_buf[fidx];
 			}
 			lc++;
 		}
 	}
 	if (this->useStateBias) {
-		ExpF[lc]+=alpha_beta*this->stateBiasVal;
+		if (compute_grad) { ExpF[lc]+=alpha_beta*this->stateBiasVal;}
 		if (t_clab == clab) {
-			if (compute_grad) { grad[lc]+=this->stateBiasVal; }
+			if (compute_grad) {	grad[lc]+=this->stateBiasVal; }
 			logLi += lambda[lc]*this->stateBiasVal;
 		}
 		lc++;
@@ -197,7 +197,7 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 	if (this->useTransFtrs) {
 		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
 		{
-			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
+			if (compute_grad) { ExpF[lc]+=alpha_beta*ftr_buf[fidx];}
 			if ((clab==t_clab) && (plab==t_plab)) {
 				if (compute_grad) { grad[lc]+=ftr_buf[fidx]; }
 				logLi += lambda[lc]*ftr_buf[fidx];
@@ -206,11 +206,10 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 		}
 	}
 	if (this->useTransBias) {
-		ExpF[lc] += alpha_beta*this->transBiasVal;
+		if (compute_grad) { ExpF[lc] += alpha_beta*this->transBiasVal;}
 		if ((clab==t_clab) && (plab==t_plab)) {
-			if (compute_grad) { grad[lc]+=this->transBiasVal;}
+			if (compute_grad) { grad[lc]+=this->transBiasVal; }
 			logLi+=lambda[lc]*this->transBiasVal;
-
 		}
 		lc++;
 	}

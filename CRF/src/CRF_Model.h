@@ -14,6 +14,7 @@ protected:
 	//CRF_Range* rangeMachine; // Holds the range generating machine for the CRF
 	CRF_FeatureMap* featureMap;
 	QNUInt32 init_present;
+	nodetype node_type;
 public:
 	CRF_Model(QNUInt32 num_labs);
 	bool useLog;
@@ -37,6 +38,8 @@ public:
 	virtual bool readAverageFromFile(const char* fname, int present);
 	virtual void setUseLog(bool isLog);
 	virtual void setUseMask(bool isMasked);
+	virtual void setNodeType();
+	virtual nodetype getNodeType();
 };
 
 #endif /*CRF_H_*/

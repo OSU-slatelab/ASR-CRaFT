@@ -56,8 +56,9 @@ double CRF_StdStateNodeLogMasked::computeExpF(double* ExpF, double* grad, double
 			}
 		}
 	}
-	bool compute_clab_grad=!(this->label == best_clab);
+//	bool compute_clab_grad=!(this->label == best_clab);
 	bool compute_plab_grad=!(this->label == best_clab && prev_lab==best_plab);
+	bool compute_clab_grad=compute_plab_grad;  //Use the same criterion for state updates as transition updates
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		alpha_beta=expE(this->alphaArray[clab]+this->betaArray[clab]-Zx);
 		alpha_beta_tot += alpha_beta;

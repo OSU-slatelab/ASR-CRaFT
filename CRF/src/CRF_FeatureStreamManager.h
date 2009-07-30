@@ -2,6 +2,7 @@
 #define CRF_FEATURESTREAMMANAGER_H_
 #include <QuickNet.h>
 #include <iostream>
+#include <stdio.h>
 
 #include "CRF.h"
 #include "CRF_InFtrStream_RandPresent.h"
@@ -37,6 +38,10 @@ private:
 	int train_cache_seed;
 	seqtype train_seq_type;
 	QNUInt32 rseed;
+	size_t nthreads;
+	CRF_FeatureStreamManager **children;
+protected:
+	int childnum;
 public:
 	CRF_FeatureStreamManager(int debug, const char* debug_name,
 									char* ftr_fname, const char* ftr_file_fmt, char* ht_fname, size_t ht_offset,
@@ -45,8 +50,8 @@ public:
 									int delta_o, int delta_w,
 									char* trn_rng, char* cv_rng,
 									FILE* nfile, int n_mode, double n_am, double n_av, seqtype ts,
-									QNUInt32 rseed=0);
-	
+									QNUInt32 rseed=0, size_t n_threads=1);
+
 	virtual ~CRF_FeatureStreamManager();
 	void create();
 	void display();
@@ -59,10 +64,14 @@ public:
 	void setDeltas(int,int);
 	size_t getNumFtrs();
 	int setDebug(int, const char*);
+	inline CRF_FeatureStreamManager *getChild(size_t child) {
+		return (children==NULL || child>=nthreads || child<0)?NULL:children[child];
+	}
+	inline size_t getNThreads() { return nthreads; }
 	CRF_FeatureStream* trn_stream;
 	CRF_FeatureStream* cv_stream;
 
-	
+
 };
 
 #endif /*QN_FEATURESTREAM_H_*/
