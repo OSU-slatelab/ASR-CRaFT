@@ -5,6 +5,7 @@
 #include "CRF_Model.h"
 #include "CRF_FeatureStreamManager.h"
 #include "CRF_SGTrainer.h"
+#include "CRF_LBFGSTrainer.h"
 //#include "CRF_StdRange.h"
 //#include "CRF_StdTransRange.h"
 #include "CRF_StdFeatureMap.h"
@@ -59,10 +60,12 @@ static struct {
 	int crf_bunch_size;
 	int crf_epochs;
 	int crf_utt_rpt;
+	char* crf_train_method;
 	char* crf_train_order;
 	float crf_lr;
 	int crf_random_seed;
 	int crf_logtrain;
+	int crf_masktrain;
 	char* crf_featuremap;
 	char* crf_featuremap_file;
 	int crf_stateftr_start;
@@ -75,6 +78,7 @@ static struct {
 	int crf_use_trans_bias;
 	float crf_state_bias_value;
 	float crf_trans_bias_value;
+	int threads;
 	int verbose;
 	int dummy;
 } config;
@@ -128,6 +132,8 @@ QN_ArgEntry argtab[] =
 	{ "crf_lr", "Learning rate", QN_ARG_FLOAT, &(config.crf_lr) },
 	{ "crf_random_seed", "Presentation order random seed", QN_ARG_INT, &(config.crf_random_seed) },
 	{ "crf_logtrain", "Use logarithmic space training", QN_ARG_BOOL, &(config.crf_logtrain) },
+	{ "crf_masktrain", "Use masked labels for gradient calculation", QN_ARG_BOOL, &(config.crf_masktrain) },
+	{ "crf_train_method", "CRF training method (sg|lbfgs)", QN_ARG_STR, &(config.crf_train_method) },
 	{ "crf_train_order", "Presentation order of samples for training (seq|random|noreplace)", QN_ARG_STR, &(config.crf_train_order) },
 	{ "crf_featuremap", "Association of inputs to feature functions (stdstate|stdtrans|stdsparse|stdsparsetrans|file)", QN_ARG_STR, &(config.crf_featuremap) },
 	{ "crf_featuremap_file", "File containing map of inputs to feature functions", QN_ARG_STR, &(config.crf_featuremap_file) },
@@ -141,8 +147,10 @@ QN_ArgEntry argtab[] =
 	{ "crf_use_trans_bias", "Use transition bias functions", QN_ARG_BOOL, &(config.crf_use_trans_bias) },
 	{ "crf_state_bias_value", "Function value for state bias functions", QN_ARG_FLOAT, &(config.crf_state_bias_value) },
 	{ "crf_trans_bias_value", "Function value for transition bias functions", QN_ARG_FLOAT, &(config.crf_trans_bias_value) },
-//	{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
-	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) }
+	{ "threads", "Number of threads to use for multithreaded trainers", QN_ARG_INT, &(config.threads) },
+	//	{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
+	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
+	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
 static void set_defaults(void) {
@@ -191,6 +199,8 @@ static void set_defaults(void) {
 	config.crf_lr=0.008;
 	config.crf_random_seed=0;
 	config.crf_logtrain=0;
+	config.crf_masktrain=0;
+	config.crf_train_method="sg";
 	config.crf_train_order="random";
 	config.crf_featuremap="stdstate";
 	config.crf_featuremap_file=NULL;
@@ -204,6 +214,7 @@ static void set_defaults(void) {
 	config.crf_use_trans_bias=1;
 	config.crf_state_bias_value=1.0;
 	config.crf_trans_bias_value=1.0;
+	config.threads=1;
 	config.verbose=0;
 };
 
@@ -218,6 +229,7 @@ int main(int argc, const char* argv[]) {
 
 	seqtype trn_seq = RANDOM_REPLACE;
 	ftrmaptype trn_ftrmap = STDSTATE;
+	trntype trn_type = SGTRAIN;
 
 	if (strcmp(config.crf_train_order,"seq")==0) { trn_seq=SEQUENTIAL;}
 	if (strcmp(config.crf_train_order,"noreplace")==0) { trn_seq=RANDOM_NO_REPLACE;}
@@ -226,6 +238,9 @@ int main(int argc, const char* argv[]) {
 	if (strcmp(config.crf_featuremap,"stdsparse")==0) { trn_ftrmap=STDSPARSE;}
 	if (strcmp(config.crf_featuremap,"stdsparsetrans")==0) { trn_ftrmap=STDSPARSETRANS;}
 	if (strcmp(config.crf_featuremap,"file")==0) { trn_ftrmap=INFILE;}
+
+	if (strcmp(config.crf_train_method,"sg")==0) {trn_type=SGTRAIN;}
+	if (strcmp(config.crf_train_method,"lbfgs")==0) {trn_type=LBFGSTRAIN;}
 
 	if ((trn_ftrmap == INFILE) && (config.crf_featuremap_file==NULL)) {
 		cerr << "ERROR: crf_featuremap_file must be non-NULL when crf_featuremap set to 'file'" << endl;
@@ -237,7 +252,7 @@ int main(int argc, const char* argv[]) {
 							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
 							config.ftr1_delta_order, config.ftr1_delta_win,
 							config.train_sent_range, config.cv_sent_range,
-							NULL,0,0,0,trn_seq,config.crf_random_seed);
+							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
 	if (strcmp(config.ftr2_file,"") != 0) {
 
 		CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
@@ -245,7 +260,7 @@ int main(int argc, const char* argv[]) {
 							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
 							config.ftr2_delta_order, config.ftr2_delta_win,
 							config.train_sent_range, config.cv_sent_range,
-							NULL,0,0,0,trn_seq,config.crf_random_seed);
+							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
 		str1.join(&str2);
 	}
 	if (strcmp(config.ftr3_file,"") != 0) {
@@ -255,7 +270,7 @@ int main(int argc, const char* argv[]) {
 							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
 							config.ftr3_delta_order, config.ftr3_delta_win,
 							config.train_sent_range, config.cv_sent_range,
-							NULL,0,0,0,trn_seq,config.crf_random_seed);
+							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
 		str1.join(&str3);
 	}
 
@@ -264,7 +279,7 @@ int main(int argc, const char* argv[]) {
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 
-	CRF_FeatureMap* my_map;
+	CRF_FeatureMap* my_map=NULL;
 	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
 		CRF_StdSparseFeatureMap* tmp_map=new CRF_StdSparseFeatureMap(config.crf_label_size,str1.getNumFtrs());
 		if (trn_ftrmap == STDSPARSE) {
@@ -336,6 +351,8 @@ int main(int argc, const char* argv[]) {
 	my_map->setNumStates(config.crf_states);
 	my_map->recalc();
 	my_crf.setFeatureMap(my_map);
+	my_crf.setUseLog(config.crf_logtrain);
+	my_crf.setUseMask(config.crf_masktrain);
 	cout << "FEATURES: " << my_crf.getLambdaLen() << endl;
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 	if (config.init_weight_file != NULL) {
@@ -355,7 +372,12 @@ int main(int argc, const char* argv[]) {
 
 		}
 	}
-	CRF_Trainer* my_trainer = new CRF_SGTrainer(&my_crf,str1.trn_stream,config.out_weight_file);
+	CRF_Trainer* my_trainer;
+	if (trn_type==LBFGSTRAIN) {
+		my_trainer = new CRF_LBFGSTrainer(&my_crf,&str1,config.out_weight_file);
+	} else { //trn_type=SGTRAIN
+		my_trainer = new CRF_SGTrainer(&my_crf,&str1,config.out_weight_file);
+	}
 	my_trainer->setMaxIters(config.crf_epochs);
 	my_trainer->setLR(config.crf_lr);
 	my_trainer->setUttRpt(config.crf_utt_rpt);
