@@ -15,7 +15,8 @@ protected:
 	QN_InLabStream* lab_stream;
 	int debug;
 	QNUInt32 start_offset;
-	QNUInt32 numsegs;
+	//QNUInt32 numsegs;
+	unsigned long numsegs;
 	QN_SegID segid;
 
 public:

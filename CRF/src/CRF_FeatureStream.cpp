@@ -47,6 +47,7 @@ QN_SegID CRF_FeatureStream::nextseg()
 		lab_segid = this->lab_stream->nextseg();
 	}
 
+	//cout << "Sizeof(size_t)" << sizeof(size_t) << "QN_ALL" << QN_ALL << endl;
 	//cout << "Feature ID: " << ftr_segid << " Label ID: " << lab_segid << endl;
 	assert (ftr_segid == lab_segid);
 	if (this->numsegs==QN_ALL && ftr_segid==QN_SEGID_BAD) {
