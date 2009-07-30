@@ -278,10 +278,8 @@ int main(int argc, const char* argv[]) {
 
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
-	my_crf.setUseLog(config.crf_logtrain);
-	my_crf.setUseMask(config.crf_masktrain);
 
-	CRF_FeatureMap* my_map;
+	CRF_FeatureMap* my_map=NULL;
 	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
 		CRF_StdSparseFeatureMap* tmp_map=new CRF_StdSparseFeatureMap(config.crf_label_size,str1.getNumFtrs());
 		if (trn_ftrmap == STDSPARSE) {
@@ -353,6 +351,8 @@ int main(int argc, const char* argv[]) {
 	my_map->setNumStates(config.crf_states);
 	my_map->recalc();
 	my_crf.setFeatureMap(my_map);
+	my_crf.setUseLog(config.crf_logtrain);
+	my_crf.setUseMask(config.crf_masktrain);
 	cout << "FEATURES: " << my_crf.getLambdaLen() << endl;
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 	if (config.init_weight_file != NULL) {
