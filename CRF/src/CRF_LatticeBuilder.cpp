@@ -54,7 +54,7 @@ StdVectorFst* CRF_LatticeBuilder::buildLattice()
 }
 
 // this version requires you to create fst and labFst
-template <class Arc> void CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
+template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 									  bool align,
 									  VectorFst<Arc>*labFst) {
 	// Returns the best path through the current segment
@@ -130,7 +130,7 @@ template <class Arc> void CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 	if (align) {
 		labFst->SetFinal(curLabState,0);
 	}
-
+	return seq_len;
 }
 
 StdVectorFst* CRF_LatticeBuilder::bestPath(bool align)
@@ -161,7 +161,7 @@ StdVectorFst* CRF_LatticeBuilder::bestPath(bool align)
 
 }
 
-void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma,
+int CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma,
 											vector<double> *numeratorStateGamma,
 											vector<double> *denominatorTransGamma,
 											vector<double> *numeratorTransGamma) {
@@ -173,10 +173,7 @@ void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamm
 	VectorFst<LogArc> aligner;
 
 	//cout << "In getAlignmentGammas" << endl;
-	this->buildLattice(&denominator,true,&aligner);
-	//cout << "Built lattice" << endl;
-	int nstates=denominator.NumStates()-1;
-	vector<int> positions(nstates+1);
+	int nstates=this->buildLattice(&denominator,(numeratorStateGamma!=NULL),&aligner);
 
 	// do the denominator first
 	if (denominatorStateGamma != NULL) {
@@ -187,6 +184,7 @@ void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamm
 
 	if (numeratorStateGamma) {
 		ComposeFst<LogArc> numerator(denominator,aligner);
+		//cout << "start: " << numerator.Start() << " numarcs: " << numerator.NumArcs(numerator.Start());
 		//Project(numerator,PROJECT_OUTPUT);
 		//RmEpsilon(numerator);
 		//TopSort(numerator);
@@ -194,7 +192,7 @@ void CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamm
 		_computeGamma(numeratorStateGamma,numeratorTransGamma,numerator,nstates);
 	}
 
-
+	return nstates;
 }
 
 void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double> *transGamma, Fst<LogArc> &fst,int nstates) {
@@ -214,6 +212,8 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 	//for(int i=0;i<alpha.size();i++) {
 	//	cout << beta[i] << " ";
 	//}
+
+	//cout << "nstates=" << nstates << endl;
 
 	// set up the vector
 	stateGamma->reserve(nstates*this->num_labs);
@@ -235,6 +235,12 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 		int crfstate=positions[s];
 		int stateoffset=crfstate*this->num_labs;
 
+		// ok maybe this isn't the best way.  This is to cure the problem of
+		// having a null transition on the last arc, but crucially it assumes
+		// that this arc has no cost.
+		if (crfstate>=nstates)
+			continue;
+
 		for (ArcIterator< Fst<LogArc> > aiter(fst,s);!aiter.Done(); aiter.Next()) {
 			const LogArc &arc = aiter.Value();
 
@@ -245,16 +251,23 @@ void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double
 			double gammaarc=-1*(alpha_s+arc.weight.Value()+beta_next);
 			int label=arc.olabel-1;
 
+			// should't see these but just in case
+			if (label<0)
+				continue;
+
 			stateGamma->at(stateoffset+label)=
 				CRF_LogMath::logAdd(stateGamma->at(stateoffset+label),
 									gammaarc);
 
-			//cout << "state:" << s << " pos:" << positions[s] << " alpha:" << alpha_s <<
-			//			" weight: " << arc.weight.Value()
-			//			<< " label: " << label
-			//			<< " next:" << arc.nextstate << " beta:" << beta_next
-			//			<< " gammaarc: " << gammaarc << " totalgamma: " << stateGamma->at(stateoffset+arc.olabel)
-			//			<< endl;
+#ifdef DEBUG
+			cout << "state:" << s << " pos:" << positions[s] << " alpha:" << alpha_s <<
+						" weight: " << arc.weight.Value()
+						<< " label: " << label
+						<< " gammaindex: " << stateoffset+label
+						<< " next:" << arc.nextstate << " beta:" << beta_next
+						<< " gammaarc: " << gammaarc << " totalgamma: " << stateGamma->at(stateoffset+label)
+						<< endl;
+#endif
 
 			// if there are transition gammas needed, then look over pairs of
 			// labels

@@ -28,11 +28,11 @@ public:
 	virtual ~CRF_LatticeBuilder();
 	virtual StdVectorFst* testBuild();
 	virtual StdVectorFst* buildLattice();
-	template <class Arc> void buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL);
+	template <class Arc> int buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL);
 	virtual StdVectorFst* bestPath(bool align);
 	virtual StdVectorFst* bestPath_old(bool align);
 	virtual StdVectorFst* LMBestPath(bool align, StdFst* lmFst);
-	virtual void getAlignmentGammas(vector<double> *denominatorStateGamma,
+	virtual int getAlignmentGammas(vector<double> *denominatorStateGamma,
 									vector<double> *numeratorStateGamma,
 									vector<double> *denominatorTransGamma,
 									vector<double> *numeratorTransGamma);
