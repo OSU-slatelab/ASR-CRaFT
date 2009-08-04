@@ -133,7 +133,8 @@ QN_ArgEntry argtab[] =
     { "crf_olist", "Ordered list of output labels (for MLF)", QN_ARG_STR, &(config.crf_olist) },
 	{ "crf_lat_outdir", "Output directory for lattice files (in OpenFST binary format)", QN_ARG_STR, &(config.crf_lat_outdir) },
 	{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
-	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) }
+	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
+	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
 static void set_defaults(void) {
@@ -378,7 +379,9 @@ int main(int argc, const char* argv[]) {
 	FILE* outl=fopen(config.crf_output_labelfile,"w+");
 	QN_OutLabStream* labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 255, 1);
 	while (segid != QN_SEGID_BAD) {
+		if (count %100 == 0) {
 		cout << "Processing segment " << count << endl;
+		}
 		try {
 			if (lm_fst != NULL) {
 				if (config.crf_states==1) {
