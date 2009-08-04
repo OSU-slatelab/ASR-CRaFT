@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?fileVersion 4.0.0?>
 
 <cproject>
@@ -15,7 +15,7 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="" artifactName="CRFLocalPosteriors" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.2127212059" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<configuration artifactExtension="" artifactName="CRFLocalPosteriors" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.2127212059" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
 <folderInfo id="cdt.managedbuild.config.gnu.exe.debug.2127212059.1859209060" name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.2136609931" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1780505915" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
@@ -23,6 +23,7 @@
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1993782570" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 <option id="gnu.cpp.compiler.option.include.paths.1464519871" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRFDecode/src}&quot;"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080422/OpenFst"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/"/>
@@ -58,6 +59,7 @@
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.704887783" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 <option id="gnu.cpp.link.option.libs.1169381333" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="pthread"/>
+<listOptionValue builtIn="false" value="fst"/>
 <listOptionValue builtIn="false" value="CRF"/>
 <listOptionValue builtIn="false" value="ptcblas"/>
 <listOptionValue builtIn="false" value="quicknet3"/>
@@ -66,6 +68,7 @@
 </option>
 <option id="gnu.cpp.link.option.paths.1947671730" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="stringList">
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080422/OpenFst/fst/lib"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/Debug}&quot;"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
 <listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.7.8/lib/Linux_P4SSE2_4"/>
@@ -593,7 +596,7 @@
 </extensions>
 </storageModule>
 <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-<configuration artifactExtension="" artifactName="CRFLocalPosteriors" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.1501413573" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<configuration artifactExtension="" artifactName="CRFLocalPosteriors" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release,org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.1501413573" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
 <folderInfo id="cdt.managedbuild.config.gnu.exe.release.1501413573.1317771050" name="/" resourcePath="">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.300699532" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
 <targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.75412856" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>

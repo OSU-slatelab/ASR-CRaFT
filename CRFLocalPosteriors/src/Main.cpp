@@ -62,6 +62,7 @@ static struct {
 	int crf_use_trans_bias;
 	float crf_state_bias_value;
 	float crf_trans_bias_value;
+	int crf_logpost_usefst;
 	int verbose;
 	int dummy;
 } config;
@@ -117,8 +118,10 @@ QN_ArgEntry argtab[] =
 	{ "crf_use_trans_bias", "Use transition bias functions", QN_ARG_BOOL, &(config.crf_use_trans_bias) },
 	{ "crf_state_bias_value", "Function value for state bias functions", QN_ARG_FLOAT, &(config.crf_state_bias_value) },
 	{ "crf_trans_bias_value", "Function value for transition bias functions", QN_ARG_FLOAT, &(config.crf_trans_bias_value) },
+	{ "crf_localpost_usefst", "Use finite state code to compute local posteriors (slower)", QN_ARG_BOOL, &(config.crf_logpost_usefst) },
 	//{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
-	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) }
+	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
+	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
 static void set_defaults(void) {
@@ -168,6 +171,7 @@ static void set_defaults(void) {
 	config.crf_use_trans_bias=1;
 	config.crf_state_bias_value=1.0;
 	config.crf_trans_bias_value=1.0;
+	config.crf_logpost_usefst=0;
 	config.verbose=0;
 };
 
@@ -312,121 +316,129 @@ int main(int argc, const char* argv[]) {
 		exit(-1);
 	}
 
-#ifdef USE_OLD_POSTERIOR_CODE
-
-	//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
-	CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
-
-	crf_ftr_str->rewind();
-	FILE* outl=fopen(config.crf_output_ftrfile,"w+");
-	QNUInt32 len=config.crf_label_size;
-	QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
-	QN_SegID segid = crf_ftr_str->nextseg();
-	int count=0;
-	CRF_Seq* seq_head;
-	CRF_StateVector* posteriorList;
-	float ab_f[len];
-	while (segid != QN_SEGID_BAD) {
-		cout << "Processing segment " << count;
-		try {
-			//seq_head=lpb->buildFtrSeq(crf_ftr_str);
-			posteriorList=lpb->buildFtrSeq(crf_ftr_str);
-		}
-		catch (exception &e) {
-			cerr << "Exception: " << e.what() << endl;
+	if (!config.crf_logpost_usefst) {
+		if (config.hardtarget_file != NULL) {
+			cerr << "ERROR: Hardtarget file requires FST decoding" << endl;
 			exit(-1);
 		}
-		cout << " ... Segment processed" << endl;
-		CRF_Seq* cur_seq=seq_head;
-		//while (cur_seq != NULL) {
-		//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
-		for (QNUInt32 j=0; j<posteriorList->getNodeCount(); j++) {
-			//double* ab = cur_seq->getAlphaBeta();
-			double* ab = posteriorList->at(j)->getAlphaBeta();
-			for (QNUInt32 i=0; i<len; i++) {
-				if (!logftrs) {
-					try {
-						ab[i]=expE(ab[i]);
+		//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
+		CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
+
+		crf_ftr_str->rewind();
+		FILE* outl=fopen(config.crf_output_ftrfile,"w+");
+		QNUInt32 len=config.crf_label_size;
+		QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
+		QN_SegID segid = crf_ftr_str->nextseg();
+		int count=0;
+		CRF_Seq* seq_head;
+		CRF_StateVector* posteriorList;
+		float ab_f[len];
+		while (segid != QN_SEGID_BAD) {
+			cout << "Processing segment " << count;
+			try {
+				//seq_head=lpb->buildFtrSeq(crf_ftr_str);
+				posteriorList=lpb->buildFtrSeq(crf_ftr_str);
+			}
+			catch (exception &e) {
+				cerr << "Exception: " << e.what() << endl;
+				exit(-1);
+			}
+			cout << " ... Segment processed" << endl;
+			CRF_Seq* cur_seq=seq_head;
+			//while (cur_seq != NULL) {
+			//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
+			for (QNUInt32 j=0; j<posteriorList->getNodeCount(); j++) {
+				//double* ab = cur_seq->getAlphaBeta();
+				double* ab = posteriorList->at(j)->getAlphaBeta();
+				for (QNUInt32 i=0; i<len; i++) {
+					if (!logftrs) {
+						try {
+							ab[i]=expE(ab[i]);
+						}
+						catch (exception& e) {
+							cerr << "Exception: " << e.what() << endl;
+							exit(-1);
+						}
 					}
-					catch (exception& e) {
-						cerr << "Exception: " << e.what() << endl;
-						exit(-1);
+					ab_f[i]=ab[i]; // Convert array from double to float for QuickNet interface
+				}
+				//cout << "Starting Write" << endl;
+				ftrout->write_ftrs(1,ab_f);
+				//cout << "Ending Write" << endl << "Starting Delete" << endl;
+				//CRF_Seq* last_seq=cur_seq;
+				//cur_seq=cur_seq->getNext();
+				//delete last_seq;
+				//cout << "Ending Delete" << endl;
+			}
+			ftrout->doneseg(segid);
+			segid=crf_ftr_str->nextseg();
+			count++;
+			//delete posteriorList;
+		}
+		delete ftrout; // explicitly delete the labelstream to flush contents to disk.
+		fclose(outl);
+	} else { // config.crf_logpost_usecrf==true
+
+		CRF_LatticeBuilder *lb=new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
+		crf_ftr_str->rewind();
+
+		FILE* outl=fopen(config.crf_output_ftrfile,"w+");
+		QNUInt32 len=config.crf_label_size;
+		QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
+		QN_SegID segid = crf_ftr_str->nextseg();
+		int count=0;
+
+		int nframes;
+		vector<double> gamma;
+
+		float ab_f[len];
+		while (segid != QN_SEGID_BAD) {
+			cout << "Processing segment " << count;
+			try {
+				//seq_head=lpb->buildFtrSeq(crf_ftr_str);
+				//posteriorList=lpb->buildFtrSeq(crf_ftr_str);
+				if (config.hardtarget_file==NULL)
+					nframes=lb->getAlignmentGammas(&gamma,NULL,NULL,NULL);
+				else
+					nframes=lb->getAlignmentGammas(NULL,&gamma,NULL,NULL);
+
+			}
+			catch (exception &e) {
+				cerr << "Exception: " << e.what() << endl;
+				exit(-1);
+			}
+			cout << " ... Segment processed" << endl;
+			//CRF_Seq* cur_seq=seq_head;
+			//while (cur_seq != NULL) {
+			//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
+
+			//cout << "gamma size: " << gamma.size() << endl;
+
+			for (QNUInt32 j=0; j<nframes; j++) {
+				//double* ab = cur_seq->getAlphaBeta();
+				//double* ab = posteriorList->at(j)->getAlphaBeta();
+				for (QNUInt32 i=0; i<len; i++) {
+					if (!logftrs) {
+						try {
+							ab_f[i]=(float)(expE(gamma.at(j*len+i)));
+						}
+						catch (exception& e) {
+							cerr << "Exception: " << e.what() << endl;
+							exit(-1);
+						}
+					} else {
+						ab_f[i]=(float)gamma.at(j*len+i);
 					}
 				}
-				ab_f[i]=ab[i]; // Convert array from double to float for QuickNet interface
+				ftrout->write_ftrs(1,ab_f);
 			}
-			//cout << "Starting Write" << endl;
-			ftrout->write_ftrs(1,ab_f);
-			//cout << "Ending Write" << endl << "Starting Delete" << endl;
-			//CRF_Seq* last_seq=cur_seq;
-			//cur_seq=cur_seq->getNext();
-			//delete last_seq;
-			//cout << "Ending Delete" << endl;
+			ftrout->doneseg(segid);
+			segid=crf_ftr_str->nextseg();
+			count++;
+			//delete posteriorList;
+			gamma.clear();
 		}
-		ftrout->doneseg(segid);
-		segid=crf_ftr_str->nextseg();
-		count++;
-		//delete posteriorList;
+		delete ftrout; // explicitly delete the labelstream to flush contents to disk.
+		fclose(outl);
 	}
-	delete ftrout; // explicitly delete the labelstream to flush contents to disk.
-	fclose(outl);
-
-#else // USE_NEW_POSTERIOR_CALC
-	//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
-	//CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
-
-	CRF_LatticeBuilder *lb=new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
-	crf_ftr_str->rewind();
-
-	FILE* outl=fopen(config.crf_output_ftrfile,"w+");
-	QNUInt32 len=config.crf_label_size;
-	QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
-	QN_SegID segid = crf_ftr_str->nextseg();
-	int count=0;
-
-	vector<double> denominatorGamma;
-	float ab_f[len];
-	while (segid != QN_SEGID_BAD) {
-		cout << "Processing segment " << count;
-		try {
-			//seq_head=lpb->buildFtrSeq(crf_ftr_str);
-			//posteriorList=lpb->buildFtrSeq(crf_ftr_str);
-			lb->getAlignmentGammas(&denominatorGamma,NULL,NULL,NULL);
-		}
-		catch (exception &e) {
-			cerr << "Exception: " << e.what() << endl;
-			exit(-1);
-		}
-		cout << " ... Segment processed" << endl;
-		//CRF_Seq* cur_seq=seq_head;
-		//while (cur_seq != NULL) {
-		//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
-		for (QNUInt32 j=0; j<denominatorGamma.size(); j+=len) {
-			//double* ab = cur_seq->getAlphaBeta();
-			//double* ab = posteriorList->at(j)->getAlphaBeta();
-			for (QNUInt32 i=0; i<len; i++) {
-				if (!logftrs) {
-					try {
-						ab_f[i]=(float)(expE(denominatorGamma.at(j+i)));
-					}
-					catch (exception& e) {
-						cerr << "Exception: " << e.what() << endl;
-						exit(-1);
-					}
-				} else {
-					ab_f[i]=(float)denominatorGamma.at(j+i);
-				}
-			}
-			ftrout->write_ftrs(1,ab_f);
-		}
-		ftrout->doneseg(segid);
-		segid=crf_ftr_str->nextseg();
-		count++;
-		//delete posteriorList;
-		denominatorGamma.clear();
-	}
-	delete ftrout; // explicitly delete the labelstream to flush contents to disk.
-	fclose(outl);
-
-#endif
 }
