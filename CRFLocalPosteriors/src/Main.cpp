@@ -63,6 +63,7 @@ static struct {
 	float crf_state_bias_value;
 	float crf_trans_bias_value;
 	int crf_logpost_usefst;
+	int crf_logpost_output_transpost;
 	int verbose;
 	int dummy;
 } config;
@@ -119,6 +120,7 @@ QN_ArgEntry argtab[] =
 	{ "crf_state_bias_value", "Function value for state bias functions", QN_ARG_FLOAT, &(config.crf_state_bias_value) },
 	{ "crf_trans_bias_value", "Function value for transition bias functions", QN_ARG_FLOAT, &(config.crf_trans_bias_value) },
 	{ "crf_localpost_usefst", "Use finite state code to compute local posteriors (slower)", QN_ARG_BOOL, &(config.crf_logpost_usefst) },
+	{ "crf_localpost_output_transpost", "Output transition posteriors as well (requires fst code)", QN_ARG_BOOL, &(config.crf_logpost_output_transpost) },
 	//{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
 	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
@@ -172,6 +174,7 @@ static void set_defaults(void) {
 	config.crf_state_bias_value=1.0;
 	config.crf_trans_bias_value=1.0;
 	config.crf_logpost_usefst=0;
+	config.crf_logpost_output_transpost=0;
 	config.verbose=0;
 };
 
@@ -321,6 +324,10 @@ int main(int argc, const char* argv[]) {
 			cerr << "ERROR: Hardtarget file requires FST decoding" << endl;
 			exit(-1);
 		}
+		if (config.crf_logpost_output_transpost) {
+			cerr << "ERROR: Transition posteriors require FST decoding" << endl;
+			exit(-1);
+		}
 		//CRF_LocalPosteriorBuilder* lpb = new CRF_LocalPosteriorBuilder(&my_crf);
 		CRF_NewLocalPosteriorBuilder* lpb = new CRF_NewLocalPosteriorBuilder(&my_crf,normfeas);
 
@@ -384,13 +391,16 @@ int main(int argc, const char* argv[]) {
 
 		FILE* outl=fopen(config.crf_output_ftrfile,"w+");
 		QNUInt32 len=config.crf_label_size;
+		if (config.crf_logpost_output_transpost) {
+			len+=config.crf_label_size*config.crf_label_size;
+		}
 		QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
 		QN_SegID segid = crf_ftr_str->nextseg();
 		int count=0;
 
 		int nframes;
 		vector<double> gamma;
-
+		vector<double> transgamma;
 		float ab_f[len];
 		while (segid != QN_SEGID_BAD) {
 			cout << "Processing segment " << count;
@@ -398,9 +408,9 @@ int main(int argc, const char* argv[]) {
 				//seq_head=lpb->buildFtrSeq(crf_ftr_str);
 				//posteriorList=lpb->buildFtrSeq(crf_ftr_str);
 				if (config.hardtarget_file==NULL)
-					nframes=lb->getAlignmentGammas(&gamma,NULL,NULL,NULL);
+					nframes=lb->getAlignmentGammas(&gamma,NULL,(config.crf_logpost_output_transpost)?(&transgamma):NULL,NULL);
 				else
-					nframes=lb->getAlignmentGammas(NULL,&gamma,NULL,NULL);
+					nframes=lb->getAlignmentGammas(NULL,&gamma,NULL,(config.crf_logpost_output_transpost)?(&transgamma):NULL);
 
 			}
 			catch (exception &e) {
@@ -414,30 +424,47 @@ int main(int argc, const char* argv[]) {
 
 			//cout << "gamma size: " << gamma.size() << endl;
 
-			for (QNUInt32 j=0; j<nframes; j++) {
+			QNUInt32 nlabs=(QNUInt32)config.crf_label_size;
+
+			try {
+				for (QNUInt32 j=0; j<nframes; j++) {
 				//double* ab = cur_seq->getAlphaBeta();
 				//double* ab = posteriorList->at(j)->getAlphaBeta();
-				for (QNUInt32 i=0; i<len; i++) {
-					if (!logftrs) {
-						try {
-							ab_f[i]=(float)(expE(gamma.at(j*len+i)));
+
+					for (QNUInt32 i=0; i<nlabs; i++) {
+						if (!logftrs) {
+							ab_f[i]=(float)(expE(gamma.at(j*nlabs+i)));
+						} else {
+							ab_f[i]=(float)gamma.at(j*nlabs+i);
 						}
-						catch (exception& e) {
-							cerr << "Exception: " << e.what() << endl;
-							exit(-1);
+
+						if (config.crf_logpost_output_transpost) {
+							if (!logftrs) {
+								for (QNUInt32 k=0; k<nlabs; k++) {
+									ab_f[nlabs+i*nlabs+k]=(float)expE(transgamma.at(j*nlabs*nlabs+i*nlabs+k));
+								}
+							} else {
+								for (QNUInt32 k=0; k<nlabs; k++) {
+									ab_f[nlabs+i*nlabs+k]=(float)transgamma.at(j*nlabs*nlabs+i*nlabs+k);
+								}
+							}
 						}
-					} else {
-						ab_f[i]=(float)gamma.at(j*len+i);
 					}
+					ftrout->write_ftrs(1,ab_f);
 				}
-				ftrout->write_ftrs(1,ab_f);
+				ftrout->doneseg(segid);
+				segid=crf_ftr_str->nextseg();
+				count++;
+				//delete posteriorList;
+				gamma.clear();
+				transgamma.clear();
+
+			} catch (exception& e) {
+				cerr << "Exception: " << e.what() << endl;
+					exit(-1);
 			}
-			ftrout->doneseg(segid);
-			segid=crf_ftr_str->nextseg();
-			count++;
-			//delete posteriorList;
-			gamma.clear();
 		}
+
 		delete ftrout; // explicitly delete the labelstream to flush contents to disk.
 		fclose(outl);
 	}
