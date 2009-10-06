@@ -6,6 +6,7 @@
 
 #include "CRF_NewGradBuilder.h"
 #include "CRF_NewGradBuilderLog.h"
+#include "CRF_FerrGradBuilder.h"
 #include "CRF_StdStateVector.h"
 #include "CRF_StdStateVectorLog.h"
 #include "CRF_StdNStateVector.h"

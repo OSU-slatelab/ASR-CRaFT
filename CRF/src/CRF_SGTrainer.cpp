@@ -20,6 +20,7 @@ void CRF_SGTrainer::train()
 	QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
 	if (this->useLogspace) {
 		gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
+		//gbuild=new CRF_FerrGradBuilder(this->crf_ptr);
 		cout << "Using Logspace training..." << endl;
 	}
 	else {
@@ -95,6 +96,7 @@ void CRF_SGTrainer::train()
 			cout << time << " Beginning Utt: " << uCounter << " SegID: " << segid <<  endl;
 			//delete time;
 		}
+		tmp_Zx=uCounter%this->uttRpt; // Added for Ferr testing
 		tmpLogLi=gbuild->buildGradient(ftr_str,grad,&tmp_Zx);
 		//tmpLogLi=logLi;
 		logLi=tmpLogLi - tmp_Zx;
