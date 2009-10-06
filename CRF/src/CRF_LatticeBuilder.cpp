@@ -29,10 +29,6 @@ CRF_LatticeBuilder::~CRF_LatticeBuilder()
 	delete this->nodeList;
 }
 
-CRF_StateVector * CRF_LatticeBuilder::getNodeList() {
-	return this->nodeList;
-}
-
 StdVectorFst* CRF_LatticeBuilder::testBuild()
 {
 	// A vector FST is a general mutable FST
