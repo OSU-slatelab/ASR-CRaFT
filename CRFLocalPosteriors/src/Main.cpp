@@ -204,6 +204,8 @@ int main(int argc, const char* argv[]) {
 	if (strcmp(config.crf_featuremap,"stdsparsetrans")==0) { trn_ftrmap=STDSPARSETRANS;}
 	if (strcmp(config.crf_featuremap,"file")==0) { trn_ftrmap=INFILE;}
 
+	CRF_FeatureStreamManager* str2=NULL;
+	CRF_FeatureStreamManager* str3=NULL;
 
     CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
@@ -214,19 +216,26 @@ int main(int argc, const char* argv[]) {
 
 	if (strcmp(config.ftr2_file,"") != 0) {
 
-		CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
+		/*CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
 							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
 							config.ftr2_delta_order, config.ftr2_delta_win,
 							config.crf_eval_range, 0,
 							NULL,0,0,0,SEQUENTIAL);
-		str1.join(&str2);
+		str1.join(&str2);*/
+
+		str2 = new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
+							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
+							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
+							config.ftr2_delta_order, config.ftr2_delta_win,
+							config.crf_eval_range, 0,
+							NULL,0,0,0,SEQUENTIAL);
+		str1.join(str2);
 	}
-    cout << "Feature File created" << endl;
 
 	if (strcmp(config.ftr3_file,"") != 0) {
 
-		CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
+		/*CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
 							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
 							config.ftr3_delta_order, config.ftr3_delta_win,
@@ -234,14 +243,22 @@ int main(int argc, const char* argv[]) {
 							NULL,0,0,0,SEQUENTIAL);
 		cout << "Joining files" << endl;
 		str1.join(&str3);
-		cout << "Files joined" << endl;
+		cout << "Files joined" << endl;*/
+
+		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
+							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
+							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
+							config.ftr3_delta_order, config.ftr3_delta_win,
+							config.crf_eval_range, 0,
+							NULL,0,0,0,SEQUENTIAL);
+		str1.join(str3);
 	}
     cout << "Feature File created" << endl;
 
 	CRF_FeatureStream* crf_ftr_str = str1.trn_stream;
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
-	CRF_FeatureMap* my_map;
+	CRF_FeatureMap* my_map=NULL;
 	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
 		CRF_StdSparseFeatureMap* tmp_map=new CRF_StdSparseFeatureMap(config.crf_label_size,str1.getNumFtrs());
 		if (trn_ftrmap == STDSPARSE) {
@@ -337,7 +354,7 @@ int main(int argc, const char* argv[]) {
 		QN_OutFtrStream* ftrout = new QN_OutFtrLabStream_PFile(1, "localposterior", outl, len, 0, 1);
 		QN_SegID segid = crf_ftr_str->nextseg();
 		int count=0;
-		CRF_Seq* seq_head;
+		//CRF_Seq* seq_head;
 		CRF_StateVector* posteriorList;
 		float ab_f[len];
 		while (segid != QN_SEGID_BAD) {
@@ -351,7 +368,7 @@ int main(int argc, const char* argv[]) {
 				exit(-1);
 			}
 			cout << " ... Segment processed" << endl;
-			CRF_Seq* cur_seq=seq_head;
+			//CRF_Seq* cur_seq=seq_head;
 			//while (cur_seq != NULL) {
 			//for (QNUInt32 j=0; j<posteriorList->size(); j++) {
 			for (QNUInt32 j=0; j<posteriorList->getNodeCount(); j++) {
