@@ -251,6 +251,8 @@ int main(int argc, const char* argv[]) {
 		cerr << "ERROR: crf_featuremap_file must be non-NULL when crf_featuremap set to 'file'" << endl;
 		exit(-1);
 	}
+	CRF_FeatureStreamManager* str2=NULL;
+	CRF_FeatureStreamManager* str3=NULL;
 
 	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file, config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
@@ -260,26 +262,38 @@ int main(int argc, const char* argv[]) {
 							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
 	if (strcmp(config.ftr2_file,"") != 0) {
 
-		CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
+		/*CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
 							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
 							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
 							config.ftr2_delta_order, config.ftr2_delta_win,
 							config.train_sent_range, config.cv_sent_range,
 							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-		str1.join(&str2);
+		str1.join(&str2);*/
+		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
+				(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
+				config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
+				config.ftr2_delta_order, config.ftr2_delta_win,
+				config.train_sent_range, config.cv_sent_range,
+				NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
+		str1.join(str2);
 	}
 	if (strcmp(config.ftr3_file,"") != 0) {
 
-		CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
+		/*CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
 							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
 							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
 							config.ftr3_delta_order, config.ftr3_delta_win,
 							config.train_sent_range, config.cv_sent_range,
 							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-		str1.join(&str3);
+		str1.join(&str3);*/
+		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
+									(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
+									config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
+									config.ftr3_delta_order, config.ftr3_delta_win,
+									config.train_sent_range, config.cv_sent_range,
+									NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
+		str1.join(str3);
 	}
-
-
 
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
