@@ -27,6 +27,8 @@ CRF_StdNStateNode::~CRF_StdNStateNode()
 {
 	delete [] this->diagTransMatrix;
 	delete [] this->offDiagTransMatrix;
+	delete [] this->stateArray;
+	delete [] this->tempBeta;
 }
 
 double CRF_StdNStateNode::computeTransMatrix()

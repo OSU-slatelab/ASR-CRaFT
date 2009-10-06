@@ -15,10 +15,22 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	this->num_labs=this->crf->getNLabs();
 	this->ftr_buf = new float[num_ftrs*bunch_size];
 	this->lab_buf = new QNUInt32[bunch_size];
+	this->alpha_base = new double[this->num_labs];
+	for (QNUInt32 i=0; i<this->num_labs; i++) {
+		this->alpha_base[i]=0.0;
+	}
 }
 
 CRF_LatticeBuilder::~CRF_LatticeBuilder()
 {
+	delete [] this->ftr_buf;
+	delete [] this->lab_buf;
+	delete [] this->alpha_base;
+	delete this->nodeList;
+}
+
+CRF_StateVector * CRF_LatticeBuilder::getNodeList() {
+	return this->nodeList;
 }
 
 StdVectorFst* CRF_LatticeBuilder::testBuild()
@@ -53,7 +65,9 @@ StdVectorFst* CRF_LatticeBuilder::buildLattice()
 	return fst;
 }
 
-// this version requires you to create fst and labFst
+/*
+ * Moved to .h file to allow for template usage
+ * // this version requires you to create fst and labFst
 template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 									  bool align,
 									  VectorFst<Arc>*labFst) {
@@ -77,6 +91,7 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 
 	do {
 		ftr_count=ftr_strm->read(this->bunch_size,ftr_buf,lab_buf);
+
 
 		for (QNUInt32 i=0; i<ftr_count; i++) {
 			float* new_buf = new float[this->num_ftrs];
@@ -134,7 +149,7 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 	// nodelist at the moment does not know its sequence length
 	this->nodeList->setNodeCount(seq_len);
 	return seq_len;
-}
+}*/
 
 StdVectorFst* CRF_LatticeBuilder::bestPath(bool align)
 {
@@ -446,6 +461,8 @@ StdVectorFst* CRF_LatticeBuilder::LMBestPath(bool align, StdFst* lmFst)
 }
 
 
+
+
 StdVectorFst* CRF_LatticeBuilder::nStateBuildLattice()
 {
 	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
@@ -660,6 +677,8 @@ StdVectorFst* CRF_LatticeBuilder::nStateBuildLattice(StdVectorFst* labFst)
 	return fst;
 
 }
+
+
 
 StdVectorFst* CRF_LatticeBuilder::nStateBestPath(bool align)
 {

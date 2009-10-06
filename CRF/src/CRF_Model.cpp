@@ -13,6 +13,9 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 
 CRF_Model::~CRF_Model()
 {
+	if (this->lambda != NULL ) {delete [] this->lambda;}
+	if (this->lambdaAcc != NULL ) {delete [] this->lambdaAcc;}
+	if (this->featureMap != NULL ) {delete this->featureMap;}
 }
 
 QNUInt32 CRF_Model::getNLabs()

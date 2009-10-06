@@ -70,6 +70,7 @@ public:
 	inline size_t getNThreads() { return nthreads; }
 	CRF_FeatureStream* trn_stream;
 	CRF_FeatureStream* cv_stream;
+	CRF_FeatureStream* old_trn_stream;
 
 
 };

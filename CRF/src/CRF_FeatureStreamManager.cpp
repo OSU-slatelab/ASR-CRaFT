@@ -316,7 +316,11 @@ void CRF_FeatureStreamManager::create()
 }
 
 void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
+	this->old_trn_stream=this->trn_stream;
 	this->trn_stream = this->trn_stream->join(instr->trn_stream);
+	//cout << "Joined numsegs: " << this->trn_stream->num_segs();
+	cout << "Old trn_stream id: " << this->old_trn_stream << endl;
+	cout << "Joined trn_stream id: " << this->trn_stream << endl;
 	if (this->cv_stream != NULL) {
 		this->cv_stream = this->cv_stream->join(instr->cv_stream);
 	}
@@ -332,12 +336,16 @@ void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 			}
 		}
 	}
+	//this->display();
 }
 
 
 void CRF_FeatureStreamManager::display()
 {
 //	this->rewind(); // Reset it to the beginning
+	cout << "trn_stream id: " << this->trn_stream << endl;
+	cout << "Old Partition" << endl;
+	//this->old_trn_stream->display();
 	cout << "Training Partition" << endl;
 	this->trn_stream->display();
 	cout << "CV Partition" << endl;
