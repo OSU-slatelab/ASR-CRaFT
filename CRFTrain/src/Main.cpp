@@ -6,6 +6,7 @@
 #include "CRF_FeatureStreamManager.h"
 #include "CRF_SGTrainer.h"
 #include "CRF_LBFGSTrainer.h"
+#include "CRF_AISTrainer.h"
 //#include "CRF_StdRange.h"
 //#include "CRF_StdTransRange.h"
 #include "CRF_StdFeatureMap.h"
@@ -78,6 +79,7 @@ static struct {
 	int crf_use_trans_bias;
 	float crf_state_bias_value;
 	float crf_trans_bias_value;
+	float crf_ais_l1alpha;
 	int threads;
 	int verbose;
 	int dummy;
@@ -148,6 +150,7 @@ QN_ArgEntry argtab[] =
 	{ "crf_state_bias_value", "Function value for state bias functions", QN_ARG_FLOAT, &(config.crf_state_bias_value) },
 	{ "crf_trans_bias_value", "Function value for transition bias functions", QN_ARG_FLOAT, &(config.crf_trans_bias_value) },
 	{ "threads", "Number of threads to use for multithreaded trainers", QN_ARG_INT, &(config.threads) },
+	{ "crf_ais_l1alpha", "l1 alpha threshold for AIS training", QN_ARG_FLOAT, &(config.crf_ais_l1alpha) },
 	//	{ "dummy", "Output status messages", QN_ARG_INT, &(config.dummy) },
 	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
@@ -214,6 +217,7 @@ static void set_defaults(void) {
 	config.crf_use_trans_bias=1;
 	config.crf_state_bias_value=1.0;
 	config.crf_trans_bias_value=1.0;
+	config.crf_ais_l1alpha=0.0;
 	config.threads=1;
 	config.verbose=0;
 };
@@ -241,6 +245,7 @@ int main(int argc, const char* argv[]) {
 
 	if (strcmp(config.crf_train_method,"sg")==0) {trn_type=SGTRAIN;}
 	if (strcmp(config.crf_train_method,"lbfgs")==0) {trn_type=LBFGSTRAIN;}
+	if (strcmp(config.crf_train_method,"ais")==0) {trn_type=AISTRAIN;}
 
 	if ((trn_ftrmap == INFILE) && (config.crf_featuremap_file==NULL)) {
 		cerr << "ERROR: crf_featuremap_file must be non-NULL when crf_featuremap set to 'file'" << endl;
@@ -373,11 +378,20 @@ int main(int argc, const char* argv[]) {
 		}
 	}
 	CRF_Trainer* my_trainer;
-	if (trn_type==LBFGSTRAIN) {
+	switch (trn_type) {
+	case LBFGSTRAIN :
 		my_trainer = new CRF_LBFGSTrainer(&my_crf,&str1,config.out_weight_file);
-	} else { //trn_type=SGTRAIN
+		break;
+	case AISTRAIN :
+		my_trainer = new CRF_AISTrainer(&my_crf,&str1,config.out_weight_file);
+		((CRF_AISTrainer *)my_trainer)->setl1alpha(config.crf_ais_l1alpha);
+		break;
+	case SGTRAIN :
+	default:
 		my_trainer = new CRF_SGTrainer(&my_crf,&str1,config.out_weight_file);
+		break;
 	}
+
 	my_trainer->setMaxIters(config.crf_epochs);
 	my_trainer->setLR(config.crf_lr);
 	my_trainer->setUttRpt(config.crf_utt_rpt);
