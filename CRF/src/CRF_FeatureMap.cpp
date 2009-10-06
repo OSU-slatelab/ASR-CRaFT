@@ -70,12 +70,22 @@ QNUInt32 CRF_FeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 
 QNUInt32 CRF_FeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 {
-	return 0;
+	return QN_UINT32_MAX;
+}
+
+QNUInt32 CRF_FeatureMap::getStateBiasIdx(QNUInt32 clab)
+{
+	return QN_UINT32_MAX;
 }
 
 QNUInt32 CRF_FeatureMap::getTransFeatureIdx(QNUInt32 plab, QNUInt32 clab, QNUInt32 fno)
 {
-	return 0;
+	return QN_UINT32_MAX;
+}
+
+QNUInt32 CRF_FeatureMap::getTransBiasIdx(QNUInt32 clab, QNUInt32 plab)
+{
+	return QN_UINT32_MAX;
 }
 
 QNUInt32 CRF_FeatureMap::getNumFtrFuncs()
@@ -101,4 +111,8 @@ QNUInt32 CRF_FeatureMap::recalc()
 string CRF_FeatureMap::getMapDescriptor(QNUInt32 lambdaNum)
 {
 	return string("");
+}
+
+void CRF_FeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QNUInt32 lab) {
+	return;
 }

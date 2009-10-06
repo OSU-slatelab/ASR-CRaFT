@@ -51,8 +51,11 @@ public:
 	virtual QNUInt32 getNumStates();
 	virtual QNUInt32 getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno=0);
 	virtual QNUInt32 getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno=0);
+	virtual QNUInt32 getStateBiasIdx(QNUInt32 clab);
+	virtual QNUInt32 getTransBiasIdx(QNUInt32 plab, QNUInt32 clab);
 	virtual QNUInt32 recalc();
 	virtual string getMapDescriptor(QNUInt32 lambdaNum);
+	virtual void accumulateFeatures(float *ftr_buf, double *accumulator, QNUInt32 lab);
 };
 
 #endif /*CRF_STDFEATUREMAP_H_*/

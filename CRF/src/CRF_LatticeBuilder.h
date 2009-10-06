@@ -41,6 +41,7 @@ public:
 	virtual StdVectorFst* nStateBestPath(bool align);
 	virtual StdVectorFst* nStateLMBestPath(bool align, StdFst* lmFst);
 	virtual StdVectorFst* nStateBestPath_old(bool align);
+	virtual CRF_StateVector * getNodeList();
 };
 
 #endif /*CRF_LATTICEBUILDER_H_*/

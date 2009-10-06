@@ -164,3 +164,11 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 		}
 	}
 }
+
+float *CRF_StateNode::getFtrBuffer() {
+	return this->ftrBuf;
+}
+
+QNUInt32 CRF_StateNode::getFtrBufferSize() {
+	return this->ftrBuf_size;
+}

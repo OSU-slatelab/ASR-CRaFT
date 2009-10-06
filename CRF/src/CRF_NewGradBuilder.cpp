@@ -29,7 +29,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 		this->lab_buf = new QNUInt32[bunch_size];
 	}
 
-	size_t ftr_count;
+	size_t frame_count;
 
 	for (QNUInt32 i=0; i<lambda_len; i++) {
 		this->ExpF[i]=0.0;
@@ -48,9 +48,9 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 	do {
 		// First, read in the next training value from the file
 		//	We can read in a "bunch" at a time, then separate them into individual frames
-		ftr_count=ftr_strm->read(bunch_size,this->ftr_buf,this->lab_buf);
+		frame_count=ftr_strm->read(bunch_size,this->ftr_buf,this->lab_buf);
 
-		for (QNUInt32 i=0; i<ftr_count; i++) {
+		for (QNUInt32 i=0; i<frame_count; i++) {
 			//cout << "\tLabel: " << lab_buf[i] << "\tFeas:";
 			// Now, separate the bunch into individual frames
 			float* new_buf = new float[num_ftrs];
@@ -99,7 +99,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 			// End of Loop:
 			//	alpha[i] = alpha[i-1]*M[i]
 		}
-	} while (ftr_count >= bunch_size);
+	} while (frame_count >= bunch_size);
 
 	nodeCnt--;//Correct for the fact that we add 1 to the nodeCnt at the end of the above loop...
 	QNUInt32 lastNode=nodeCnt;

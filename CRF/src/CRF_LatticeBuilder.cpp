@@ -130,6 +130,9 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 	if (align) {
 		labFst->SetFinal(curLabState,0);
 	}
+
+	// nodelist at the moment does not know its sequence length
+	this->nodeList->setNodeCount(seq_len);
 	return seq_len;
 }
 
@@ -174,12 +177,14 @@ int CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma
 
 	//cout << "In getAlignmentGammas" << endl;
 	int nstates=this->buildLattice(&denominator,(numeratorStateGamma!=NULL),&aligner);
+	//cout << "...(lattice)" << endl;
 
 	// do the denominator first
 	if (denominatorStateGamma != NULL) {
 		//cout << "Computing gamma for denominator" << endl;
 		_computeGamma(denominatorStateGamma,denominatorTransGamma,denominator,nstates);
 		//cout << "Done computing gamma" << endl;
+        //cout << "...(denominator gamma)" << endl;
 	}
 
 	if (numeratorStateGamma) {
@@ -190,6 +195,7 @@ int CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma
 		//TopSort(numerator);
 
 		_computeGamma(numeratorStateGamma,numeratorTransGamma,numerator,nstates);
+		//cout << "...(numerator gamma)" << endl;
 	}
 
 	return nstates;
@@ -824,3 +830,8 @@ StdVectorFst* CRF_LatticeBuilder::nStateBestPath_old(bool align)
 	return final_result;
 
 }
+
+CRF_StateVector * CRF_LatticeBuilder::getNodeList() {
+	return this->nodeList;
+}
+

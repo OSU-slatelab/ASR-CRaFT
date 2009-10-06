@@ -3,6 +3,10 @@
 
 #include "CRF.h"
 
+#ifndef QN_UINT32_MAX
+#define QN_UINT32_MAX (0xffffffff)
+#endif
+
 class CRF_FeatureMap
 {
 protected:
@@ -26,9 +30,12 @@ public:
 	virtual QNUInt32 getNumTransFuncs(QNUInt32 plab, QNUInt32 clab);
 	virtual QNUInt32 getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno);
 	virtual QNUInt32 getTransFeatureIdx(QNUInt32 plab, QNUInt32 clab, QNUInt32 fno);
+	virtual QNUInt32 getStateBiasIdx(QNUInt32 clab);
+	virtual QNUInt32 getTransBiasIdx(QNUInt32 plab, QNUInt32 clab);
 	virtual void setNumStates(QNUInt32 ns);
 	virtual QNUInt32 recalc();
 	virtual string getMapDescriptor(QNUInt32 lambdaNum);
+	virtual void accumulateFeatures(float *ftr_buf, double *accumulator, QNUInt32 lab);
 };
 
 #endif /*CRF_FEATUREMAP_H_*/

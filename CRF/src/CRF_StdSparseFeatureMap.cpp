@@ -199,8 +199,8 @@ double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda,
 			if ((new_idx >= this->stateFidxStart) && (new_idx <= this->stateFidxEnd)) {
 				tmp_lc=lc+new_idx;
 				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
-				if (t_clab == clab) {
-					if (compute_grad) { grad[tmp_lc]+=ftr_buf[fidx+1];}
+				if (compute_grad && (t_clab == clab)) {
+					grad[tmp_lc]+=ftr_buf[fidx+1];
 					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
 				}
 			}
@@ -209,8 +209,8 @@ double CRF_StdSparseFeatureMap::computeStateExpF(float* ftr_buf, double* lambda,
 	if (this->useStateBias) {
 		tmp_lc=lc+this->numStateFuncs-1;
 		ExpF[tmp_lc]+=alpha_beta;
-		if (t_clab==clab) {
-			if (compute_grad) { grad[tmp_lc]+=1;}
+		if (compute_grad && (t_clab==clab)) {
+			grad[tmp_lc]+=1;
 			logLi += lambda[tmp_lc];
 		}
 	}
@@ -229,8 +229,8 @@ double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda,
 			if ((new_idx >= this->transFidxStart) && (new_idx<=this->transFidxEnd)) {
 				tmp_lc=lc+new_idx;
 				ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx+1];
-				if ((clab==t_clab) && (plab==t_plab)) {
-					if (compute_grad) { grad[tmp_lc]+=ftr_buf[fidx+1];}
+				if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
+					grad[tmp_lc]+=ftr_buf[fidx+1];
 					logLi += lambda[tmp_lc]*ftr_buf[fidx+1];
 				}
 				//lc++;
@@ -241,7 +241,7 @@ double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda,
 		//lc=clab*(this->numStateFuncs+this->numTransFuncs)+this->numStateFuncs+(plab+1)*this->numTransFuncs-1;
 		tmp_lc=lc+this->numTransFuncs-1;
 		ExpF[tmp_lc] += alpha_beta;
-		if ((clab==t_clab) && (plab==t_plab)) {
+		if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
 			if (compute_grad) { grad[tmp_lc]+=1;}
 			logLi+=lambda[tmp_lc];
 		}
@@ -290,4 +290,16 @@ double CRF_StdSparseFeatureMap::computeTransExpF(float* ftr_buf, double* lambda,
 	}
 	return this->numFtrFuncs;
 }*/
+
+void CRF_StdSparseFeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QNUInt32 clab) {
+	int offset=clab*(this->stateFidxEnd-this->stateFidxStart);
+
+	for (QNUInt32 fidx=0; fidx<this->numFeas; fidx=fidx+2)
+	{
+		QNUInt32 new_idx=(QNUInt32) ftr_buf[fidx];
+		if ((new_idx >= this->stateFidxStart) && (new_idx <= this->stateFidxEnd)) {
+			accumulator[offset+new_idx]+=ftr_buf[fidx+1];
+		}
+	}
+}
 
