@@ -18,6 +18,7 @@ public:
 	virtual double computeExpF(double* ExpF, double* grad, double Zx, double* prev_alpha, QNUInt32 prev_lab);
 	virtual double* computeAlphaBeta(double Zx);
 	virtual double computeAlphaSum();
+	virtual double computeAlphaAlignedSum();
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 };
 

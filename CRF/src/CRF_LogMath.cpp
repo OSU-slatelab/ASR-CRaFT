@@ -105,6 +105,61 @@ double CRF_LogMath::logAdd(double* R, double max, int idx) {
 	return max+lsum;
 }
 
+double CRF_LogMath::logAdd(vector<double>* R, int idx) {
+	// Logic for performing logAdd as a summation over an entire 1D vector
+	// 1. Find the maximum element
+	double max=R->at(0);
+	for (int i=1; i<idx; i++) {
+		if (R->at(i)>max) { max=R->at(i); }
+	}
+	// 2. Create the summation
+	double sum=0.0;
+	for (int i=0; i<idx; i++) {
+		try {
+			sum += expE(R->at(i)-max);
+		}
+		catch (exception& e) {
+			string errstr="logAdd caught exception: "+string(e.what())+" while creating summation";
+			throw runtime_error(errstr);
+		}
+	}
+	// 3. Apply the log function to the summation
+	double lsum=0.0;
+	try {
+		lsum=logE(sum);
+	}
+	catch (exception& e) {
+		string errstr="logAdd caught exception: "+string(e.what())+" while taking exp of summation";
+		throw runtime_error(errstr);
+	}
+	return max+lsum;
+}
+
+double CRF_LogMath::logAdd(vector<double>* R, double max, int idx) {
+	// Perform the log add without having to find the maximum value in the array R
+	// 2. Create the summation
+	double sum=0.0;
+	for (int i=0; i<idx; i++) {
+		try {
+			sum += expE(R->at(i)-max);
+		}
+		catch (exception& e) {
+			string errstr="logAdd caught exception: "+string(e.what())+" while creating summation";
+			throw runtime_error(errstr);
+		}
+	}
+	// 3. Apply the log function to the summation
+	double lsum=0.0;
+	try {
+		lsum=logE(sum);
+	}
+	catch (exception& e) {
+		string errstr="logAdd caught exception: "+string(e.what())+" while taking exp of summation";
+		throw runtime_error(errstr);
+	}
+	return max+lsum;
+}
+
 double CRF_LogMath::logE(double a)
 {
 //	if (a==1) { return 0; }

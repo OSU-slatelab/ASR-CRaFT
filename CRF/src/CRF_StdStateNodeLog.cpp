@@ -5,6 +5,8 @@ CRF_StdStateNodeLog::CRF_StdStateNodeLog(float* fb, QNUInt32 sizeof_fb, QNUInt32
 {
 	QNUInt32 nLabs=this->crf_ptr->getNLabs();
 	this->logAddAcc = new double[nLabs];
+	this->alphaArrayAligned.assign(nLabs,CRF_LogMath::LOG0);
+	this->betaArrayAligned.assign(nLabs,CRF_LogMath::LOG0);
 }
 
 CRF_StdStateNodeLog::~CRF_StdStateNodeLog()
@@ -196,6 +198,21 @@ double CRF_StdStateNodeLog::computeAlphaSum()
 	double Zx;
 	try {
 		Zx=logAdd(this->alphaArray,this->crf_ptr->getNLabs());
+	}
+	catch (exception& e) {
+		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		throw runtime_error(errstr);
+	}
+	return Zx;
+}
+
+double CRF_StdStateNodeLog::computeAlphaAlignedSum()
+{
+	//double Zx = 0.0;
+	//QNUInt32 nLabs=this->crf_ptr->getNLabs();
+	double Zx;
+	try {
+		Zx=logAdd(&(this->alphaArrayAligned),this->crf_ptr->getNLabs());
 	}
 	catch (exception& e) {
 		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());

@@ -339,7 +339,13 @@ QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 }
 
 // EFL: I rewrote this because I don't like the loop in the second part
-#ifdef OLDCODE
+// JJM: Internally this function only initializes the lookup table, so it should only get called once
+//      what really needs to be done is that this needs to be moved to a private function with a
+//      new name and replaced with public functions that look at the cached indices and do the correct
+//      thing with them, rather than recomputing them on the fly
+//      ** Set back to the old code because the new code was causing a segfault with my multi-state models
+//         will explore why later.
+#ifndef OLDCODE
 QNUInt32 CRF_StdFeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 {
 	QNUInt32 retVal=0;

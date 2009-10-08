@@ -70,6 +70,11 @@ double CRF_StateNode::computeAlphaSum()
 	return 0;
 }
 
+double CRF_StateNode::computeAlphaAlignedSum()
+{
+	return 0;
+}
+
 void CRF_StateNode::reset(float *fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in)
 {
 	//memcpy(fb,this->ftrBuf,sizeof_fb);
@@ -104,6 +109,16 @@ QNUInt32 CRF_StateNode::getLabel()
 double CRF_StateNode::getAlphaScale()
 {
 	return this->alphaScale;
+}
+
+vector<double>* CRF_StateNode::getAlphaAligned()
+{
+	return &(this->alphaArrayAligned);
+}
+
+vector<double>* CRF_StateNode::getBetaAligned()
+{
+	return &(this->betaArrayAligned);
 }
 
 double CRF_StateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)

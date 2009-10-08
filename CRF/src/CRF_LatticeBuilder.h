@@ -24,17 +24,23 @@ protected:
 	QNUInt32 num_labs;
 	double* alpha_base;
 	virtual void _computeGamma(vector<double> *stategamma,vector<double> *transgamma,Fst<LogArc>& fst,int nstates);
+
 public:
 	CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);
 	virtual ~CRF_LatticeBuilder();
 	virtual StdVectorFst* testBuild();
 	virtual StdVectorFst* buildLattice();
-	template <class Arc> int buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL);
-	template <class Arc> int nStateBuildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL);
+	template <class Arc> int buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL,bool norm=true);
+	template <class Arc> int nStateBuildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL, bool norm=true);
+	virtual void computeAlignedAlphaBeta(Fst<LogArc>& fst, int nstates);
 	virtual StdVectorFst* bestPath(bool align);
 	virtual StdVectorFst* bestPath_old(bool align);
 	virtual StdVectorFst* LMBestPath(bool align, StdFst* lmFst);
 	virtual int getAlignmentGammas(vector<double> *denominatorStateGamma,
+									vector<double> *numeratorStateGamma,
+									vector<double> *denominatorTransGamma,
+									vector<double> *numeratorTransGamma);
+	virtual int getAlignmentGammasNState(vector<double> *denominatorStateGamma,
 									vector<double> *numeratorStateGamma,
 									vector<double> *denominatorTransGamma,
 									vector<double> *numeratorTransGamma);
@@ -51,7 +57,8 @@ public:
 // this version requires you to create fst and labFst
 template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 									  bool align,
-									  VectorFst<Arc>*labFst) {
+									  VectorFst<Arc>*labFst,
+									  bool norm) {
 	// Returns the best path through the current segment
 	QNUInt32 ftr_count;
 
@@ -127,7 +134,9 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 		}
 	} while (ftr_count >= this->bunch_size);
 	this->nodeList->setNodeCount(nodeCnt);
-	double Zx=this->nodeList->at(nodeCnt-1)->computeAlphaSum();
+	double Zx=0;
+	//double Zx=this->nodeList->at(nodeCnt-1)->computeAlphaSum();
+	if (norm) { Zx=-1*this->nodeList->at(nodeCnt-1)->computeAlphaSum(); }
 	//cout << "Zx: " << Zx << endl;
 	int final_state = fst->AddState();
 	for (int prev_lab=0; prev_lab<this->num_labs; prev_lab++) {
@@ -144,7 +153,8 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 
 template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* fst,
 									  bool align,
-									  VectorFst<Arc>*labFst) {
+									  VectorFst<Arc>*labFst,
+									  bool norm) {
 
 	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
 	// Returns the best path through the current segment
@@ -196,7 +206,7 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 					// previous state easier later
 					float value=-1*this->nodeList->at(nodeCnt)->getStateValue(cur_lab);
 					int cur_state=fst->AddState();
-					fst->AddArc(startState,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+					fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 				}
 			}
 			else {
@@ -208,14 +218,14 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 						for (int prev_lab=nStates-1; prev_lab<this->num_labs; prev_lab+=nStates) {
 							float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 							int prev_state=(this->num_labs)*(cur_time-2)+(prev_lab+1);
-							fst->AddArc(prev_state,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+							fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 						}
 						// Special case handling - if we have more than one state we have to explicitly
 						// put a self loop in
 						if (nStates >1) {
 							float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(cur_lab,cur_lab);
 							int prev_state=(this->num_labs)*(cur_time-2)+(cur_lab+1);
-							fst->AddArc(prev_state,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+							fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 						}
 					}
 					else {
@@ -224,11 +234,11 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 						int prev_lab=cur_lab-1;
 						float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 						int prev_state=this->num_labs*(cur_time-2)+(prev_lab+1);
-						fst->AddArc(prev_state,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 						prev_lab=cur_lab;
 						value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 						prev_state=this->num_labs*(cur_time-2)+(prev_lab+1);
-						fst->AddArc(prev_state,StdArc(cur_lab+1,cur_lab+1,value,cur_state));
+						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 					}
 				}
 			}
@@ -237,8 +247,8 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 				if (firstLab or (lab != curLab)) {
 					int prevLabState=curLabState;
 					curLabState=labFst->AddState();
-					labFst->AddArc(prevLabState,StdArc(lab,lab,0,curLabState));
-					labFst->AddArc(curLabState,StdArc(lab,lab,0,curLabState)); // Add self loop
+					labFst->AddArc(prevLabState,Arc(lab,lab,0,curLabState));
+					labFst->AddArc(curLabState,Arc(lab,lab,0,curLabState)); // Add self loop
 					firstLab=false;
 					curLab=lab;
 				}
@@ -247,12 +257,14 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 		}
 	} while (ftr_count >= this->bunch_size);
 	this->nodeList->setNodeCount(nodeCnt);
-	double Zx=-1*this->nodeList->at(nodeCnt-1)->computeAlphaSum();
+	double Zx=0;
+	//double Zx=-1*this->nodeList->at(nodeCnt-1)->computeAlphaSum();
+	if (norm) { Zx=-1*this->nodeList->at(nodeCnt-1)->computeAlphaSum(); }
 	int final_state = fst->AddState();
 	for (int prev_lab=0; prev_lab<this->num_labs; prev_lab++) {
 		int prev_state=(this->num_labs)*(nodeCnt-1)+(prev_lab+1);
 		//fst->AddArc(prev_state,StdArc(0,0,0,final_state));
-		fst->AddArc(prev_state,StdArc(0,0,Zx,final_state));
+		fst->AddArc(prev_state,Arc(0,0,Zx,final_state));
 	}
 	fst->SetFinal(final_state,0);
 	//StdVectorFst* final_result=new StdVectorFst();

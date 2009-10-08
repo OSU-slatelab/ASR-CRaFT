@@ -20,7 +20,8 @@ CRF_StdNStateNode::CRF_StdNStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab
 	this->tempBeta = new double[nLabs];
 	this->alphaSize = nLabs;
 	this->alphaScale = 0.0;
-
+	this->alphaArrayAligned.assign(nLabs,0);
+	this->betaArrayAligned.assign(nLabs,0);
 }
 
 CRF_StdNStateNode::~CRF_StdNStateNode()

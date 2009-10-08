@@ -5,6 +5,7 @@
 
 #include "CRF.h"
 #include "CRF_Model.h"
+#include <vector>
 
 class CRF_StateNode
 {
@@ -16,6 +17,8 @@ protected:
 	double* alphaArray;
 	double* betaArray;
 	double* alphaBetaArray;
+	vector<double> alphaArrayAligned;
+	vector<double> betaArrayAligned;
 	QNUInt32 alphaSize;
 	double alphaScale;
 public:
@@ -30,10 +33,13 @@ public:
 	virtual void setTailBeta();
 	virtual double computeExpF(double* ExpF, double* grad, double Zx, double* prev_alpha, QNUInt32 prev_lab);
 	virtual double computeAlphaSum();
+	virtual double computeAlphaAlignedSum();
 	virtual void reset(float *fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in);
 	virtual double* getAlpha();
 	virtual double* getBeta();
 	virtual double* getAlphaBeta();
+	virtual vector<double>* getAlphaAligned();
+	virtual vector<double>* getBetaAligned();
 	virtual QNUInt32 getLabel();
 	virtual double getAlphaScale();
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);

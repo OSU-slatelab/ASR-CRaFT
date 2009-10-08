@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "math.h"
 #include "float.h"
@@ -16,6 +17,8 @@ namespace CRF_LogMath {
 	double logAdd(double a, double b);
 	double logAdd(double* R, int idx);
 	double logAdd(double* R, double max, int idx);
+	double logAdd(vector<double>* R, int idx);
+	double logAdd(vector<double>* R, double max, int idx);
 	double logE(double a);
 	double expE(double a);
 }

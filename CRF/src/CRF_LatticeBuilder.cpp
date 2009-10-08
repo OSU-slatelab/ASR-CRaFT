@@ -212,6 +212,95 @@ int CRF_LatticeBuilder::getAlignmentGammas(vector<double> *denominatorStateGamma
 	return nstates;
 }
 
+int CRF_LatticeBuilder::getAlignmentGammasNState(vector<double> *denominatorStateGamma,
+											vector<double> *numeratorStateGamma,
+											vector<double> *denominatorTransGamma,
+											vector<double> *numeratorTransGamma) {
+
+	// normally, you'd want to use StdArc, but we use LogArc so we can get
+	// alphas/betas.  Critically, the aligner is unweighted, so that being
+	// in the LogArc semiring doesn't matter.
+	VectorFst<LogArc> denominator;
+	VectorFst<LogArc> aligner;
+
+	//cout << "In getAlignmentGammas" << endl;
+	int nstates=this->nStateBuildLattice(&denominator,(numeratorStateGamma!=NULL),&aligner);
+	//cout << "...(lattice)" << endl;
+
+	// do the denominator first
+	if (denominatorStateGamma != NULL) {
+		//cout << "Computing gamma for denominator" << endl;
+		_computeGamma(denominatorStateGamma,denominatorTransGamma,denominator,nstates);
+		//cout << "Done computing gamma" << endl;
+        //cout << "...(denominator gamma)" << endl;
+	}
+
+	if (numeratorStateGamma) {
+		ComposeFst<LogArc> numerator(denominator,aligner);
+		//cout << "start: " << numerator.Start() << " numarcs: " << numerator.NumArcs(numerator.Start());
+		//Project(numerator,PROJECT_OUTPUT);
+		//RmEpsilon(numerator);
+		//TopSort(numerator);
+
+		_computeGamma(numeratorStateGamma,numeratorTransGamma,numerator,nstates);
+		//cout << "...(numerator gamma)" << endl;
+	}
+
+	return nstates;
+}
+
+void CRF_LatticeBuilder::computeAlignedAlphaBeta(Fst<LogArc>& fst, int nstates) {
+	vector<LogWeight> alpha;
+	vector<LogWeight> beta;
+
+	// when shortest distance is done with log semiring, we get alphas
+	ShortestDistance(fst,&alpha,false);
+	// run in reverse to get betas
+	ShortestDistance(fst,&beta,true);
+
+	// next we store the alphas and the betas in their proper places in the nodeList
+	// Because we don't know the structure of the input fst a priori, we need to build this
+	// based on the arc labels in the lattice and store the values from the larger alpha and
+	// beta arrays in the right places
+
+	vector<int> positions(alpha.size(),0);
+	vector<int> labels(alpha.size(),0);
+	vector<double>* curAlpha=NULL;
+	vector<double>* curBeta=NULL;
+	for (StateIterator<Fst<LogArc> > siter(fst);!siter.Done(); siter.Next()) {
+
+		LogArc::StateId s=siter.Value();
+		int crfstate=positions[s];
+
+		// ok maybe this isn't the best way.  This is to cure the problem of
+		// having a null transition on the last arc, but crucially it assumes
+		// that this arc has no cost.
+		if (crfstate>=nstates)
+			continue;
+
+		// To conform with our standard method of alphas and betas, nodelist 0 contains the
+		// data from the first observation, so we need to make exceptions for it.
+		// (the first state should have an alpha of 0 and a beta of shortest path anyway...)
+		if (crfstate!=0) {
+			curAlpha=this->nodeList->at(crfstate-1)->getAlphaAligned();
+			curBeta=this->nodeList->at(crfstate-1)->getBetaAligned();
+		}
+		for (ArcIterator< Fst<LogArc> > aiter(fst,s);!aiter.Done(); aiter.Next()) {
+			const LogArc &arc = aiter.Value();
+			// The labels array contains what label the state at the end of this arc should have
+			labels[arc.nextstate]=arc.olabel-1;
+			// Positions array tells us what timestep the state at the end of this arc occurs at
+			positions[arc.nextstate]=crfstate+1;
+
+			if (crfstate!=0) {
+				// skip the first state because there are no alpha or beta arrays here
+				curAlpha->at(labels[s])=(double)(alpha[s].Value());
+				curBeta->at(labels[s])=(double)(beta[s].Value());
+			}
+		}
+	}
+}
+
 void CRF_LatticeBuilder::_computeGamma(vector<double> *stateGamma, vector<double> *transGamma, Fst<LogArc> &fst,int nstates) {
 	vector<LogWeight> alpha;
 	vector<LogWeight> beta;
