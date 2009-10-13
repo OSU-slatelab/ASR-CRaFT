@@ -5,21 +5,26 @@
 #include <map>
 
 #include "CRF.h"
-#include "CRF_FeatureStream.h"
-#include "CRF_FeatureStreamManager.h"
 #include "CRF_Model.h"
-#include "CRF_StdFeatureMap.h"
-#include "CRF_StdSparseFeatureMap.h"
-#include "CRF_StdTransFeatureMap.h"
-#include "CRF_LatticeBuilder.h"
+#include "io/CRF_FeatureStream.h"
+#include "io/CRF_FeatureStreamManager.h"
+#include "ftrmaps/CRF_StdFeatureMap.h"
+#include "ftrmaps/CRF_StdSparseFeatureMap.h"
+#include "decoders/CRF_LatticeBuilder.h"
+#include "io/CRF_MLFManager.h"
+
+//#include "CRF_StdTransFeatureMap.h"
 //#include "CRF_LatticeBuilder.cpp"
-#include "CRF_NewViterbi.h"
-#include "CRF_LabelPath.h"
-#include "CRF_MLFManager.h"
+//#include "CRF_NewViterbi.h"
+//#include "CRF_LabelPath.h"
+
+
+
 
 using namespace std;
 typedef StdArc::StateId StateId;
 
+static struct CRF_FeatureMap_config fmap_config;
 
 static struct {
 	char* ftr1_file;
@@ -232,6 +237,53 @@ static void set_defaults(void) {
 	config.verbose=0;
 };
 
+static void set_fmap_config(QNUInt32 nfeas) {
+	fmap_config.map_type=STDSTATE;
+	if (strcmp(config.crf_featuremap,"stdtrans")==0) { fmap_config.map_type=STDTRANS;}
+	if (strcmp(config.crf_featuremap,"stdsparse")==0) { fmap_config.map_type=STDSPARSE;}
+	if (strcmp(config.crf_featuremap,"stdsparsetrans")==0) { fmap_config.map_type=STDSPARSETRANS;}
+	if (strcmp(config.crf_featuremap,"file")==0) { fmap_config.map_type=INFILE;}
+	fmap_config.numLabs=config.crf_label_size;
+	fmap_config.numFeas=nfeas;
+	fmap_config.numStates=config.crf_states;
+	fmap_config.useStateFtrs=true;
+	fmap_config.stateFidxStart=config.crf_stateftr_start;
+	if (config.crf_stateftr_end>=0) {
+		fmap_config.stateFidxEnd=config.crf_stateftr_end;
+	}
+	else {
+		fmap_config.stateFidxEnd=nfeas-1;
+	}
+	if (fmap_config.map_type==STDTRANS || fmap_config.map_type==STDSPARSETRANS) {
+		fmap_config.useTransFtrs=true;
+		fmap_config.transFidxStart=config.crf_transftr_start;
+		if (config.crf_transftr_end>=0) {
+			fmap_config.transFidxEnd=config.crf_transftr_end;
+		}
+		else {
+			fmap_config.transFidxEnd=nfeas-1;
+		}
+	}
+	else {
+		fmap_config.useTransFtrs=false;
+	}
+	if (config.crf_use_state_bias == 0) {
+		fmap_config.useStateBias=false;
+	}
+	else {
+		fmap_config.useStateBias=true;
+	}
+	if (config.crf_use_trans_bias == 0) {
+		fmap_config.useTransBias=false;
+	}
+	else {
+		fmap_config.useTransBias=true;
+	}
+	fmap_config.stateBiasVal=config.crf_state_bias_value;
+	fmap_config.transBiasVal=config.crf_trans_bias_value;
+};
+
+
 void log_msg(string outstr) {
 	if (config.verbose) {
 		cout << outstr << endl;
@@ -433,8 +485,10 @@ int main(int argc, const char* argv[]) {
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 
-	CRF_FeatureMap* my_map = NULL;
-	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
+//	CRF_FeatureMap* my_map = NULL;
+	set_fmap_config(str1.getNumFtrs());
+	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
+	/*if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
 		CRF_StdSparseFeatureMap* tmp_map=new CRF_StdSparseFeatureMap(config.crf_label_size,str1.getNumFtrs());
 		if (trn_ftrmap == STDSPARSE) {
 			if (config.crf_stateftr_end>=0) {
@@ -504,7 +558,7 @@ int main(int argc, const char* argv[]) {
 	}
 	my_map->setNumStates(config.crf_states);
 	my_map->recalc();
-	my_crf.setFeatureMap(my_map);
+	my_crf.setFeatureMap(my_map);*/
 	bool openchk=my_crf.readFromFile(config.weight_file);
 	if (!openchk) {
 		cerr << "ERROR: Failed opening file: " << config.weight_file << endl;
