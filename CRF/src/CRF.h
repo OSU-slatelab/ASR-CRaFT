@@ -22,7 +22,7 @@ extern "C" {
 #include "QuickNet.h"
 
 
-#include "CRF_LogMath.h"
+#include "utils/CRF_LogMath.h"
 
 using namespace std;
 using namespace CRF_LogMath;

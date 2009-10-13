@@ -2,7 +2,7 @@
 #define CRFMODEL_H_
 
 #include "CRF.h"
-#include "CRF_FeatureMap.h"
+#include "ftrmaps/CRF_FeatureMap.h"
 
 class CRF_Model
 {
