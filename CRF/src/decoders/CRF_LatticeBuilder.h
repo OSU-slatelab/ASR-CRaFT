@@ -1,7 +1,7 @@
 #ifndef CRF_LATTICEBUILDER_H_
 #define CRF_LATTICEBUILDER_H_
 
-#include "fst/lib/fstlib.h"
+#include "fst/fstlib.h"
 #include "../CRF.h"
 #include "../CRF_Model.h"
 #include "../io/CRF_FeatureStream.h"
