@@ -17,11 +17,13 @@ protected:
 	bool useLogspace;
 	int nStates;
 	int uttReport;
+	objfunctype objective;
 public:
 	CRF_GradAccumulator(CRF_Model *myCrf,bool myLogspace,int myNStates);
 	virtual ~CRF_GradAccumulator();
 	virtual double accumulateGradient(CRF_FeatureStreamManager* ftr_strm, int nStreams, double* grad,QNUInt32 *uttCount);
 	inline void setUttReport(int u) { uttReport=u; }
+	inline void setObjectiveFunction(objfunctype ofunc) {objective=ofunc;}
 };
 
 #endif /* CRF_GRADACCUMULATOR_H_ */

@@ -14,6 +14,7 @@ CRF_GradAccumulator::CRF_GradAccumulator(CRF_Model *myCrf,
 	: crf(myCrf), useLogspace(myLogspace), nStates(myNStates) {
 
 	uttReport=0;
+	objective=EXPF;
 }
 
 CRF_GradAccumulator::~CRF_GradAccumulator() {
@@ -25,8 +26,10 @@ double CRF_GradAccumulator::accumulateGradient(CRF_FeatureStreamManager* ftr_str
 												double* grad,
 												QNUInt32 *uttCount) {
 
-	CRF_GradBuilder *gbuild=CRF_GradBuilder::create(crf,useLogspace,nStates);
+	//CRF_GradBuilder *gbuild=CRF_GradBuilder::create(crf,useLogspace,nStates);
 
+	//cerr << "Creating gradbuilder" << endl;
+	CRF_GradBuilder *gbuild=CRF_GradBuilder::create(crf,this->objective);
 	if (nStreams!=1) {
 		cerr << "CRF_GradAccumulator can only handle one stream" << endl;
 		exit(1);
@@ -74,8 +77,9 @@ double CRF_GradAccumulator::accumulateGradient(CRF_FeatureStreamManager* ftr_str
 		segid = ftr_str->nextseg();
 	} while (segid != QN_SEGID_BAD);
 
-
+	cerr << "Deleting gbuild" << endl;
 	delete gbuild;
+	cerr << "gbuild deleted" << endl;
 	    // clean up stream
 	ftr_str->rewind();
 	ftr_str->nextseg();

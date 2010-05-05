@@ -37,6 +37,7 @@ int CRF_Pthread_GradAccumulator_Thread::run()
 
 	this->uttCount=0;
 	QN_SegID segid=QN_SEGID_BAD;
+	time_t rawtime;
 
 	// now loop over all utterances
 	do {
@@ -44,12 +45,30 @@ int CRF_Pthread_GradAccumulator_Thread::run()
 		//cout << this->builder << endl;
 		//cout << this->ftr_str << endl;
 		//cout << this->grad << endl;
+		time(&rawtime);
+		char* ntime = ctime(&rawtime);
+		if (uttCount % 100 == 0) {
+		cout << ntime << " Thread: " << this->threadId;
+		cout << " Starting Utt: " << uttCount << endl;
+		}
 		double tmpLogLi=this->builder->buildGradient(this->ftr_str,
 														this->grad,
 														&this->tmpZx);
 		//cout << "thread " << this->threadId << " utt " << uCounter << " end" << endl;
 		double uttLogLi=tmpLogLi - tmpZx;
 		this->logLi += uttLogLi;
+
+		//if (this->uttReport>0 && (uttCount % this->uttReport == 0)) {
+		if (uttCount % 100 == 0) {
+			time(&rawtime);
+			char* time = ctime(&rawtime);
+			time[strlen(time)-1]='\0';
+			cout << time << " Thread: " << this->threadId;
+			cout << " Finished Utt: " << uttCount << " logLi: " << logLi;
+			cout << " Avg LogLi: " << logLi/(uttCount+1) << " Zx: " << tmpZx;
+			cout << " Numerator: " << tmpLogLi << endl;
+		}
+
 		this->uttCount++;
 
 
@@ -61,6 +80,7 @@ int CRF_Pthread_GradAccumulator_Thread::run()
 	// clean up stream
 	ftr_str->rewind();
 	ftr_str->nextseg();
+	cout << "exiting thread  " << this->threadId << endl;
 	return 0;
 }
 
@@ -134,31 +154,43 @@ double CRF_Pthread_GradAccumulator::accumulateGradient(CRF_FeatureStreamManager*
 			exit(1);
 		}
 
-		builders[stream]=CRF_GradBuilder::create(crf,useLogspace,nStates);
+		//builders[stream]=CRF_GradBuilder::create(crf,useLogspace,nStates);
+		//cerr << "Creating thread " << stream << endl;
+		builders[stream]=CRF_GradBuilder::create(crf,this->objective);
 		threads[stream]=
 			new CRF_Pthread_GradAccumulator_Thread(builders[stream],sgrad[stream]);
 
+		//cerr << "Starting thread " << stream << endl;
 		threads[stream]->start(ftr_str);
+		//cerr << "thread " << stream << " started" << endl;
 	}
 
 	double totLogLi=0.;
 
 	// now get them to join
 	for (stream=0;stream<nStreams;stream++) {
+		//cerr << "Joining thread " << stream << endl;
 		threads[stream]->join();
+		//cerr << "Thread joined " << endl;
 		totLogLi+=threads[stream]->getLogLi();
 		uCounter+=threads[stream]->getUttCount();
 
 		for(QNUInt32 i=0;i<nlambda;i++)
 			grad[i]+=sgrad[stream][i];
 
+		//cerr << "Deleting builders " << stream << endl;
 		delete builders[stream];
+		//cerr << "Deleting thread " << stream << endl;
 		delete threads[stream];
+		//cerr << "Thread deleted" << endl;
 	}
-
+	//cerr << "Deleting array builders" << endl;
 	delete[] builders;
+	//cerr << "Deleting array threads" << endl;
 	delete[] threads;
+	//cerr << "Deleting array sgrad_data" << endl;
 	delete[] sgrad_data;
+	//cerr << "Deleting array sgrad" << endl;
 	delete[] sgrad;
 
 	*uttCount=uCounter;
