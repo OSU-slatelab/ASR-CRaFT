@@ -29,6 +29,10 @@ CRF_StdNStateNode::~CRF_StdNStateNode()
 {
 	delete [] this->diagTransMatrix;
 	delete [] this->offDiagTransMatrix;
+	delete [] this->denseTransMatrix;
+	delete [] this->alphaArray;
+	delete [] this->betaArray;
+	delete [] this->alphaBetaArray;
 	delete [] this->stateArray;
 	delete [] this->tempBeta;
 	delete [] this->logAddAcc;

@@ -8,6 +8,7 @@ CRF_StateVector::CRF_StateVector()
 
 CRF_StateVector::~CRF_StateVector()
 {
+	this->deleteAll();
 	//cerr << "in statevector destructor" << endl;
 	// vector destroys objects, but not pointers to objects
 }
@@ -34,9 +35,9 @@ QNUInt32 CRF_StateVector::getNodeCount()
 
 void CRF_StateVector::deleteAll()
 {
-	cerr << "in statevector::deleteall" << endl;
+	//cerr << "in statevector::deleteall" << endl;
 	for (size_t n=0;n<this->size();n++) {
 		delete this->at(n);
 	}
-	cerr << "leaving statevector::deleteall" << endl;
+	//cerr << "leaving statevector::deleteall" << endl;
 }

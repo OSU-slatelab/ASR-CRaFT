@@ -22,9 +22,9 @@ CRF_StateNode::CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Mo
 CRF_StateNode::~CRF_StateNode()
 {
 	delete [] this->ftrBuf;
-	if (this->alphaArray != NULL) { delete this->alphaArray; }
-	if (this->betaArray != NULL) { delete this->betaArray; }
-	if (this->alphaBetaArray != NULL) { delete this->betaArray; }
+/*	if (this->alphaArray != NULL) { delete [] this->alphaArray; }
+	if (this->betaArray != NULL) { delete [] this->betaArray; }
+	if (this->alphaBetaArray != NULL) { delete [] this->betaArray; }*/
 }
 
 double CRF_StateNode::computeTransMatrix()
@@ -66,6 +66,12 @@ double CRF_StateNode::computeExpF(double* ExpF, double* grad, double Zx, double*
 {
 	return 0;
 }
+
+double CRF_StateNode::computeSoftExpF(double* ExpF, double* grad, double Zx, double soft_Zx, double* prev_alpha, vector<double>* prevAlphaAligned, bool firstFrame)
+{
+	return 0;
+}
+
 
 double CRF_StateNode::computeAlphaSum()
 {
@@ -123,6 +129,32 @@ vector<double>* CRF_StateNode::getBetaAligned()
 	return &(this->betaArrayAligned);
 }
 
+vector<double>* CRF_StateNode::getAlphaVector()
+{
+	return &(this->alphaVector);
+}
+
+vector<double>* CRF_StateNode::getBetaVector()
+{
+	return &(this->betaVector);
+}
+
+double* CRF_StateNode::getPrevAlpha()
+{
+	return this->prevAlpha;
+}
+
+
+vector<double>* CRF_StateNode::getAlphaAlignedBase()
+{
+	return &(this->alphaArrayAlignedBase);
+}
+
+vector<double>* CRF_StateNode::getBetaAlignedBase()
+{
+	return &(this->betaArrayAlignedBase);
+}
+
 double CRF_StateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
 	return 0.0;
@@ -131,6 +163,11 @@ double CRF_StateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 double CRF_StateNode::getStateValue(QNUInt32 cur_lab)
 {
 	return 0.0;
+}
+
+double CRF_StateNode::getStateValue(QNUInt32 cur_lab, QNUInt32 cur_mix)
+{
+	return getStateValue(cur_lab);
 }
 
 double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
@@ -146,6 +183,7 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 
 	if (crf->getFeatureMap()->getNumStates()>1) {
 		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
+		//return new CRF_StdNStateNMixNode(fb, sizeof_fb, lab, crf);
 	}
 	else {
 		return new CRF_StdStateNode(fb, sizeof_fb, lab, crf);
