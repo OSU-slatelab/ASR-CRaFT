@@ -5,6 +5,7 @@ CRF_SGTrainer::CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_st
 {
 }
 
+
 void CRF_SGTrainer::train()
 {
 	double logLi = 0.0;
@@ -16,7 +17,7 @@ void CRF_SGTrainer::train()
 	CRF_FeatureStream *ftr_str=this->ftr_strm_mgr->trn_stream;
 	//int uCounter = this->crf_ptr->getPresentations();
 	ofstream ofile;
-	CRF_GradBuilder* gbuild;
+
 
 	/* This is now meaningless - we're always using logspace now, and the StateVector
 	 * figures out on its own what kind of state topology to use
@@ -30,7 +31,24 @@ void CRF_SGTrainer::train()
 		gbuild=new CRF_NewGradBuilder(this->crf_ptr);
 		cout << "Using Realspace training..." << endl;
 	}*/
-	gbuild = new CRF_NewGradBuilder(this->crf_ptr);
+/*	switch (this->objective) {
+	case EXPF :
+		gbuild = new CRF_NewGradBuilder(this->crf_ptr);
+		break;
+	case EXPFSOFT :
+		gbuild = new CRF_NewGradBuilderSoft(this->crf_ptr);
+		break;
+	case FERR :
+		gbuild = new CRF_FerrGradBuilder(this->crf_ptr);
+		break;
+	default :
+		gbuild = new CRF_NewGradBuilder(this->crf_ptr);
+		break;
+	}
+	*/
+	//gbuild = new CRF_NewGradBuilder(this->crf_ptr);
+	//gbuild = new CRF_NewGradBuilderSoft(this->crf_ptr);
+	CRF_GradBuilder* gbuild = CRF_GradBuilder::create(this->crf_ptr,this->objective);
 	gbuild->setNodeList(new CRF_StateVector());
 	cout << "Using Logspace training..." << endl;
 	/*if (this->useLogspace) {
@@ -66,17 +84,23 @@ void CRF_SGTrainer::train()
 	QNUInt32 lambdaLen = this->crf_ptr->getLambdaLen();
 	//double* lambdaAcc=new double[lambdaLen];
 	double* lambdaAcc=this->crf_ptr->getLambdaAcc();
+	double* lambdaSqrAcc=new double[lambdaLen];
 	double* lambdaAvg=new double[lambdaLen];
+	double* lambdaVar=new double[lambdaLen];
 	//int accCnt=0;
 	int accCnt = this->crf_ptr->getPresentations();
 	double* grad=new double[lambdaLen];
 	for (QNUInt32 i=0; i<lambdaLen; i++) {
 		grad[i]=0.0;
+		lambdaSqrAcc[i]=0.0;
 		//lambdaAcc[i]=0.0;
 	}
 	bool start=true;
 	float invSquareVar=0.0;
-	invSquareVar=1/this->gvar;
+	if (this->useGvar) {
+		invSquareVar=1/this->gvar;
+	}
+	//invSquareVar=1/this->gvar;
 	//if (this->useGvar) {
 	//	invSquareVar=1/(this->gvar*this->gvar);
 	//}
@@ -123,6 +147,7 @@ void CRF_SGTrainer::train()
 			}
 			lambda[i]+=this->lr*grad[i];
 			lambdaAcc[i]+=lambda[i];
+			lambdaSqrAcc[i]+=lambda[i]*lambda[i];
 			grad[i]=0.0;
 		}
 		accCnt++;
@@ -150,8 +175,19 @@ void CRF_SGTrainer::train()
 			cout << "Writing after " << (float) accCnt << " samples" << endl;
 			for (QNUInt32 i=0; i<lambdaLen; i++) {
 				lambdaAvg[i]=(lambdaAcc[i]/(float)accCnt);
+				lambdaVar[i]=(lambdaSqrAcc[i]/(float)accCnt)-(lambdaAvg[i]*lambdaAvg[i]);
 			}
 			chkwrite=this->crf_ptr->writeToFile(fname.c_str(),lambdaAvg,lambdaLen);
+			if (!chkwrite) {
+				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
+				exit(-1);
+			}
+			stringstream svar;
+			svar << this->weight_fname << ".i" << iCounter << ".var.out";
+			svar >> fname;
+			cout << "Writing Iteration " << iCounter << " weight variance to file " << fname << endl;
+			cout << "Writing after " << (float) accCnt << " samples" << endl;
+			chkwrite=this->crf_ptr->writeToFile(fname.c_str(),lambdaVar,lambdaLen);
 			if (!chkwrite) {
 				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
 				exit(-1);
@@ -172,6 +208,12 @@ void CRF_SGTrainer::train()
 	savg >> fname;
 	cout << "Writing Final Iteration average weights to file " << fname << endl;
 	this->crf_ptr->writeToFile(fname.c_str(),lambdaAvg,lambdaLen);
+	stringstream svar;
+	svar << this->weight_fname << ".var.out";
+	svar >> fname;
+	cout << "Writing Final Iteration weight variance to file " << fname << endl;
 	delete[] lambdaAvg;
+	delete[] lambdaVar;
+	delete[] lambdaSqrAcc;
 	delete[] grad;
 }

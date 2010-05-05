@@ -19,6 +19,7 @@ protected:
 	float gvar;
 	bool useGvar;
 	bool useLabelMask;
+	objfunctype objective;
 public:
 	CRF_Trainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname);
 	virtual ~CRF_Trainer();
@@ -30,6 +31,7 @@ public:
 	virtual void setLogSpace(int);
 	virtual void setGaussVar(float gvar_in);
 	virtual void setLabelMask(bool useMask);
+	virtual void setObjectiveFunction(objfunctype ofunc);
 };
 
 #endif /*CRF_TRAINER_H_*/

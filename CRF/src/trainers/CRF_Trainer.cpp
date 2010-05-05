@@ -10,6 +10,7 @@ CRF_Trainer::CRF_Trainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str, c
 	this->gvar=0.0;
 	this->useGvar=false;
 	this->useLabelMask=false;
+	this->objective=EXPF;
 }
 
 CRF_Trainer::~CRF_Trainer()
@@ -51,3 +52,8 @@ void CRF_Trainer::setGaussVar(float gvar_in) {
 void CRF_Trainer::setLabelMask(bool useMask) {
 	this->useLabelMask=useMask;
 }
+
+void CRF_Trainer::setObjectiveFunction(objfunctype ofunc) {
+	this->objective=ofunc;
+}
+

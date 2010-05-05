@@ -4,8 +4,10 @@
 #include "../CRF.h"
 #include "CRF_Trainer.h"
 
-#include "gradbuilders/CRF_NewGradBuilder.h"
-#include "gradbuilders/CRF_FerrGradBuilder.h"
+//#include "gradbuilders/CRF_NewGradBuilder.h"
+//#include "gradbuilders/CRF_FerrGradBuilder.h"
+//#include "gradbuilders/CRF_NewGradBuilderSoft.h"
+#include "gradbuilders/CRF_GradBuilder.h"
 #include "../nodes/CRF_StateVector.h"
 //#include "CRF_NewGradBuilderLog.h"
 //#include "CRF_StdStateVector.h"

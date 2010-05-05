@@ -3,6 +3,7 @@
 CRF_LBFGSTrainer::CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
 	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
+	this->iCounter=0;
 }
 
 void CRF_LBFGSTrainer::train()
@@ -15,6 +16,7 @@ void CRF_LBFGSTrainer::train()
 	else
 		gaccum = new CRF_Pthread_GradAccumulator(this->crf_ptr,this->useLogspace,nStates);
 	this->gaccum->setUttReport(this->uttRpt);
+	this->gaccum->setObjectiveFunction(this->objective);
 
 	//	gbuild = CRF_GradBuilder::create(this->crf_ptr,this->useLogspace,nStates);
 
@@ -35,7 +37,8 @@ void CRF_LBFGSTrainer::train()
 	this->start=true;
 	this->invSquareVar=0.0;
 	if (this->useGvar) {
-		invSquareVar=1/(this->gvar*this->gvar);
+		invSquareVar=1/this->gvar;
+	//	invSquareVar=1/(this->gvar*this->gvar);
 	}
 	lbfgs_parameter_t lbfgs_params;
 	lbfgs_parameter_init(&lbfgs_params);
