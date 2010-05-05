@@ -2,6 +2,7 @@
 
 #include "CRF.h"
 
+#include "fst/fstlib.h"
 #include "CRF_Model.h"
 #include "io/CRF_FeatureStreamManager.h"
 #include "trainers/CRF_SGTrainer.h"
@@ -63,6 +64,7 @@ static struct {
 	int crf_epochs;
 	int crf_utt_rpt;
 	char* crf_train_method;
+	char* crf_objective_function;
 	char* crf_train_order;
 	float crf_lr;
 	int crf_random_seed;
@@ -133,6 +135,7 @@ QN_ArgEntry argtab[] =
 	{ "crf_lr", "Learning rate", QN_ARG_FLOAT, &(config.crf_lr) },
 	{ "crf_random_seed", "Presentation order random seed", QN_ARG_INT, &(config.crf_random_seed) },
 	{ "crf_train_method", "CRF training method (sg|lbfgs)", QN_ARG_STR, &(config.crf_train_method) },
+	{ "crf_objective_function", "Objective function for gradient training (expf|softexpf|ferr)", QN_ARG_STR, &(config.crf_objective_function) },
 	{ "crf_train_order", "Presentation order of samples for training (seq|random|noreplace)", QN_ARG_STR, &(config.crf_train_order) },
 	{ "crf_featuremap", "Association of inputs to feature functions (stdstate|stdtrans|stdsparse|stdsparsetrans|file)", QN_ARG_STR, &(config.crf_featuremap) },
 	{ "crf_featuremap_file", "File containing map of inputs to feature functions", QN_ARG_STR, &(config.crf_featuremap_file) },
@@ -201,6 +204,7 @@ static void set_defaults(void) {
 	config.crf_lr=0.008;
 	config.crf_random_seed=0;
 	config.crf_train_method="sg";
+	config.crf_objective_function="expf";
 	config.crf_train_order="random";
 	config.crf_featuremap="stdstate";
 	config.crf_featuremap_file=NULL;
@@ -228,6 +232,7 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.numLabs=config.crf_label_size;
 	fmap_config.numFeas=nfeas;
 	fmap_config.numStates=config.crf_states;
+
 	fmap_config.useStateFtrs=true;
 	fmap_config.stateFidxStart=config.crf_stateftr_start;
 	if (config.crf_stateftr_end>=0) {
@@ -263,6 +268,7 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	}
 	fmap_config.stateBiasVal=config.crf_state_bias_value;
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
+
 };
 
 
@@ -270,6 +276,11 @@ static void set_fmap_config(QNUInt32 nfeas) {
 int main(int argc, const char* argv[]) {
 	char* progname;
 
+	cout << "SIZEOF_SIZE_T: " << QN_SIZEOF_SIZE_T;
+	cout << " QN_SIZET_BAD: " << QN_SIZET_BAD;
+	cout << " QN_SIZET_MAX: " << QN_SIZET_MAX;
+	cout << " QN_SEGID_BAD: " << QN_SEGID_BAD;
+	cout << " QN_ALL: " << QN_ALL << endl;
 	set_defaults();
 	QN_initargs(&argtab[0], &argc, &argv, &progname);
 	QN_printargs(NULL, progname, &argtab[0]);
@@ -278,6 +289,7 @@ int main(int argc, const char* argv[]) {
 	seqtype trn_seq = RANDOM_REPLACE;
 	ftrmaptype trn_ftrmap = STDSTATE;
 	trntype trn_type = SGTRAIN;
+	objfunctype ofunc_type = EXPF;
 
 	if (strcmp(config.crf_train_order,"seq")==0) { trn_seq=SEQUENTIAL;}
 	if (strcmp(config.crf_train_order,"noreplace")==0) { trn_seq=RANDOM_NO_REPLACE;}
@@ -290,6 +302,10 @@ int main(int argc, const char* argv[]) {
 	if (strcmp(config.crf_train_method,"sg")==0) {trn_type=SGTRAIN;}
 	if (strcmp(config.crf_train_method,"lbfgs")==0) {trn_type=LBFGSTRAIN;}
 	if (strcmp(config.crf_train_method,"ais")==0) {trn_type=AISTRAIN;}
+
+	if (strcmp(config.crf_objective_function,"expf")==0) { ofunc_type=EXPF; }
+	if (strcmp(config.crf_objective_function,"softexpf")==0) { ofunc_type=EXPFSOFT; }
+	if (strcmp(config.crf_objective_function,"ferr")==0) { ofunc_type=FERR; }
 
 	if ((trn_ftrmap == INFILE) && (config.crf_featuremap_file==NULL)) {
 		cerr << "ERROR: crf_featuremap_file must be non-NULL when crf_featuremap set to 'file'" << endl;
@@ -439,6 +455,7 @@ int main(int argc, const char* argv[]) {
 	switch (trn_type) {
 	case LBFGSTRAIN :
 		my_trainer = new CRF_LBFGSTrainer(&my_crf,&str1,config.out_weight_file);
+		((CRF_LBFGSTrainer *)my_trainer)->setObjectiveFunction(ofunc_type);
 		break;
 	case AISTRAIN :
 		my_trainer = new CRF_AISTrainer(&my_crf,&str1,config.out_weight_file);
@@ -447,6 +464,7 @@ int main(int argc, const char* argv[]) {
 	case SGTRAIN :
 	default:
 		my_trainer = new CRF_SGTrainer(&my_crf,&str1,config.out_weight_file);
+		((CRF_SGTrainer *)my_trainer)->setObjectiveFunction(ofunc_type);
 		break;
 	}
 
