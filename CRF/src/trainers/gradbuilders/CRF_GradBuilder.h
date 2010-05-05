@@ -28,6 +28,7 @@ public:
 	virtual void setNodeList(CRF_StateVector* nl);
 	// factory method
 	static CRF_GradBuilder *create(CRF_Model *crf_ptr, bool useLogspace,int nStates);
+	static CRF_GradBuilder* create(CRF_Model *crf_ptr, objfunctype ofunc);
 };
 
 #endif /*CRF_GRADBUILDER_H_*/

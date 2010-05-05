@@ -8,7 +8,7 @@
 #include "CRF_FerrGradBuilder.h"
 #include "../../nodes/CRF_StdStateNode.h"
 #include "../../nodes/CRF_StateVector.h"
-#include "fst/lib/fstlib.h"
+#include "fst/fstlib.h"
 
 typedef StdArc::StateId StateId;
 

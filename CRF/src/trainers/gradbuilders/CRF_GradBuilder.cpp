@@ -1,5 +1,7 @@
 #include "CRF_GradBuilder.h"
 #include "CRF_NewGradBuilder.h"
+#include "CRF_NewGradBuilderSoft.h"
+#include "CRF_FerrGradBuilder.h"
 
 /*#include "CRF_NewGradBuilderLog.h"
 #include "CRF_StdStateVector.h"
@@ -20,7 +22,7 @@ CRF_GradBuilder::CRF_GradBuilder(CRF_Model* crf_in)
 
 CRF_GradBuilder::~CRF_GradBuilder()
 {
-	cerr << "called GradBuilder destructor" << endl;
+	cerr << "GradBuilder destructor" << endl;
 	delete[] alpha_base;
 	delete[] tmp_beta;
 	if (this->ftr_buf != NULL) { delete[] ftr_buf;}
@@ -29,6 +31,7 @@ CRF_GradBuilder::~CRF_GradBuilder()
 		//this->nodeList->deleteAll();
 		delete nodeList;
 	}
+	//cerr << "exiting GradBuilder destructor" << endl;
 }
 
 double CRF_GradBuilder::buildGradient(CRF_FeatureStream* ftr_strm,double* grad, double* Zx_out)
@@ -82,4 +85,24 @@ CRF_GradBuilder *CRF_GradBuilder::create(CRF_Model *crf_ptr,bool useLogspace, in
 
 	return new CRF_NewGradBuilder(crf_ptr);
 
+}
+
+CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
+{
+	CRF_GradBuilder* gbuild;
+	switch (ofunc) {
+	case EXPF :
+		gbuild = new CRF_NewGradBuilder(crf_ptr);
+		break;
+	case EXPFSOFT :
+		gbuild = new CRF_NewGradBuilderSoft(crf_ptr);
+		break;
+	case FERR :
+		gbuild = new CRF_FerrGradBuilder(crf_ptr);
+		break;
+	default :
+		gbuild = new CRF_NewGradBuilder(crf_ptr);
+		break;
+	}
+	return gbuild;
 }

@@ -14,8 +14,8 @@ CRF_NewGradBuilder::CRF_NewGradBuilder(CRF_Model* crf_in)
 CRF_NewGradBuilder::~CRF_NewGradBuilder()
 {
 	cerr << "newgradbuilder destructor" << endl;
-	if (this->ftr_buf != NULL) { delete this->ftr_buf; }
-	if (this->lab_buf != NULL) { delete this->lab_buf; }
+	//if (this->ftr_buf != NULL) { delete this->ftr_buf; }
+	//if (this->lab_buf != NULL) { delete this->lab_buf; }
 	delete [] this->ExpF;
 }
 
@@ -63,6 +63,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 				this->nodeList.at(nodeCnt)->reset(new_buf,num_ftrs,this->lab_buf[i],this->crf);
 			}*/
 			this->nodeList->set(nodeCnt,new_buf,num_ftrs,this->lab_buf[i],this->crf);
+			//cout << "Label: " << this->lab_buf[i] << endl;
 			double value=this->nodeList->at(nodeCnt)->computeTransMatrix();
 			double scale;
 			double* prev_alpha;

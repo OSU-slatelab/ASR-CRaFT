@@ -6,7 +6,7 @@
  */
 
 #include "CRF_NewGradBuilderSoft.h"
-#include "fst/lib/fstlib.h"
+#include "fst/fstlib.h"
 
 CRF_NewGradBuilderSoft::CRF_NewGradBuilderSoft(CRF_Model* crf_in)
 	: CRF_GradBuilder(crf_in)
