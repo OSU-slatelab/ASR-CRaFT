@@ -7,7 +7,7 @@
 
 #ifndef CRF_MLFMANAGER_H_
 #define CRF_MLFMANAGER_H_
-#include "fst/lib/fstlib.h"
+#include "fst/fstlib.h"
 #include <stdexcept>
 #include <vector>
 

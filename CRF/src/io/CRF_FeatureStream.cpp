@@ -1,5 +1,11 @@
 #include "CRF_FeatureStream.h"
 
+// The following is to correct for the fact that QN_ALL ends up being defined as
+// larger than a 32bit integer can handle on 64bit machines.  CRF_ALL is always the
+// maximum a 32bit integer can hold.  This should be revisited and examined.
+#define CRF_ALL 4294967295
+
+
 CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg)
 	: ftr_stream(ftr),
 	  lab_stream(lab),
@@ -32,7 +38,8 @@ QN_SegID CRF_FeatureStream::nextseg()
 		this->segid=0;
 	} else {
 		this->segid++;
-		if ((this->numsegs != QN_ALL) &&
+		//if ((this->numsegs != QN_ALL) &&
+		if ((this->numsegs != ULONG_MAX) &&
 			(this->segid >= this->numsegs)) {
 			this->segid=QN_SEGID_BAD;
 			return QN_SEGID_BAD;
@@ -50,7 +57,8 @@ QN_SegID CRF_FeatureStream::nextseg()
 	//cout << "Sizeof(size_t)" << sizeof(size_t) << "QN_ALL" << QN_ALL << endl;
 	//cout << "Feature ID: " << ftr_segid << " Label ID: " << lab_segid << endl;
 	assert (ftr_segid == lab_segid);
-	if (this->numsegs==QN_ALL && ftr_segid==QN_SEGID_BAD) {
+	//if (this->numsegs==QN_ALL && ftr_segid==QN_SEGID_BAD) {
+	if (this->numsegs==CRF_ALL && ftr_segid==QN_SEGID_BAD) {
 		this->segid=QN_SEGID_BAD;
 	}
 	return this->segid;
@@ -140,7 +148,8 @@ QNUInt32 CRF_FeatureStream::num_ftrs()
 void CRF_FeatureStream::set_pos(QNUInt32 segno, QNUInt32 frmno)
 {
 	//eeek!  better error handling needed
-	if ((this->numsegs != QN_ALL) &&
+	//if ((this->numsegs != QN_ALL) &&
+	if ((this->numsegs != CRF_ALL) &&
 			(segno>this->start_offset+this->numsegs)) {
 		cerr << "CRF_FeatureStream: set_pos(" << segno << "," << frmno << ") out of bounds in view" << endl;
 		exit(1);
@@ -153,7 +162,8 @@ void CRF_FeatureStream::set_pos(QNUInt32 segno, QNUInt32 frmno)
 
 QNUInt32 CRF_FeatureStream::num_segs()
 {
-	if (this->numsegs==QN_ALL) {
+	//if (this->numsegs==QN_ALL) {
+	if (this->numsegs==CRF_ALL) {
 		return this->ftr_stream->num_segs();
 	} else {
 		return this->numsegs;
@@ -212,7 +222,8 @@ void CRF_FeatureStream::display() {
 void CRF_FeatureStream::view(QNUInt32 startseg,QNUInt32 nsegs) {
 	QNUInt32 ftrnseg=this->ftr_stream->num_segs();
 	if (ftrnseg<startseg || startseg<0 ||
-		(nsegs!=QN_ALL && ftrnseg<startseg+nsegs)) {
+			(nsegs!=CRF_ALL && ftrnseg<startseg+nsegs)) {
+		//(nsegs!=QN_ALL && ftrnseg<startseg+nsegs)) {
 		cerr << "CRF_FeatureStream::view out of range " << startseg << " " << nsegs << endl;
 		exit(1);
 	}
