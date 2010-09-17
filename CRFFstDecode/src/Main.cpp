@@ -1,9 +1,18 @@
+/*
+ * CRFFstDecode.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Command line interface for CRF lattice-based decoding.
+ * Follows command line interface model for ICSI Quicknet.
+ * Requires the OpenFst finite state library.
+ */
 #include "QN_config.h"
 #include "fst/fstlib.h"
 #include <vector>
 #include <string>
 #include <map>
-
 #include "CRF.h"
 #include "CRF_Model.h"
 #include "io/CRF_FeatureStream.h"
@@ -13,13 +22,6 @@
 #include "decoders/CRF_LatticeBuilder.h"
 #include "io/CRF_MLFManager.h"
 
-//#include "CRF_StdTransFeatureMap.h"
-//#include "CRF_LatticeBuilder.cpp"
-//#include "CRF_NewViterbi.h"
-//#include "CRF_LabelPath.h"
-
-
-
 
 using namespace std;
 typedef StdArc::StateId StateId;
@@ -27,6 +29,9 @@ typedef StdArc::Weight Weight;
 
 static struct CRF_FeatureMap_config fmap_config;
 
+/*
+ * command line options
+ */
 static struct {
 	char* ftr1_file;
 	char* ftr1_format;
@@ -104,6 +109,9 @@ static struct {
 	int dummy;
 } config;
 
+/*
+ * Command line options to be presented to the screen
+ */
 QN_ArgEntry argtab[] =
 {
 	{ NULL, "ASR CRaFT CRF decoding program version " CRF_VERSION, QN_ARG_DESC },
@@ -179,6 +187,9 @@ QN_ArgEntry argtab[] =
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
+/*
+ * Default values for command line options
+ */
 static void set_defaults(void) {
 	config.ftr1_file="";
 	config.ftr1_format="pfile";
@@ -251,6 +262,9 @@ static void set_defaults(void) {
 	config.verbose=0;
 };
 
+/*
+ * Sets initial values for the feature map object based on command line config object
+ */
 static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.map_type=STDSTATE;
 	if (strcmp(config.crf_featuremap,"stdtrans")==0) { fmap_config.map_type=STDTRANS;}
@@ -297,20 +311,28 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
 };
 
-
+/*
+ * logs an error message to standard output
+ */
 void log_msg(string outstr) {
 	if (config.verbose) {
 		cout << outstr << endl;
 	}
 }
 
+/*
+ * logs an error message to standard error
+ */
 void log_errmsg(string errstr) {
 	if (config.verbose) {
 		cerr << errstr << endl;
 	}
 }
 
-
+/*
+ * Main decoding block
+ *
+ */
 int main(int argc, const char* argv[]) {
 	char* progname;
 
@@ -325,7 +347,6 @@ int main(int argc, const char* argv[]) {
 	set_defaults();
 	QN_initargs(&argtab[0], &argc, &argv, &progname);
 	QN_printargs(NULL, progname, &argtab[0]);
-	//QN_logger = new QN_Logger_Simple(stdout,stderr,progname);
 
 	cout << "IN LABELS: " << config.crf_label_size << endl;
 
@@ -397,6 +418,7 @@ int main(int argc, const char* argv[]) {
 
 
 	if (config.crf_lm_bin != NULL) {
+		// Note - this code is very experimental and unstable.
 		cout << "Reading in LM fst from file: " << config.crf_lm_bin << endl;
 		VectorFst<LogArc>* log_fst=VectorFst<LogArc>::Read(config.crf_lm_bin);
 		if (log_fst == NULL) {
@@ -409,16 +431,7 @@ int main(int argc, const char* argv[]) {
 		Map(*log_fst,lm_fst,LogToStdMapper());
 		delete log_fst;
 
-		/*vector<pair<StdArc::Label, StdArc::Label> >* ipairs;
-		vector<pair<StdArc::Label, StdArc::Label> >* opairs;
-		ipairs = new vector<pair<StdArc::Label, StdArc::Label> >;
-		opairs = new vector<pair<StdArc::Label, StdArc::Label> >;
-		pair<StdArc::Label,StdArc::Label> mypair(0,-2);
-		//pair<StdArc::Label,StdArc::Label> mypair(0,kPhiLabel);
-		(*ipairs).push_back(mypair);
-		//(*opairs).push_back(mypair);
-		Relabel(lm_fst,*ipairs,*opairs);
-		log_msg("Pushing LM weights and labels ...");*/
+		/*
 		log_msg("Removing EOW tokens from final PhoneMap/LM/Dict lattice");
 		vector<pair<StdArc::Label, StdArc::Label> >* ipairs;
 		vector<pair<StdArc::Label, StdArc::Label> >* opairs;
@@ -429,10 +442,6 @@ int main(int argc, const char* argv[]) {
 		//pair<StdArc::Label,StdArc::Label> mypair3(57,-2);
 		//pair<StdArc::Label,StdArc::Label> mypair4(58,-2);
 		pair<StdArc::Label,StdArc::Label> mypair0(0,-2);
-		/*pair<StdArc::Label,StdArc::Label> mypair1(163,0);
-		pair<StdArc::Label,StdArc::Label> mypair2(164,0);
-		pair<StdArc::Label,StdArc::Label> mypair3(165,0);
-		pair<StdArc::Label,StdArc::Label> mypair4(166,0);*/
 		pair<StdArc::Label,StdArc::Label> mypair1(55,0);
 		pair<StdArc::Label,StdArc::Label> mypair2(56,0);
 		pair<StdArc::Label,StdArc::Label> mypair3(57,0);
@@ -448,13 +457,14 @@ int main(int argc, const char* argv[]) {
 		(*ipairs).push_back(mypair4);
 		//(*opairs).push_back(mypair);
 		Relabel(lm_fst,*ipairs,*opairs);
-
+		*/
 
 		//log_msg("Sorting LM arcs ...");
 		//ArcSort(lm_fst,ILabelCompare<StdArc>());
 		//ArcSort(lm_fst,OLabelCompare<StdArc>());
 	}
 	if (config.crf_dict_bin != NULL) {
+		// NOTE: This code is unstable and very experimental
 		cout << "Reading in dict fst from file: " << config.crf_dict_bin << endl;
 		VectorFst<LogArc>* log_fst=VectorFst<LogArc>::Read(config.crf_dict_bin);
 		if (log_fst == NULL) {
@@ -466,6 +476,7 @@ int main(int argc, const char* argv[]) {
 		Map(*log_fst,dict_fst,LogToStdMapper());
 		delete log_fst;
 
+		/*
 		pair<StdArc::Label,StdArc::Label> mypair1(55,0);
 		pair<StdArc::Label,StdArc::Label> mypair2(56,0);
 		pair<StdArc::Label,StdArc::Label> mypair3(57,0);
@@ -482,6 +493,7 @@ int main(int argc, const char* argv[]) {
 		(*ipairs).push_back(mypair4);
 		Relabel(dict_fst,*ipairs,*opairs);
 		ArcSort(dict_fst,ILabelCompare<StdArc>());
+		*/
 	}
 	if (config.crf_phn_bin != NULL) {
 		cout << "Reading in phone fst from file: " << config.crf_phn_bin << endl;
@@ -521,17 +533,6 @@ int main(int argc, const char* argv[]) {
 							config.crf_eval_range, 0,
 							NULL,0,0,0,SEQUENTIAL);
 	if (strcmp(config.ftr2_file,"") != 0) {
-
-		/*CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
-							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
-							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
-							config.ftr2_delta_order, config.ftr2_delta_win,
-							config.crf_eval_range, 0,
-							NULL,0,0,0,SEQUENTIAL);
-		cout << "Joining files" << endl;
-		str1.join(&str2);
-		cout << "Files joined" << endl;*/
-
 		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
 							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
@@ -541,16 +542,6 @@ int main(int argc, const char* argv[]) {
 		str1.join(str2);
 	}
 	if (strcmp(config.ftr3_file,"") != 0) {
-
-		/*CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
-							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
-							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
-							config.ftr3_delta_order, config.ftr3_delta_win,
-							config.crf_eval_range, 0,
-							NULL,0,0,0,SEQUENTIAL);
-		cout << "Joining files" << endl;
-		str1.join(&str3);
-		cout << "Files joined" << endl;*/
 		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
 							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
@@ -596,32 +587,25 @@ int main(int argc, const char* argv[]) {
 			time(&rawtime);
 			char* time1 = ctime(&rawtime);
 			time1[strlen(time1)-1]='\0';
-			//log_msg(time1);
 			VectorFst<StdArc>* phn_lat=new VectorFst<StdArc>();
 			VectorFst<StdArc>* lab_lat=new VectorFst<StdArc>();
-			//VectorFst<LogArc>* phn_lat=new VectorFst<LogArc>();
-			//VectorFst<LogArc>* lab_lat=new VectorFst<LogArc>();
-			//Fst<StdArc>* working_fst=phn_lat;
 			int nodeCnt=0;
 			if (config.crf_states == 1) {
 				lb.buildLattice(phn_lat,alignMode,lab_lat);
 			}
 			else {
 				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
-				//nodeCnt=lb.nStateBuildLatticeHCRF(phn_lat,alignMode,lab_lat);
-				//nodeCnt=lb.nStateBuildLatticeHCRFmarg(phn_lat,alignMode,lab_lat);
 			}
 
 			if (config.crf_lat_outdir != NULL) {
-				// Put code here to dump the lattice file out to the latdir in
-				// OpenFst format
+				// Dump the lattice to a file in openfst format
 				string fst_fname=string(config.crf_lat_outdir)+"/fst."+stringify(count)+".final.fst";
 				log_msg("*	*Writing lattice to "+fst_fname);
 				phn_lat->Write(fst_fname);
 			}
 			if (config.crf_output_labelfile != NULL) {
+				// Write the output to an ilab file in Quicknet format
 				VectorFst<StdArc>* shortest_fst = new VectorFst<StdArc>();
-				//cout << "Writing to output labelfile: " << config.crf_output_labelfile << endl;
 				if (alignMode) {
 					ComposeFst<StdArc>* result=new ComposeFst<StdArc>(*phn_lat,*lab_lat);
 					ShortestPath(*result,shortest_fst,1);
@@ -660,48 +644,17 @@ int main(int argc, const char* argv[]) {
 			}
 
 			if (config.crf_output_mlffile != NULL) {
-				//VectorFst<StdArc>* working_fst=phn_lat;
+				//Write the output to an HTK style MLF file
+				//Note that this code is currently experimental, and the ilab output above
+				// is generally preferred for output
 				bool findShortest=true;
-				//cout << "Pushing weights on lattice before processing..." << endl;
-				//VectorFst<StdArc>* working_fst=phn_lat;
 				Fst<StdArc>* working_fst=phn_lat;
-				log_msg("States in pre-phn lattice: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
-
-				//log_msg("Projecting output...");
-				//Project((VectorFst<StdArc>*)working_fst,PROJECT_OUTPUT);
-
 				log_msg("States in pre-phn lattice: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
 				if (phn_fst != NULL ) {
 					log_msg("Lazily composing with phone penalty lattice...");
 					ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(*working_fst,*phn_fst);
 					if (working_fst!=phn_lat) { delete working_fst;}
 					working_fst=composed_fst;
-
-					/*
-					log_msg("Projecting output...");
-					Project((VectorFst<StdArc>*)working_fst,PROJECT_OUTPUT);
-					*/
-
-					/*
-					log_msg("Lazily mapping to log ring and pushing weights");
-					VectorFst<LogArc>* pushed_fst = new VectorFst<LogArc>();
-					Push<LogArc,REWEIGHT_TO_INITIAL>(MapFst<StdArc,LogArc,StdToLogMapper>(*working_fst,StdToLogMapper()),pushed_fst,kPushWeights|kPushLabels);
-					log_msg("Lazily mapping back to tropical semiring");
-					MapFst<LogArc,StdArc,LogToStdMapper>* unmapped_fst = new MapFst<LogArc,StdArc,LogToStdMapper>(*pushed_fst,LogToStdMapper());
-					delete pushed_fst;
-					if (working_fst!=phn_lat) { delete working_fst;}
-					working_fst=unmapped_fst;
-
-
-					log_msg("Pushing weights");
-					VectorFst<StdArc>* pushed_fst = new VectorFst<StdArc>();
-					Push<StdArc,REWEIGHT_TO_INITIAL>(*working_fst,pushed_fst,kPushWeights|kPushLabels);
-					if (working_fst!=phn_lat) { delete working_fst;}
-					working_fst=pushed_fst;
-					*/
-
-
-
 					log_msg("Mapping to log ring");
 					VectorFst<LogArc>* mapped_fst = new VectorFst<LogArc>();
 					Map(*working_fst,mapped_fst,StdToLogMapper());
@@ -714,27 +667,9 @@ int main(int argc, const char* argv[]) {
 					if (working_fst!=phn_lat) { delete working_fst;}
 					working_fst=unmapped_fst;
 					delete mapped_fst;
-
-
-					//log_msg("Lazily determinizing and mapping back to tropical semiring");
-					//MapFst<LogArc,StdArc,LogToStdMapper>* unmapped_fst = new MapFst<LogArc,StdArc,LogToStdMapper>(*rmep_fst,LogToStdMapper());
-					//delete rmep_fst;
-					//if (working_fst!=phn_lat) { delete working_fst;}
-					//working_fst=unmapped_fst;
-
-					//log_msg("Lazily removing epsilons");
-					//RmEpsilonFst<StdArc>* rmep_fst=new RmEpsilonFst<StdArc>(*composed_fst);
-					//if (working_fst!=phn_lat) { delete working_fst;}
-					//working_fst=rmep_fst;
-
-
 					if (config.crf_phn_wt != 0) {
-						//ComposeFstOptions<StdArc, SortedMatcher<StdFst> > options;
-						//options.gc_limit = 0;
-						//ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(RmEpsilonFst<StdArc>(*working_fst),*phn_fst);
 						log_msg("Initial pass of pruning with weight "+stringify(config.crf_phn_wt));
 						VectorFst<StdArc>* pruned_fst = new VectorFst<StdArc>();
-						//Prune(RmEpsilonFst<StdArc>(*working_fst),pruned_fst,config.crf_phn_wt);
 						Prune(*working_fst,pruned_fst,config.crf_phn_wt);
 						if (working_fst != phn_lat) { delete working_fst; }
 						working_fst=pruned_fst;
@@ -744,60 +679,8 @@ int main(int argc, const char* argv[]) {
 						log_msg("Minimizing phn lattice");
 						Minimize(pruned_fst);
 						log_msg("States in phn lattice following pruning: "+stringify(pruned_fst->NumStates()));
-
-						/*log_msg("Lazily determinizing and Pruning phone lattice with weight "+stringify(config.crf_phn_wt));
-						VectorFst<StdArc>* pruned_fst2 = new VectorFst<StdArc>();
-						Prune(DeterminizeFst<StdArc>(*working_fst),pruned_fst2,config.crf_phn_wt);
-						if (working_fst != phn_lat) { delete working_fst; }
-						working_fst=pruned_fst2;
-
-						log_msg("States in phn lattice following pruning: "+stringify(pruned_fst2->NumStates()));
-
-
-						log_msg("Minimizing phn lattice");
-						Minimize(pruned_fst2);
-
-
-						log_msg("States in phn lattice following pruning: "+stringify(pruned_fst2->NumStates()));
-
-
-
-						log_msg("Removing epsilons");
-						RmEpsilon(pruned_fst2);
-						log_msg("States in phn lattice following pruning: "+stringify(pruned_fst2->NumStates()));
-						*/
-
-						//log_msg("Resorting phone lattice by output arcs");
-						//ArcSort(pruned_fst, OLabelCompare<StdArc>());
-
-						//log_msg("Resorting phone lattice by output arcs");
-						//ArcSort(pruned_fst, OLabelCompare<StdArc>());
-						//RmEpsilonFst<StdArc>* rmep_fst = new RmEpsilonFst<StdArc>(*pruned_fst2);
-						//if (working_fst != phn_lat) { delete working_fst; }
-						//working_fst=rmep_fst;
-
-
-
-						/*
-						log_msg("Lazily removing epsilons and determinizing");
-						DeterminizeFst<StdArc>* det_fst = new DeterminizeFst<StdArc>(RmEpsilonFst<StdArc>(*pruned_fst));
-						working_fst=det_fst;
-						*/
-
-						/*
-						log_msg("Lazily removing epsilons, determinizing and pruning with weight "+stringify(config.crf_phn_wt));
-						VectorFst<StdArc>* pruned_fst2=new VectorFst<StdArc>();
-						Prune(DeterminizeFst<StdArc>(RmEpsilonFst<StdArc>(*pruned_fst)),pruned_fst2,config.crf_phn_wt);
-						if (working_fst != phn_lat) { delete working_fst; }
-						working_fst=pruned_fst;
-						log_msg("States in phn lattice following pruning: "+stringify(pruned_fst2->NumStates()));
-						*/
-
-
 					}
 				}
-
-
 
 				if (dict_fst != NULL ) {
 					log_msg("Lazily composing with dictionary lattice...");
@@ -812,53 +695,17 @@ int main(int argc, const char* argv[]) {
 						working_fst=pruned_fst;
 						log_msg("States in pruned word lattice: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
 					}
-					/*log_msg("Projecting output...");
-					Project((VectorFst<StdArc>*)working_fst,PROJECT_OUTPUT);
-
-					log_msg("States in word lattice before determinization: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
-
-					log_msg("Mapping to Log semi-ring");
-					VectorFst<LogArc>* mapped_fst = new VectorFst<LogArc>();
-					Map(*working_fst,mapped_fst,StdToLogMapper());
-
-					log_msg("Pushing weights in Log semi-ring");
-					VectorFst<LogArc>* pushed_fst=new VectorFst<LogArc>();
-					Push<LogArc,REWEIGHT_TO_INITIAL>(*mapped_fst,pushed_fst,kPushWeights|kPushLabels);
-
-					log_msg("States in pre-phn lattice: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
-
-					log_msg("Mapping back to Tropical semi-ring");
-					VectorFst<StdArc>* unmapped_fst = new VectorFst<StdArc>();
-					Map(*pushed_fst,unmapped_fst,LogToStdMapper());
-					if (working_fst != phn_lat) { delete working_fst; }
-					working_fst=unmapped_fst;
-					delete pushed_fst;
-					delete mapped_fst;
-
-					//log_msg("Pushing weights on word lattice...");
-					//VectorFst<StdArc>* pushed_fst=new StdVectorFst();
-					//Push<StdArc,REWEIGHT_TO_INITIAL>(*working_fst,pushed_fst,kPushWeights);
-					//if (working_fst != phn_lat) { delete working_fst; }
-					//working_fst=pushed_fst;
-					log_msg("States in word lattice after determinization: "+stringify(((VectorFst<StdArc>*)working_fst)->NumStates()));
-					log_msg("Resorting word lattice by output arcs");
-					ArcSort((VectorFst<StdArc>*) working_fst, OLabelCompare<StdArc>());
-					*/
 				}
 				if (config.crf_align_mlffile != NULL) {
 					log_msg("Building FST for utterance "+olist.at(count));
 					VectorFst<StdArc>* align_fst = mlfManager->getFst(olist.at(count));
 					VectorFst<StdArc>* composed_fst = new VectorFst<StdArc>();
 					Compose(*working_fst,*align_fst,composed_fst);
-					//cout << "Projecting to output symbols..." << endl;
-					//Project(composed_fst,PROJECT_OUTPUT);
 					if (working_fst!=phn_lat) { delete working_fst;}
 					delete align_fst;
 					working_fst=composed_fst;
 				}
 				if (lm_fst != NULL ) {
-					//ArcSort(lm_fst,ILabelCompare<StdArc>());
-
 					time_t rawtime;
 					time(&rawtime);
 					char* time1 = ctime(&rawtime);
@@ -866,69 +713,17 @@ int main(int argc, const char* argv[]) {
 					log_msg(time1);
 
 					log_msg("Composing with LM lattice...");
-					//ComposeFstOptions<StdArc, PhiMatcher< SortedMatcher<StdFst> >, MatchComposeFilter<StdArc> > options;
-					//ComposeFstOptions<StdArc, PhiMatcher< SortedMatcher<StdFst> > > options;
 					ComposeFstOptions<StdArc> options;
-					//options.gc = false;
 					options.gc_limit = 0;
-					//options.matcher1 = new PhiMatcher< SortedMatcher<StdFst> >(*working_fst, MATCH_NONE, kNoLabel);
-					//options.matcher2 = new PhiMatcher< SortedMatcher<StdFst> >(*lm_fst, MATCH_INPUT, -2);
-					//options.filter=new MatchComposeFilter<StdArc>(*working_fst,*lm_fst);
-					//options.gc_limit=0;
-					// This disable the caching of the result of composition
-					// and should lower the memory usage at no computational cost since
-					// shortest-path should visit each state in the composed machine at most once.
-
-					//ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(*working_fst,*lm_fst,ComposeFstOptions<COMPOSE_FST2_PHI>());
-					//log_msg("Lazily sorting input arcs and composing with LM lattice...");
 					ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(ArcSortFst<StdArc, OLabelCompare<StdArc> >(*working_fst,OLabelCompare<StdArc>()),*lm_fst,options);
-					//ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(*working_fst,*lm_fst,options);
-					//ComposeFst<StdArc>* composed_fst = new ComposeFst<StdArc>(*working_fst,*lm_fst);
-
-					//VectorFst<StdArc>* composed_fst = new VectorFst<StdArc>();
-					//Compose(ArcSortFst<StdArc, OLabelCompare<StdArc> >(*working_fst,OLabelCompare<StdArc>()),*lm_fst,composed_fst);
-
 					if (working_fst != phn_lat) { delete working_fst; }
 					working_fst=composed_fst;
 
-					/*log_msg("Pushing weights on word lattice...");
-					VectorFst<StdArc>* pushed_fst=new StdVectorFst();
-					Push<StdArc,REWEIGHT_TO_INITIAL>(*composed_fst,pushed_fst,kPushWeights|kPushLabels);
-					if (working_fst!=phn_lat) { delete working_fst;}
-					working_fst=pushed_fst;
-					delete composed_fst;*/
-
-
-
-					//ComposeFst<Arc> cfst(fst1, fst2, opt);
-
-
-					/*vector<StdArc::Weight> distance;
-					NaturalShortestFirstQueue<StateId, Weight> state_queue(distance);
-					bool unique=false;
-					ShortestPathOptions<StdArc, NaturalShortestFirstQueue<StateId, Weight >,
-					   AnyArcFilter<StdArc> > spoptions(&state_queue, AnyArcFilter<StdArc>(),1,unique);
-					spoptions.first_path = true;*/
-
-					/*
-					log_msg("Pruning word lattice with weight "+stringify(config.crf_phn_wt));
-					VectorFst<StdArc>* pruned_fst = new VectorFst<StdArc>();
-					Prune(*working_fst,pruned_fst,config.crf_phn_wt);
-					if (working_fst != phn_lat) { delete working_fst; }
-					working_fst=pruned_fst;
-					*/
-
-
 					VectorFst<StdArc>* shortest_fst = new StdVectorFst();
 					log_msg("Finding shortest path...");
-					//ShortestPath(*composed_fst,shortest_fst,&distance,spoptions);
 					ShortestPath(*working_fst,shortest_fst,1);
 
-					//ShortestPath(*working_fst,shortest_fst,1);
 					if (working_fst!=phn_lat) { delete working_fst;}
-					//delete composed_fst;
-					//log_msg("Projecting to Output Symbols");
-					//Project(shortest_fst,PROJECT_OUTPUT);
 					log_msg("Removing epsilons");
 					RmEpsilon(shortest_fst);
 					log_msg("Top sorting");
@@ -940,8 +735,6 @@ int main(int argc, const char* argv[]) {
 					VectorFst<StdArc>* shortest_fst = new VectorFst<StdArc>();
 					log_msg("Finding Shortest Path");
 					ShortestPath(*working_fst,shortest_fst,1);
-					//log_msg("Projecting to Output Symbols");
-					//Project(shortest_fst,PROJECT_OUTPUT);
 					log_msg("Removing epsilons");
 					RmEpsilon(shortest_fst);
 					log_msg("Top sorting");
@@ -1007,7 +800,6 @@ int main(int argc, const char* argv[]) {
 			time(&rawtime);
 			char* time2 = ctime(&rawtime);
 			time2[strlen(time2)-1]='\0';
-			//log_msg(time2);
 
 			delete phn_lat;
 			delete lab_lat;
@@ -1072,7 +864,6 @@ int main(int argc, const char* argv[]) {
 		segid=crf_ftr_str->nextseg();
 		count++;
 	}
-	//final_result.Write("binary.fst");
 	if (labout!=NULL) {delete labout;} // explicitly delete the labelstream to flush contents to disk.
 	if (outl != NULL) {fclose(outl);}
 	if (lm_fst != NULL) { delete lm_fst; }
