@@ -1,10 +1,28 @@
+/*
+ * CRF_LBFGSTrainer.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Eric Fosler-Lussier
+ *
+ */
 #include "CRF_LBFGSTrainer.h"
 
+/*
+ * CRF_LBFGSTrainer constructor
+ *
+ * See superclass CRF_Trainer for details
+ */
 CRF_LBFGSTrainer::CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
 	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
 	this->iCounter=0;
 }
+
+/*
+ * CRF_LBFGSTrainer::train
+ *
+ * Performs LBFGS training.
+ */
 
 void CRF_LBFGSTrainer::train()
 {
@@ -65,8 +83,11 @@ void CRF_LBFGSTrainer::train()
 	delete[] grad;
 }
 
-
-// Compute the gradient and return the log likelihood
+/*
+ * CRF_LBFGSTrainer::evaluateGradient
+ *
+ * Compute the gradient and return the log likelihood
+ */
 lbfgsfloatval_t CRF_LBFGSTrainer::evaluateGradient(const lbfgsfloatval_t *lambda,
         lbfgsfloatval_t *gradient,
         const int lambdaLen,

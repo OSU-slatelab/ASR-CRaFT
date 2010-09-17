@@ -1,7 +1,19 @@
+/*
+ * CRF_AISTrainer.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_AISTrainer.h"
 
 #define QN_UINT32_MAX (0xffffffff)
 
+/*
+ * CRF_AISTrainer constructor
+ *
+ * See superclass CRF_Trainer for details
+ */
 CRF_AISTrainer::CRF_AISTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
 	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
@@ -273,6 +285,12 @@ void CRF_AISTrainer::train()
 }
 
 #else
+
+/*
+ * CRF_AISTrainer::train
+ *
+ * Performs AIS training.
+ */
 
 void CRF_AISTrainer::train()
 {

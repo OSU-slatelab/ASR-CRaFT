@@ -1,30 +1,43 @@
+/*
+ * CRF_LogMath.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_LogMath.h"
 
-
-// LogAdd algorithm
-/* public static double logAdd(double logX, double logY) {
-       // 1. make X the max
-       if (logY > logX) {
-           double temp = logX;
-           logX = logY;
-           logY = temp;
-       }
-       // 2. now X is bigger
-       if (logX == Double.NEGATIVE_INFINITY) {
-           return logX;
-       }
-       // 3. how far "down" (think decibels) is logY from logX?
-       //    if it's really small (20 orders of magnitude smaller), then ignore
-       double negDiff = logY - logX;
-       if (negDiff < -20) {
-           return logX;
-       }
-       // 4. otherwise use some nice algebra to stay in the log domain
-       //    (except for negDiff)
-       return logX + java.lang.Math.log(1.0 + java.lang.Math.exp(negDiff));
-   }
+/*
+ *  The various logAdd functions implemented in this file perform addition in log space.  They
+ *  all follow the same basic algorithm:
+ *
+ *  LogAdd algorithm
+ * public static double logAdd(double logX, double logY) {
+ *     // 1. make X the max
+ *     if (logY > logX) {
+ *         double temp = logX;
+ *         logX = logY;
+ *         logY = temp;
+ *     }
+ *     // 2. now X is bigger
+ *     if (logX == Double.NEGATIVE_INFINITY) {
+ *         return logX;
+ *     }
+ *     // 3. how far "down" (think decibels) is logY from logX?
+ *     //    if it's really small (20 orders of magnitude smaller), then ignore
+ *     double negDiff = logY - logX;
+ *     if (negDiff < -20) {
+ *         return logX;
+ *     }
+ *     // 4. otherwise use some nice algebra to stay in the log domain
+ *     //    (except for negDiff)
+ *     return logX + java.lang.Math.log(1.0 + java.lang.Math.exp(negDiff));
+ * }
 */
 
+/*
+ *  Implements logAdd algorithm between two numbers
+ */
 double CRF_LogMath::logAdd(double loga, double logb)
 {
 	double logx = loga;
@@ -50,8 +63,10 @@ double CRF_LogMath::logAdd(double loga, double logb)
 	return retVal;
 }
 
+/*
+ * Implements logAdd as a summation over an entire vector of values
+ */
 double CRF_LogMath::logAdd(double* R, int idx) {
-	// Logic for performing logAdd as a summation over an entire 1D vector
 	// 1. Find the maximum element
 	double max=R[0];
 	for (int i=1; i<idx; i++) {
@@ -80,6 +95,10 @@ double CRF_LogMath::logAdd(double* R, int idx) {
 	return max+lsum;
 }
 
+/*
+ * As above, but the index of the maximum value in the vector R is known before calling logAdd
+ * (saving a search through the vector for the maximum value).
+ */
 double CRF_LogMath::logAdd(double* R, double max, int idx) {
 	// Perform the log add without having to find the maximum value in the array R
 	// 2. Create the summation
@@ -105,6 +124,9 @@ double CRF_LogMath::logAdd(double* R, double max, int idx) {
 	return max+lsum;
 }
 
+/*
+ * As above, but implemented as a vector instead of as an array
+ */
 double CRF_LogMath::logAdd(vector<double>* R, int idx) {
 	// Logic for performing logAdd as a summation over an entire 1D vector
 	// 1. Find the maximum element
@@ -135,6 +157,10 @@ double CRF_LogMath::logAdd(vector<double>* R, int idx) {
 	return max+lsum;
 }
 
+/*
+ * As above, but implemented as a vector instead of as an array and the maximum value is known
+ * before calling the function.
+ */
 double CRF_LogMath::logAdd(vector<double>* R, double max, int idx) {
 	// Perform the log add without having to find the maximum value in the array R
 	// 2. Create the summation
@@ -160,6 +186,9 @@ double CRF_LogMath::logAdd(vector<double>* R, double max, int idx) {
 	return max+lsum;
 }
 
+/*
+ * protected log function - throws exceptions when given a zero or when the result is infinity or NAN.
+ */
 double CRF_LogMath::logE(double a)
 {
 //	if (a==1) { return 0; }
@@ -175,6 +204,10 @@ double CRF_LogMath::logE(double a)
 	return b;
 }
 
+/*
+ * Protected exponential function.  Throws exceptions when the result would overflow or if the result
+ * is NAN or infinity.
+ */
 double CRF_LogMath::expE(double a)
 {
 //	if (a == 0) { return 1; }

@@ -1,7 +1,47 @@
+/*
+ * CRF_FeatureStreamManager.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
+
 #include "CRF_FeatureStreamManager.h"
 
 // ERROR & PROCESS LOGGING NEEDS TO BE ADDED TO THIS CLASS
 
+/*
+ * CRF_FeatureStreamManager constructor
+ *
+ * Input: dbg - debug flag
+ *        dname - debug file anme
+ *        fname - feature file name
+ *        fmt - format of feature file
+ *        ht_fname - label file name
+ *        ht_offset - offset into label window for training
+ *        width -
+ *        first_ftr - offset into feature vector to start features
+ *        num_ftrs - total number of features in feature vector to use, starting at first_ftr
+ *        win_ext - size of window of feature vectors to use
+ *        win_off - offset into window to consider "center" feature
+ *        win_len - size of window of feature vectors to use
+ *        delta_o - delta order to apply to feature file (not yet implemented)
+ *        delta_w - window size to compute deltas (not yet implemented)
+ *        trn_rng - range of feature vectors to use for training
+ *        cv_rng - range of feature vectors to use for cross-validation
+ *        nfile - file containing normalization terms (not yet implemented)
+ *        n_mode - normalization mode (not yet implemented)
+ *        n_am - (not yet implemented)
+ *        n_av - (not yet implemented)
+ *        train-seq_type - type of training to perform (sequential, random no replace, random replace)
+ *        rseed - random seed
+ *        nthreads - number of threads (used to split the training file over multiple views for multi-
+ *                    threaded training aglorithms)
+ *
+ *  Normalization and delta parameters are included for future expansion for compatability with Quicknet
+ *  feature streams, but are not implemented at this time.
+ *
+ */
 CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 									char* fname, const char* fmt, char* ht_fname, size_t ht_offset,
 									size_t width, size_t first_ftr, size_t num_ftrs,
@@ -38,7 +78,9 @@ CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 	this->create();
 }
 
-
+/*
+ * CRF_FeatureStreamManager destructor
+ */
 CRF_FeatureStreamManager::~CRF_FeatureStreamManager()
 {
 	if (this->trn_stream) {
@@ -60,11 +102,15 @@ CRF_FeatureStreamManager::~CRF_FeatureStreamManager()
 	}
 }
 
-// Modify this so that we can:
-//  * Create feature streams with NO cv stream
-//  * Create feature streams with NO corresponding label stream
-//  * Create feature streams with one of three types of selection (Sequential, Random, Random no Replace)
-
+/*
+ * CRF_FeatureStreamManager:create
+ *
+ * Takes the internal variables of the FeatureStreamManager and uses them to create CRF_FeatureStreams
+ * under a variety of conditions.  Separates training and cross-validation streams, creates multiple
+ * streams if the Manager was created with the multi-threaded option, determines if streams should be
+ * accessed sequentially, randomly, or random with replacement, and associates the label file with
+ * streams in the proper way.
+ */
 void CRF_FeatureStreamManager::create()
 {
 	QN_InFtrStream* ftr_str = NULL;     // Temporary stream holder.
@@ -315,6 +361,15 @@ void CRF_FeatureStreamManager::create()
     QN_OUTPUT("End of Stream Creation");
 }
 
+/*
+ * CRF_FeatureStreamManager::join
+ *
+ * Input: instr - input feature stream
+ *
+ * Alters the current streams managed to be concatenated streams with the initial stream concatenated with
+ * the new stream.  Manages the concatenation of multi-threaded streams as well as training and cross-validation
+ * streams.
+ */
 void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 	this->old_trn_stream=this->trn_stream;
 	this->trn_stream = this->trn_stream->join(instr->trn_stream);
@@ -339,7 +394,12 @@ void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 	//this->display();
 }
 
-
+/*
+ * CRF_FeatureStreamManager::join
+ *
+ * Displays the streams being managed by the Manager to standard output.
+ * Debugging function.
+ */
 void CRF_FeatureStreamManager::display()
 {
 //	this->rewind(); // Reset it to the beginning
@@ -356,7 +416,14 @@ void CRF_FeatureStreamManager::display()
 }
 
 
-
+/*
+ * CRF_FeatureStreamManager::setFiles
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set file information after the object has been instantiated.  Should be followed
+ * by a call to create().
+ */
 void CRF_FeatureStreamManager::setFiles(char* filename, const char* format, char* hardtarget_file,
 								size_t width, size_t first_ftr, size_t num_ftrs)
 {
@@ -368,6 +435,15 @@ void CRF_FeatureStreamManager::setFiles(char* filename, const char* format, char
 	this->num_ftrs=num_ftrs;
 }
 
+/*
+ * CRF_FeatureStreamManager::setNorm
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set normalization information after the object has been instantiated.  Should be
+ * followed by a call to create().
+ */
+
 void CRF_FeatureStreamManager::setNorm(FILE* normfile, int norm_mode, double norm_am, double norm_av)
 {
 	this->normfile=normfile;
@@ -375,6 +451,15 @@ void CRF_FeatureStreamManager::setNorm(FILE* normfile, int norm_mode, double nor
 	this->norm_am=norm_am;
 	this->norm_av=norm_av;
 }
+
+/*
+ * CRF_FeatureStreamManager::setRanges
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set range information after the object has been instantiated.  Should be
+ * followed by a call to create().
+ */
 
 void CRF_FeatureStreamManager::setRanges(char* train_range, char* cv_range,
  							     size_t train_cache_frames, int train_cache_seed)
@@ -385,6 +470,15 @@ void CRF_FeatureStreamManager::setRanges(char* train_range, char* cv_range,
 	this->train_cache_seed=train_cache_seed;
 }
 
+/*
+ * CRF_FeatureStreamManager::setWindow
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set windowing information after the object has been instantiated.  Should be
+ * followed by a call to create().
+ */
+
 void CRF_FeatureStreamManager::setWindow(size_t window_extent, size_t window_offset,
 									size_t window_len)
 {
@@ -393,23 +487,51 @@ void CRF_FeatureStreamManager::setWindow(size_t window_extent, size_t window_off
 	this->window_len=window_len;
 }
 
+/*
+ * CRF_FeatureStreamManager::setDeltas
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set delta information after the object has been instantiated.  Should be
+ * followed by a call to create().
+ */
 void CRF_FeatureStreamManager::setDeltas(int delta_order, int delta_win)
 {
 	this->delta_order=delta_order;
 	this->delta_win=delta_win;
 }
 
-
+/*
+ * CRF_FeatureStreamManager::setDebug
+ *
+ * Input: see the constructor above
+ *
+ * Mutator function to set debug information after the object has been instantiated.
+ */
 int CRF_FeatureStreamManager::setDebug(int dbgLvl, const char* dbg) {
 	this->debug=dbgLvl;
 	this->dbgname=dbg;
 	return this->debug;
 }
 
+/*
+ * CRF_FeatureStreamManager::getNumFtrs
+ *
+ *
+ * Accessor function to get the number of features.
+ */
 size_t CRF_FeatureStreamManager::getNumFtrs() {
 	return this->trn_stream->num_ftrs();
 }
 
+/*
+ * CRF_FeatureStreamManager::setUtt
+ *
+ * Input: utt - segment to set the stream position to
+ *
+ * Mutator function to set the training stream to a particular segment.
+ * used in debugging.
+ */
 void CRF_FeatureStreamManager::setUtt(QNUInt32 utt) {
 	this->trn_stream->set_pos(utt,0);
 }

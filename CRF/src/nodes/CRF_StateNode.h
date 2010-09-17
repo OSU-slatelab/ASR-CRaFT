@@ -1,5 +1,13 @@
 #ifndef CRF_STATENODE_H_
 #define CRF_STATENODE_H_
+/*
+ * CRF_StateNode.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_StateNode
+ */
 
 #include <string>
 #include "fst/fstlib.h"
@@ -7,52 +15,16 @@
 #include "../CRF_Model.h"
 #include <vector>
 
-//typedef pair<uint,uint> StatePair;
-//typedef pair<uint,uint> LabelPair;
-//typedef pair< StatePair, LabelPair > StateNode;
-/*
-class CRF_ViterbiState {
-public:
-	uint ilabel;
-	uint olabel;
-	uint prevstate;
-	uint nextstate;
-	CRF_ViterbiState(uint ilab, uint olab, uint pstate, uint nstate) :
-		ilabel(ilab), olabel(olab), prevstate(pstate), nextstate(nstate) {}
-	bool operator == (const CRF_ViterbiState p) const {
-		//return (ilabel==p.ilabel && olabel==p.olabel && prevstate==p.prevstate && nextstate==p.nextstate);
-		//return (ilabel==p.ilabel && olabel==p.olabel && nextstate==p.nextstate);
-		//return (ilabel==p.ilabel && nextstate==p.nextstate);
-		//return (nextstate==p.nextstate && prevstate==p.prevstate);
-		return (nextstate==p.nextstate);
-	}
-
-	bool operator < (const CRF_ViterbiState p) const {
-		// definite order - order by prevstate, then by nextstate, then by ilabel, then by olabel
-		//if (prevstate==p.prevstate) {
-			//if (nextstate==p.nextstate) {
-				//if (ilabel == p.ilabel) {
-				//	return (olabel < p.olabel);
-				//}
-				//else {
-				//	return (ilabel < p.ilabel);
-				//}
-			//}
-			//else {
-				return (nextstate < p.nextstate);
-			//}
-		//}
-		//else {
-		//	return (prevstate < p.prevstate);
-		//}
-	}
-};
-*/
-
-
-
 using namespace fst;
-
+/*
+ * class CRF_StateNode
+ *
+ * Used in training and decoding processing.  Holds the features for a given state, the label (if during
+ * training), the computed alpha and beta arrays, and the computed transition matrix.
+ *
+ * This class is a base class for CRF nodes, and should not be used directly.  See the subclasses
+ * CRF_StdStateNode and CRF_StdNStateNode for examples of implementation.
+ */
 class CRF_StateNode
 {
 protected:
@@ -72,23 +44,8 @@ protected:
 	QNUInt32 nLabs;
 	double* prevAlpha;
 public:
-	vector<double> gammaProbs;
-	vector<double> gammaTransProbs;
-	vector<double> alphaVector;
-	vector<double> betaVector;
-	vector<double> gammaProbsAligned;
-	vector<double> gammaTransProbsAligned;
-	vector<int> latticeNodes;
-	vector<int> labLatticeNodes;
-	vector<const StdArc*> viterbiStates;
-	//vector<uint> viterbiStateIds;
-	//vector<CRF_ViterbiState> viterbiStateIds;
 	vector<uint> viterbiPhnIds;
-	//vector<int> viterbiIlabs;
-	//vector<int> viterbiOlabs;
-	//vector<float> viterbiWeights;
 	vector<int> viterbiPointers;
-	//double viterbiPruningWeight;
 	CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual ~CRF_StateNode();
 	virtual double computeTransMatrix();
@@ -107,8 +64,6 @@ public:
 	virtual double* getPrevAlpha();
 	virtual double* getBeta();
 	virtual double* getAlphaBeta();
-	virtual vector<double>* getAlphaVector();
-	virtual vector<double>* getBetaVector();
 	virtual vector<double>* getAlphaAligned();
 	virtual vector<double>* getBetaAligned();
 	virtual vector<double>* getAlphaAlignedBase();
@@ -117,7 +72,6 @@ public:
 	virtual double getAlphaScale();
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 	virtual double getStateValue(QNUInt32 cur_lab);
-	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 cur_mix);
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual float *getFtrBuffer();

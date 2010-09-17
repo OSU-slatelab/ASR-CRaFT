@@ -1,16 +1,29 @@
 #ifndef CRF_LATTICEBUILDER_H_
 #define CRF_LATTICEBUILDER_H_
-
+/*
+ * CRF_LatticeBuilder.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "fst/fstlib.h"
 #include "../CRF.h"
 #include "../CRF_Model.h"
 #include "../io/CRF_FeatureStream.h"
 #include "../nodes/CRF_StateVector.h"
 
-/*#include "CRF_StdStateVectorLog.h"
-#include "CRF_StdNStateVectorLog.h"*/
-
 using namespace fst;
+
+/*
+ * class CRF_LatticeBuilder
+ *
+ * Used to create an OpenFST lattice for decoding.  Instantiating a
+ * CRF_LatticeBuilder object requires an input feature stream
+ * (see CRF_FeatureStream) and a CRF model (see CRF_Model).
+ * Lattices are built for a feature sequence using a call to one of the
+ * buildLattice functions.
+ */
 
 class CRF_LatticeBuilder
 {
@@ -29,14 +42,9 @@ protected:
 public:
 	CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);
 	virtual ~CRF_LatticeBuilder();
-	virtual StdVectorFst* testBuild();
-	virtual StdVectorFst* buildLattice();
 	template <class Arc> int buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL,bool norm=true);
 	template <class Arc> int nStateBuildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL, bool norm=true);
-	virtual void computeAlignedAlphaBeta(Fst<LogArc>& fst, int nstates);
-	virtual StdVectorFst* bestPath(bool align);
-	virtual StdVectorFst* bestPath_old(bool align);
-	virtual StdVectorFst* LMBestPath(bool align, StdFst* lmFst);
+	virtual StdVectorFst* buildLattice();
 	virtual int getAlignmentGammas(vector<double> *denominatorStateGamma,
 									vector<double> *numeratorStateGamma,
 									vector<double> *denominatorTransGamma,
@@ -45,17 +53,31 @@ public:
 									vector<double> *numeratorStateGamma,
 									vector<double> *denominatorTransGamma,
 									vector<double> *numeratorTransGamma);
-	virtual StdVectorFst* nStateBuildLattice();
-	virtual StdVectorFst* nStateBuildLattice(StdVectorFst* labFst);
-	virtual StdVectorFst* nStateBestPath(bool align);
-	virtual StdVectorFst* nStateLMBestPath(bool align, StdFst* lmFst);
-	virtual StdVectorFst* nStateBestPath_old(bool align);
 	virtual CRF_StateVector* getNodeList();
+	virtual void computeAlignedAlphaBeta(Fst<LogArc>& fst, int nstates);
 };
 
 // These template functions are included here for compile-time generation
 
-// this version requires you to create fst and labFst
+/*
+ * CRF_LatticeBuilder::buildLattice
+ *
+ * Input: *fst - pointer to VectorFst where result should be stored
+ *        align - true if resulting fst should be aligned to input labels
+ *        *labFst - pointer to a VectorFst where label lattice should be stored
+ *                  (for alignment)
+ *        norm - true if the normalization constant should be computed and
+ *               placed on the final arc of the lattice
+ *
+ * Returns: number of observation nodes in the sequence from the input stream
+ *
+ * Reads the current sequence of feature observations from the input feature
+ * stream and uses them to construct an OpenFst lattice for CRF best-path
+ * processing.  If the align flag is set, the resulting lattice is composed with
+ * an fst created from the label sequence and only the paths that match the
+ * label sequence taken from the input feature stream is returned.
+ *
+ */
 template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 									  bool align,
 									  VectorFst<Arc>*labFst,
@@ -152,6 +174,29 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 	return seq_len;
 }
 
+/*
+ * CRF_LatticeBuilder::nStateBuildLattice
+ *
+ * Input: *fst - pointer to VectorFst where result should be stored
+ *        align - true if resulting fst should be aligned to input labels
+ *        *labFst - pointer to a VectorFst where label lattice should be stored
+ *                  (for alignment)
+ *        norm - true if the normalization constant should be computed and
+ *               placed on the final arc of the lattice
+ *
+ * Returns: number of observation nodes in the sequence from the input stream
+ *
+ * Reads the current sequence of feature observations from the input feature
+ * stream and uses them to construct an OpenFst lattice for CRF best-path
+ * processing, specially constructed to pass through n states, where "n" is
+ * set in the CRF_Model given to the CRF_LatticeBuilder at instantiation.
+ * If the align flag is set, the resulting lattice is composed with
+ * an fst created from the label sequence and only the paths that match the
+ * label sequence taken from the input feature stream is returned.
+ *
+ * Much of this code follows the form of buildLattice (above), with the addition
+ * of the n-state restrictions on the allowed paths.
+ */
 template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* fst,
 									  bool align,
 									  VectorFst<Arc>*labFst,

@@ -1,5 +1,13 @@
 #ifndef CRF_H_
 #define CRF_H_
+/*
+ * CRF.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains constants and typedefs for CRF processing.
+ */
 
 #define CRF_PACKAGE_VERSION "v0.01a"
 #define CRF_VERSION CRF_PACKAGE_VERSION

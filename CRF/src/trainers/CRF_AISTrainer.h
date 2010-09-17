@@ -1,5 +1,13 @@
 #ifndef CRF_AISTRAINER_H_
 #define CRF_AISTRAINER_H_
+/*
+ * CRF_SGTrainer.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Implements the CRF_AISTrainer class
+ */
 
 #include "../CRF.h"
 #include "CRF_Trainer.h"
@@ -12,6 +20,11 @@
 #include "accumulators/CRF_CountAccumulator.h"
 #include "accumulators/CRF_Pthread_CountAccumulator.h"
 
+/*
+ * class CRF_AISTrainer
+ *
+ * Used in training.  This class implements AIS training for CRFs.
+ */
 class CRF_AISTrainer: public CRF_Trainer
 {
 protected:

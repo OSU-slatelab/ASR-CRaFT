@@ -1,27 +1,9 @@
-#ifndef CRF_STDNSTATENODE_H_
-#define CRF_STDNSTATENODE_H_
-/*
- * CRF_StdNStateNode.h
- *
- * Copyright (c) 2010
- * Author: Jeremy Morris
- *
- * Contains the class definitions for CRF_StdNStateNode
- */
+#ifndef CRF_HNSTATENODE_H_
+#define CRF_HNSTATENODE_H_
 
 #include "CRF_StateNode.h"
-/*
- * class CRF_StdNStateNode
- *
- * Used in training and decoding processing.  Holds the features for a given state, the label (if during
- * training), the computed alpha and beta arrays, and the computed transition matrix.
- *
- * These nodes are for a restricted multi-state crf topology.  The number of states can vary, but must
- * be the same for all labels.  In addition, the states must be passed through sequentially with no
- * states skipped (i.e. a three state model must have a minimum of 3 frames of features, each assigned
- * to a different state).
- */
-class CRF_StdNStateNode : public CRF_StateNode
+
+class CRF_HNStateNode : public CRF_StateNode
 {
 protected:
 	double* stateArray;
@@ -29,12 +11,12 @@ protected:
 	double* diagTransMatrix;
 	double* offDiagTransMatrix;
 	QNUInt32 nStates;
-	QNUInt32 nFullLabs;
+	QNUInt32 trueNLabs;
 	double* tempBeta;
 	double* logAddAcc;
 public:
-	CRF_StdNStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
-	virtual ~CRF_StdNStateNode();
+	CRF_HNStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
+	virtual ~CRF_HNStateNode();
 	virtual double computeTransMatrix();
 //	virtual double computeTransMatrixLog();
 	virtual double computeAlpha(double* prev_alpha);

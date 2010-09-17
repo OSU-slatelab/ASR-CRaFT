@@ -1,6 +1,15 @@
 #ifndef CRF_VITERBIDECODER_H_
 #define CRF_VITERBIDECODER_H_
 
+/*
+ * CRF_ViterbiDecoder.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_ViterbiState and CRF_ViterbiDecoder
+ */
+
 #include "fst/fstlib.h"
 #include "../CRF.h"
 #include "../CRF_Model.h"
@@ -14,7 +23,13 @@ using namespace std;
 typedef StdArc::StateId StateId;
 typedef StdArc::Weight Weight;
 
-
+/*
+ * class CRF_ViterbiState
+ *
+ * Used by the CRF_ViterbiDecoder object to perform a best pass Viterbi decoding
+ * for word recognition.
+ *
+ */
 class CRF_ViterbiState {
 public:
 	uint label; // This is the phone label into the state
@@ -41,7 +56,14 @@ public:
 	}
 };
 
-
+/*
+ * class CRF_ViterbiDecoder
+ *
+ * Performs a best-pass Viterbi decoding over the possible CRF outputs, constrained
+ * by a language model in finite-state transducer format to provide word-level
+ * transcriptions.
+ *
+ */
 
 class CRF_ViterbiDecoder
 {
@@ -55,7 +77,6 @@ protected:
 	QNUInt32 num_ftrs;
 	QNUInt32 num_labs;
 	double* alpha_base;
-	//vector<CRF_ViterbiState> tmpViterbiStateIds;
 	vector<uint> tmpViterbiStateIds_new;
 	vector<uint> tmpViterbiPhnIds;
 	vector<uint> tmpViterbiWrdIds;
@@ -68,8 +89,6 @@ protected:
 	vector<float> tmpPruneWts;
 	vector<float>* curViterbiWts;
 	vector<float>* prevViterbiWts;
-	//vector<CRF_ViterbiState>* curViterbiStateIds;
-	//vector<CRF_ViterbiState>* prevViterbiStateIds;
 	vector<uint>* curViterbiStateIds_new;
 	vector<uint>* prevViterbiStateIds_new;
 	uint updateCounter;
@@ -82,11 +101,7 @@ protected:
 public:
 	CRF_ViterbiDecoder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);
 	virtual ~CRF_ViterbiDecoder();
-	//virtual float internalStateUpdate(int nodeCnt, StdArc prevState, int prevIdx, vector<float>* prevWts,vector<float>* curWts, vector<int>* curPtrs);
 	virtual float internalStateUpdate(int nodeCnt, uint phn_id, int prevIdx, vector<float>* prevWts,vector<float>* curWts, vector<int>* curPtrs);
-	//float crossStateUpdate(int nodeCnt, const StdArc* prev_arc, int prev_idx,float base_weight, VectorFst<StdArc>* lm_fst, float min_weight, float beam);
-	//float crossStateUpdate(int nodeCnt, CRF_ViterbiState prev_state, uint prev_phn, uint prev_idx,float base_weight, VectorFst<StdArc>* lm_fst, float min_weight, float beam);
-	//float crossStateUpdate(int nodeCnt, uint prev_state, uint prev_phn, uint prev_idx,float base_weight, VectorFst<StdArc>* lm_fst, float min_weight, float beam);
 	void crossStateUpdate_new(uint check_state, uint end_idx, float transw, uint phn_lab, uint wrd_lab);
 
 	virtual int nStateDecode(VectorFst<StdArc>* fst, VectorFst<StdArc>* lm_fst, double beam=0.0, uint min_hyps=0, uint max_hyps=0, float beam_inc=0.05);

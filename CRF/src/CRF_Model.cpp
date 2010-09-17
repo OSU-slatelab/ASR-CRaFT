@@ -1,7 +1,18 @@
+/*
+ * CRF_GradBuilder.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
+
 #include "CRF_Model.h"
 
-
-
+/*
+ * CRF_Model constructor
+ *
+ * Input: num_labs - number of possible labels in the CRF model
+ */
 CRF_Model::CRF_Model(QNUInt32 num_labs)
 	: nlabs(num_labs)
 {
@@ -11,6 +22,9 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 	this->node_type=STD_STATE;
 }
 
+/*
+ * CRF_Model destructor
+ */
 CRF_Model::~CRF_Model()
 {
 	if (this->lambda != NULL ) {delete [] this->lambda;}
@@ -18,6 +32,11 @@ CRF_Model::~CRF_Model()
 	if (this->featureMap != NULL ) {delete this->featureMap;}
 }
 
+/*
+ * CRF_Model::getNLabs
+ *
+ * Returns: Number of labels defined for the CRF Model
+ */
 QNUInt32 CRF_Model::getNLabs()
 {
 	return this->nlabs;
@@ -36,6 +55,13 @@ QNUInt32 CRF_Model::getNLabs()
 //	return this->rangeMachine;
 //}
 
+/*
+ * CRF_Model::setFeatureMap
+ *
+ * Mutator function to set the feature map for the model.
+ * As a side effect, also defines the size of the lambda vector, based on how many feature funcs
+ * the feature map defines.
+ */
 void CRF_Model::setFeatureMap(CRF_FeatureMap* map)
 {
 	this->featureMap = map;
@@ -47,38 +73,76 @@ void CRF_Model::setFeatureMap(CRF_FeatureMap* map)
 }
 
 
-
+/*
+ * CRF_Mode::getFeatureMap
+ *
+ * Accessor function to retrieve the model's feature map
+ */
 CRF_FeatureMap* CRF_Model::getFeatureMap()
 {
 	return this->featureMap;
 }
 
+/*
+ * CRF_Model::getLambda
+ *
+ * Accessor function to retrieve the model's lambda vector
+ */
 double* CRF_Model::getLambda()
 {
 	return this->lambda;
 }
 
+/*
+ * CRF_Model::getLambdaAcc
+ *
+ * Accessor function to retrieve the model's lambda accumulator vector
+ *
+ * The accumulator vector is used to create average weights in stochastic gradient descent processing
+ * (or other training methods that use weight averaging)
+ */
 double* CRF_Model::getLambdaAcc()
 {
 	return this->lambdaAcc;
 }
 
+/*
+ * CRF_Model::getLambdaLen
+ *
+ * Accessor function to retrieve the length of the lambda vector
+ */
 QNUInt32 CRF_Model::getLambdaLen()
 {
 	return this->lambda_len;
 }
 
+/*
+ * CRF_Model::setLambda
+ *
+ * Mutator function to set the lambda vector and the length of the lambda vector
+ */
 void CRF_Model::setLambda(double* lam, QNUInt32 lam_len)
 {
 	this->lambda=lam;
 	this->lambda_len=lam_len;
 }
 
+/*
+ * CRF_Model::setLambdaAcc
+ *
+ * Mutator function to set the lambda accumulator vector
+ * (Note that this vector will be treated as the same length as the lambda vector)
+ */
 void CRF_Model::setLambdaAcc(double* lam)
 {
 	this->lambdaAcc=lam;
 }
 
+/*
+ * CRF_Model::resetLambda
+ *
+ * Mutator function to reset the lambda vector to zero.
+ */
 void CRF_Model::resetLambda()
 {
 	for (QNUInt32 i=0; i<this->lambda_len; i++) {
@@ -87,7 +151,15 @@ void CRF_Model::resetLambda()
 	}
 }
 
-
+/*
+ * CRF_Model::writeToFile
+ *
+ * Inputs: fname - filename to write file to
+ *
+ * Returns: true if file can be written, false otherwise
+ *
+ * Writes the current lambda vector to the file fname
+ */
 bool CRF_Model::writeToFile(const char* fname)
 {
 	std::ofstream ofile;
@@ -103,6 +175,18 @@ bool CRF_Model::writeToFile(const char* fname)
 		return false;
 	}
 }
+
+/*
+ * CRF_Model::writeToFile
+ *
+ * Inputs: fname - filename to write file to
+ *         lam - lambda vector to write to file
+ *         ll - length of lambda vector lam
+ *
+ * Returns: true if file can be written, false otherwise
+ *
+ * Writes the arbitrary lambda vector lam to the file fname
+ */
 
 bool CRF_Model::writeToFile(const char* fname, double* lam, QNUInt32 ll)
 {
@@ -120,6 +204,15 @@ bool CRF_Model::writeToFile(const char* fname, double* lam, QNUInt32 ll)
 	}
 }
 
+/*
+ * CRF_Model::readFromFile
+ *
+ * Inputs: fname - file name to read lambda values from
+ *
+ * Returns: true if file can be read, false otherwise
+ *
+ * Reads values from file fname into lambda vector
+ */
 bool CRF_Model::readFromFile(const char* fname)
 {
 	std::ifstream ifile;
@@ -140,6 +233,19 @@ bool CRF_Model::readFromFile(const char* fname)
 	}
 }
 
+/*
+ * CRF_Model::readAverageFromFile
+ *
+ * Inputs: fname - file name to read weights from
+ *         present - number of presentations used for averaging
+ *
+ * Returns: true if file can be read, false otherwise
+ *
+ * Reads the weights from file fname, multiplies them by the number of presentations present and
+ * stores them in the lambda accumulator
+ *
+ * Used to start training from a previous set of accumulated weight values
+ */
 bool CRF_Model::readAverageFromFile(const char* fname, int present)
 {
 	this->init_present=present;
@@ -163,21 +269,42 @@ bool CRF_Model::readAverageFromFile(const char* fname, int present)
 	}
 }
 
+/*
+ * CRF_Model::getPresentations
+ *
+ * Accessor function to the number of presentations used to train the lambda vector
+ */
 QNUInt32 CRF_Model::getPresentations()
 {
 	return this->init_present;
 }
 
+/*
+ * CRF_Model::setUseLog
+ *
+ * Mutator function to set the use logspace flag
+ *
+ */
 void CRF_Model::setUseLog(bool isLog) {
 	this->useLog=isLog;
 	this->setNodeType();
 }
 
+/*
+ * CRF_Model::setuseMask
+ *
+ * Mutator function to set the use mask flag
+ */
 void CRF_Model::setUseMask(bool isMasked) {
 	this->useMask=isMasked;
 	this->setNodeType();
 }
 
+/*
+ * CRF_Model::setNodeType
+ *
+ * Mutator function to set the nodetype
+ */
 void CRF_Model::setNodeType() {
 	if (this->useLog) {
 		if (this->getFeatureMap()->getNumStates()>1) {
@@ -218,6 +345,11 @@ void CRF_Model::setNodeType() {
 
 }
 
+/*
+ * CRF_Model::getNodeType
+ *
+ * Accessor function to get the node type
+ */
 nodetype CRF_Model::getNodeType() {
 	return this->node_type;
 }

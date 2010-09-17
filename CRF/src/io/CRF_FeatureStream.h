@@ -1,5 +1,15 @@
 #ifndef CRF_FEATURESTREAM_H_
 #define CRF_FEATURESTREAM_H_
+/*
+ * CRF_FeatureStream.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_FeatureStream
+ * Uses the feature stream model/classes defined for the ICSI Quicknet neural networks
+ * package for compatibility with ICSI Quicknet.
+ */
 
 #include "QuickNet.h"
 #include "QN_streams.h"
@@ -7,6 +17,16 @@
 
 #include "../CRF.h"
 
+/*
+ * class CRF_FeatureStream
+ *
+ * Controls the presentation of input features and labels to the CRF training and
+ * decoding code.  Features and labels are assumed to be held in two different files
+ * according to this model.  The CRF_FeatureStream object is based on the ICSI Quicknet
+ * file stream objects and implements similar functionality for compatibility between
+ * the two packages.
+ *
+ */
 class CRF_FeatureStream
 {
 	friend class CRF_FeatureStreamManager;

@@ -1,12 +1,26 @@
 #ifndef CRF_FEATUREMAP_H_
 #define CRF_FEATUREMAP_H_
+/*
+ * CRF_FeatureMap.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_FeatureMap_config and CRF_FeatureMap
+ */
 
 #include "../CRF.h"
 
 #ifndef QN_UINT32_MAX
 #define QN_UINT32_MAX (0xffffffff)
 #endif
-
+/*
+ * struct CRF_FeatureMap_config
+ *
+ * Used by the CRF_FeatureMap object to control settings.  Generally used in the
+ * constructor for CRF_FeatureMap.
+ *
+ */
 struct CRF_FeatureMap_config {
 	ftrmaptype map_type;
 	QNUInt32 numLabs;
@@ -23,7 +37,19 @@ struct CRF_FeatureMap_config {
 	double stateBiasVal;
 	double transBiasVal;
 };
-
+/*
+ * class CRF_FeatureMap
+ *
+ * Controls the interaction of features taken from the feature stream and the
+ * CRF_Model itself.  Determines the association between weights in the lambda
+ * vector of the CRF and the feature functions.
+ *
+ * This object should be treated as merely an interface class for an actual
+ * FeatureMap object and should never be instantiated on its own.  The factory
+ * function "createFeatureMap" should be updated to account for new FeatureMap
+ * objects as they are created.
+ *
+ */
 class CRF_FeatureMap
 {
 protected:
@@ -34,12 +60,6 @@ public:
 	CRF_FeatureMap(CRF_FeatureMap_config* cnf);
 	virtual ~CRF_FeatureMap();
 	static CRF_FeatureMap* createFeatureMap(CRF_FeatureMap_config* cnf);
-
-	/*virtual double computeRi(float* ftr_buf, double* lambda, QNUInt32 &lc, QNUInt32 clab);
-	virtual double computeMij(float* ftr_buf, double* lambda, QNUInt32 &lc, QNUInt32 plab, QNUInt32 clab);
-	virtual double computeExpFState(float* ftr_buf, double* lambda, QNUInt32 &lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 clab);
-	virtual double computeExpFTrans(float* ftr_buf, double* lambda, QNUInt32 &lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 plab, QNUInt32 clab);
-	*/
 
 	virtual double computeStateArrayValue(float* ftr_buf, double* lambda, QNUInt32 clab);
 	virtual double computeTransMatrixValue(float* ftr_buf, double* lambda, QNUInt32 plab, QNUInt32 clab);

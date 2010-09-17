@@ -1,5 +1,15 @@
 #ifndef CRF_LOGMATH_H_
 #define CRF_LOGMATH_H_
+/*
+ * CRF_LogMath.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Implements functions pertaining to log math operations.
+ *   Specifically, implements various forms of addition in the log space and a protected
+ *   exponential function, as well as constants for log math.
+ */
 #include <stdexcept>
 #include <iostream>
 #include <string>

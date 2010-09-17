@@ -1,3 +1,10 @@
+/*
+ * CRF_ViterbiDecoder.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_ViterbiDecoder.h"
 #include <cmath>
 #include <vector>
@@ -5,6 +12,14 @@
 #include <map>
 
 
+/*
+ * CRF_ViterbiDecoder constructor
+ *
+ * Input: *ftr_strm_in - pointer to input feature stream for decoding
+ *        *crf_in - pointer to the CRF model to be used for building lattices
+ *
+ *
+ */
 CRF_ViterbiDecoder::CRF_ViterbiDecoder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in)
 	: crf(crf_in),
 	  ftr_strm(ftr_strm_in)
@@ -23,11 +38,13 @@ CRF_ViterbiDecoder::CRF_ViterbiDecoder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	this->prevViterbiWts = new vector<float>();
 	this->curViterbiStateIds_new = new vector<uint>();
 	this->prevViterbiStateIds_new = new vector<uint>();
-	//this->curViterbiStateIds = new vector<CRF_ViterbiState>();
-	//this->prevViterbiStateIds = new vector<CRF_ViterbiState>();
-
 }
 
+/*
+ * CRF_ViterbiDecoder destructor
+ *
+ *
+ */
 CRF_ViterbiDecoder::~CRF_ViterbiDecoder()
 {
 	delete [] this->ftr_buf;
@@ -38,15 +55,39 @@ CRF_ViterbiDecoder::~CRF_ViterbiDecoder()
 	delete this->prevViterbiWts;
 	delete this->curViterbiStateIds_new;
 	delete this->prevViterbiStateIds_new;
-	//delete this->curViterbiStateIds;
-	//delete this->prevViterbiStateIds;
 }
 
-
+/*
+ * CRF_ViterbiDecoder::getNodeList
+ *
+ * Accessor function for nodeList created during decode, if further processing
+ * is desired.
+ *
+ */
 CRF_StateVector * CRF_ViterbiDecoder::getNodeList() {
 	return this->nodeList;
 }
 
+/*
+ * CRF_ViterbiDecoder::internalStateUpdate
+ *
+ * Input: nodeCnt - index into nodeList for current state to be updated
+ *        phn_id - phone label used in OpenFst lattice
+ *        prevIdx - previous state Id
+ *        prevWts - pointer to previous state weights
+ *        curWts - pointer to current state weights to be updated
+ *        curPtrs - point to vector of current state backwards pointers to be updated
+ *
+ * Returns: minimum weight value computed for this state update
+ *
+ * Performs an intra-state update of weights and backward pointers for the
+ * Viterbi best-path decode.
+ *
+ * For a given phone label (phn_id), and a given current state (nodeCnt), updates
+ * the possible paths into the state that result in that label.  This update
+ * assumes a multi-state model in the underlying phone structure.
+ *
+ */
 float CRF_ViterbiDecoder::internalStateUpdate(int nodeCnt, uint phn_id, int prevIdx,
 												vector<float>* prevWts,
 												vector<float>* curWts,
@@ -110,7 +151,24 @@ float CRF_ViterbiDecoder::internalStateUpdate(int nodeCnt, uint phn_id, int prev
 	return min_wt;
 }
 
-
+/*
+ * CRF_ViterbiDecoder::crossStateUpdate_new
+ *
+ * Input: check_state - index into nodeList for current state to be updated
+ *        end_idx - phone label used in OpenFst lattice
+ *        transw - previous state Id
+ *        phn_lab - pointer to previous state weights
+ *        wrd_lab - pointer to current state weights to be updated
+ *
+ *
+ * Performs an inter-state update of weights and backward pointers for the
+ * Viterbi best-path decode.
+ *
+ * For a given phone label (phn_id), and a given previous state (end_idx), updates
+ * the possible paths into the state that result in that label from the previous
+ * state.
+ *
+ */
 void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 												float transw, uint phn_lab, uint wrd_lab)
 {
@@ -133,10 +191,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 		tmpViterbiWrdIds.push_back(wrd_lab);
 		tmpViterbiStateIdMap_new[check_state]=tmpViterbiStateIds_new.size()-1;
 		tmpPruneWts.push_back(transw);
-		//CRF_ViterbiState new_state(check_state,phn_lab,transw,end_idx);
-		//new_state.wrd_label=wrd_lab;
-		//tmpViterbiStateIds.push_back(new_state);
-		//tmpViterbiStateIdMap_new[check_state]=tmpViterbiStateIds.size()-1;
 		for (uint st=0; st<nStates; st++) {
 			if (st==0) 	{
 				tmpViterbiWts.push_back(transw);
@@ -159,9 +213,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 			// expanded on, so replace the one we've got with it
 			tmpViterbiWts[exp_wt_idx]=transw;
 			tmpViterbiPtrs[exp_wt_idx]=end_idx;
-			//tmpViterbiStateIds[exp_idx].weight=transw;
-			//tmpViterbiStateIds[exp_idx].label=phn_lab;
-			//tmpViterbiStateIds[exp_idx].wrd_label=wrd_lab;
 			tmpPruneWts[exp_idx]=transw;
 			tmpViterbiPhnIds[exp_idx]=phn_lab;
 			tmpViterbiWrdIds[exp_idx]=wrd_lab;
@@ -173,6 +224,25 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 
 }
 
+/*
+ * CRF_ViterbiDecoder::nStateDecode
+ *
+ * Input: *result_fst - empty fst to store final result
+ *        *lm_fst - fst containing the language model to decode against
+ *        input_beam - beam width to decode against
+ *
+ *  Performs Viterbi decoding using time-synchronous pruning controlled by the
+ *  input_beam parameter and constrained by the language model in lm_fst.
+ *  result_fst contains a finite-state transducer with the
+ *  single best word sequence as determined by the Viterbi decode.
+ *
+ *  NOTE:  Currently this function is hard-coded to assume that the end of
+ *  sentence token (e.g. SENT_END) is mapped to symbol 1 in the language model.
+ *  This should be updated to take a parameter that holds the value of the end
+ *  of sentence token.
+ *
+ *
+ */
 int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<StdArc>* lm_fst, double input_beam, uint min_hyps, uint max_hyps, float beam_inc) {
 
 	// Takes in an empty fst and an fst containing a dictionary/language model network
@@ -197,11 +267,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	prevViterbiWts->clear();
 	curViterbiStateIds_new->clear();
 	prevViterbiStateIds_new->clear();
-
-	//curViterbiStateIds->clear();
-	//prevViterbiStateIds->clear();
-
-
 
 	// we look for arcs off the start state and make them hypotheses
 	StateIterator< VectorFst<StdArc> > lmIter(*lm_fst);
@@ -240,30 +305,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	}
 	}
 
-	/*
-	 * for (ArcIterator< VectorFst<StdArc> > aiter(*lm_fst,lm_start); !aiter.Done(); aiter.Next()) {
-
-
-
-		prevViterbiStateIds_new->push_back(aiter.Value().nextstate);
-		viterbiStartPhns.push_back(aiter.Value().ilabel);
-		viterbiStartWrds.push_back(aiter.Value().olabel);
-
-		for (uint state=0; state<nStates; state++) {
-			if (state==0) {
-				prevViterbiWts->push_back(aiter.Value().weight.Value());
-			}
-			else {
-				prevViterbiWts->push_back(99999.0);
-			}
-		}
-		//
-		//CRF_ViterbiState start_state(aiter.Value().nextstate,aiter.Value().ilabel,aiter.Value().weight.Value(),0);
-		//start_state.wrd_label=aiter.Value().olabel;
-		//prevViterbiStateIds->push_back(start_state);
-
-	}
-	 */
 
 	int nodeCnt=0;
 	int num_pruned=0;
@@ -302,8 +343,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 			//cout << "Clearing viterbi bookkeeping structs" << endl;
 			//this->nodeList->at(nodeCnt)->viterbiStates.clear();
 			this->nodeList->at(nodeCnt)->viterbiPointers.clear();
-			//tmpViterbiStateIds.clear();
-			//curViterbiStateIds->clear();
 			curViterbiWts->clear();
 			curViterbiStateIds_new->clear();
 			tmpViterbiStateIds_new.clear();
@@ -313,9 +352,7 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 			tmpViterbiWts.clear();
 			tmpViterbiPtrs.clear();
 			tmpPruneWts.clear();
-			//tmpStateMap.clear();
 			tmpViterbiStateIds_new.reserve(prevViterbiWts->size());
-			//tmpViterbiStateIds.reserve(prevViterbiWts->size());
 			tmpViterbiPhnIds.reserve(prevViterbiWts->size());
 			tmpViterbiWts.reserve(prevViterbiWts->size());
 			tmpViterbiPtrs.reserve(prevViterbiWts->size());
@@ -331,7 +368,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				// be transitioning to a new phone here.
 				// We store these in the temporary vectors to make pruning easier below
 				for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
-				//for (uint idx=0; idx<prevViterbiStateIds->size(); idx++) {
 
 					uint tmp_state=prevViterbiStateIds_new->at(idx);
 					curViterbiStateIds_new->push_back(tmp_state);
@@ -340,25 +376,12 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 					double min_wt=internalStateUpdate(nodeCnt, viterbiStartPhns[idx], idx,
 							prevViterbiWts, curViterbiWts, &(this->nodeList->at(nodeCnt)->viterbiPointers));
 					if (min_wt<min_weight) { min_weight=min_wt; }
-
-					/*
-					CRF_ViterbiState tmp_state=prevViterbiStateIds->at(idx);
-					this->nodeList->at(nodeCnt)->viterbiPhnIds.push_back(tmp_state.label);
-					double min_wt=internalStateUpdate(nodeCnt, tmp_state.label, idx,
-							prevViterbiWts, curViterbiWts, &(this->nodeList->at(nodeCnt)->viterbiPointers));
-					if (min_wt<min_weight) { min_weight=min_wt; }
-					CRF_ViterbiState new_state(tmp_state.state,tmp_state.label,min_wt,0);
-					new_state.wrd_label=tmp_state.wrd_label;
-					curViterbiStateIds->push_back(new_state);
-					prevViterbiWrdIds.push_back(tmp_state.wrd_label);
-					*/
 				}
 			}
 			else {
 				time_t time1 = time(NULL);
 				//cout << "Internal update" << endl;
 				for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
-				//for (uint idx=0; idx<prevViterbiStateIds->size(); idx++) {
 
 					uint tmp_state=prevViterbiStateIds_new->at(idx);
 					uint tmp_phn=this->nodeList->at(nodeCnt-1)->viterbiPhnIds[idx];
@@ -370,21 +393,9 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 							prevViterbiWts, &(tmpViterbiWts),&(tmpViterbiPtrs));
 					tmpPruneWts.push_back(min_wt);
 					if (min_wt<min_weight) { min_weight=min_wt; }
-					/*
-					CRF_ViterbiState tmp_state=prevViterbiStateIds->at(idx);
-					tmpViterbiWrdIds.push_back(prevViterbiWrdIds[idx]);
-					tmpViterbiPhnIds.push_back(this->nodeList->at(nodeCnt-1)->viterbiPhnIds[idx]);
-					float min_wt=internalStateUpdate(nodeCnt, tmp_state.label, idx,
-												prevViterbiWts, &(tmpViterbiWts),&(tmpViterbiPtrs));
-					if (min_wt<min_weight) { min_weight=min_wt; }
-					CRF_ViterbiState new_state(tmp_state.state,tmp_state.label,min_wt,0);
-					new_state.wrd_label=tmp_state.wrd_label;
-					tmpViterbiStateIds.push_back(new_state);
-					*/
 				}
 				time_t time2=time(NULL);
 				int_time+=time2-time1;
-				//cout << "Internal update ends" << endl;
 				updateCounter=0;
 				epsilonCounter=0;
 				addedCounter=0;
@@ -403,15 +414,9 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				//cout << "Cross state update" << endl;
 				time1=time(NULL);
 				for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
-				//for (uint idx=0; idx<prevViterbiStateIds->size(); idx++) {
 					uint prev_state=prevViterbiStateIds_new->at(idx);
-					//CRF_ViterbiState tmp_state = prevViterbiStateIds->at(idx);
-					//uint prev_state=tmp_state.state;
-					//cout << "Getting prev_phn" << endl;
 					uint prev_phn=this->nodeList->at(nodeCnt-1)->viterbiPhnIds[idx];
-					//uint prev_phn=tmp_state.label;
 					int end_idx=idx*nStates+nStates-1;
-					//cout << "Checking weight" << endl;
 					if (prevViterbiWts->at(end_idx)<prev_min_weight+beam || !prune) {
 						//only perform this update if our exit state from the previous iteration
 						// is under the pruning threshold - cut down on unneeded expansions that
@@ -433,7 +438,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 										!aiter.Done();
 										aiter.Next()) {
 							counter++;
-							//const StdArc* check_arc=(const StdArc*)&(aiter.Value());
 							uint nextstate=aiter.Value().nextstate;
 							uint check_state=nextstate;
 							if (aiter.Value().ilabel == 0) {
@@ -501,7 +505,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 																!aiter.Done();
 																aiter.Next()) {
 
-						//const StdArc* check_arc=(const StdArc*)&(aiter.Value());
 						uint nextstate=aiter.Value().nextstate;
 						uint check_state=nextstate;
 						if (aiter.Value().ilabel == 0) {
@@ -587,14 +590,9 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 					//uint tmp_phn = tmp_state.label;
 					//float tmp_wt = tmp_state.weight;
 					if (tmpPruneWts[idx]<min_weight+beam || !prune) {
-					//if (tmp_wt<min_weight+beam || !prune) {
 						// We'll keep this for the next iteration
 						curViterbiStateIds_new->push_back(tmp_state);
-						//CRF_ViterbiState new_state(tmp_state.state,tmp_state.label,tmp_state.weight,0);
-						//new_state.wrd_label=tmp_state.wrd_label;
-						//curViterbiStateIds->push_back(new_state);
 						prevViterbiWrdIds.push_back(tmpViterbiWrdIds[idx]);
-						//prevViterbiWrdIds.push_back(tmp_state.wrd_label);
 						this->nodeList->at(nodeCnt)->viterbiPhnIds.push_back(tmp_phn);
 						for (uint st=0; st<nStates; st++) {
 							curViterbiWts->push_back(tmpViterbiWts[wt_idx+st]);
@@ -608,29 +606,15 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				time2=time(NULL);
 				merge_time+=time2-time1;
 				//cout << "Final move ends" << endl;
-				/*
-				if (max_hyps>0 && curViterbiStateIds_new->size()>=max_hyps) {
-					beam=beam*(1.0-beam_inc);  // reduce pruning beam if we have too many states
-				}
-				if (min_hyps>0 && curViterbiStateIds_new->size()<=min_hyps
-						&& curViterbiStateIds_new->size()<prevViterbiStateIds_new->size()) {
-					beam=beam*(1.0+beam_inc);  // increase pruning beam if we have too few states
-												// but only if we've decreased in number of states since
-												// our last iteration
-				}
-				*/
 			}
 			tmpViterbiWts.clear();
 			tmpViterbiPtrs.clear();
-			//tmpViterbiStateIds.clear();
 			tmpViterbiStateIds_new.clear();
 			tmpViterbiPhnIds.clear();
 			tmpViterbiWrdIds.clear();
-			//tmpViterbiMap.clear();
 			tmpPruneWts.clear();
 			prev_min_weight=min_weight;
 			totalStates+=curViterbiStateIds_new->size();
-			//totalStates+=curViterbiStateIds->size();
 
 			// As a check on where we are, let's dump the current ViterbiStates and Weights at every
 			// cycle.  Just to see if what we're doing looks sane
@@ -651,10 +635,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				cout << "Internal update time: " << int_time;
 				cout << " Cross update time: " << cross_time;
 				cout << " Merge time: " << merge_time << endl;
-			    //cout << "Size of statelist: " << this->nodeList->at(nodeCnt)->viterbiStates.size();
-			    //cout << " size of statemap: " << tmpViterbiMap.size();
-			    //cout << " Size of weightlist: " << curViterbiWts->size();
-			    //cout << " Size of ptrlist: " << this->nodeList->at(nodeCnt)->viterbiPointers.size() << endl;
 			}
 
 
@@ -663,9 +643,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 			vector<float>* holdWts=curViterbiWts;
 			curViterbiWts=prevViterbiWts;
 			prevViterbiWts=holdWts;
-			//vector<CRF_ViterbiState>* holdStates=curViterbiStateIds;
-			//curViterbiStateIds=prevViterbiStateIds;
-			//prevViterbiStateIds=holdStates;
 
 			vector<uint>* holdStates=curViterbiStateIds_new;
 			curViterbiStateIds_new=prevViterbiStateIds_new;
@@ -711,8 +688,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	prevViterbiWts->clear();
 	curViterbiStateIds_new->clear();
 	prevViterbiStateIds_new->clear();
-	//curViterbiStateIds->clear();
-	//prevViterbiStateIds->clear();
 
 
 	int cur_state=fst->AddState();
@@ -758,9 +733,7 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 			fst->AddArc(startState,StdArc(cur_lab_ptr+1,cur_lab+1,trans_w,next_state));
 		}
 		this->nodeList->at(idx)->viterbiPointers.clear();
-		//this->nodeList->at(idx)->viterbiStates.clear();
 		this->nodeList->at(idx)->viterbiPhnIds.clear();
-		//this->nodeList->at(idx)->viterbiStateIds.clear();
 	}
 	}
 	Connect(fst);

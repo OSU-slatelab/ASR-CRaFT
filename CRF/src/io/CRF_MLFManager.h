@@ -1,10 +1,12 @@
 /*
  * CRF_MLFManager.h
  *
- *  Created on: Sep 15, 2009
- *      Author: morrijer
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_MLFManager
+ * Uses to read the MLF file format used by HTK.
  */
-
 #ifndef CRF_MLFMANAGER_H_
 #define CRF_MLFMANAGER_H_
 #include "fst/fstlib.h"
@@ -13,6 +15,13 @@
 
 using namespace fst;
 using namespace std;
+
+/*
+ * class CRF_MLFManager
+ *
+ * Reads the MLF file format used by HTK.  Uses the MLF to generate lattices in OpenFST format.
+ *
+ */
 
 class CRF_MLFManager {
 private:

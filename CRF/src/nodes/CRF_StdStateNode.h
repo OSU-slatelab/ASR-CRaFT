@@ -1,8 +1,24 @@
 #ifndef CRF_STDSTATENODE_H_
 #define CRF_STDSTATENODE_H_
-
+/*
+ * CRF_StateNode.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_StdStateNode
+ */
 #include "CRF_StateNode.h"
 
+/*
+ * class CRF_StdStateNode
+ *
+ * Used in training and decoding processing.  Holds the features for a given state, the label (if during
+ * training), the computed alpha and beta arrays, and the computed transition matrix.
+ *
+ * This class implements a single state topology for each label in the sequence.  This is the simplest
+ * kind of topology for the linear chain crf.
+ */
 class CRF_StdStateNode : public CRF_StateNode
 {
 protected:

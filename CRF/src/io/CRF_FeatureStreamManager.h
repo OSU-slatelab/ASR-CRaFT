@@ -1,5 +1,16 @@
 #ifndef CRF_FEATURESTREAMMANAGER_H_
 #define CRF_FEATURESTREAMMANAGER_H_
+/*
+ * CRF_FeatureStreamManager.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_FeatureStreamManager
+ * Uses the feature stream model/classes defined for the ICSI Quicknet neural networks
+ * package for compatibility with ICSI Quicknet.
+ */
+
 #include <QuickNet.h>
 #include <iostream>
 #include <stdio.h>
@@ -9,7 +20,16 @@
 #include "CRF_InLabStream_RandPresent.h"
 #include "CRF_FeatureStream.h"
 
-
+/*
+ * class CRF_FeatureStreamManager
+ *
+ * Uses the underlying CRF_FeatureStream objects to define and control access to training and
+ * cross-validation portions of the feature stream.  Acts as an interface to the various CRF_FeatureStream
+ * classes.
+ *
+ * It is recommended to use this class rather than directly using one of the various CRF_FeatureStream
+ * classes.
+ */
 
 class CRF_FeatureStreamManager
 {

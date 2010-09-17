@@ -1,34 +1,56 @@
 /*
- * CRF_MLFManager.cpp
+ * CRF_InLabStream_RandPresent.cpp
  *
- *  Created on: Sep 15, 2009
- *      Author: morrijer
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
  */
 
 #include "CRF_MLFManager.h"
 typedef StdArc::StateId StateId;
 using namespace fst;
 
+/*
+ * CRF_MLFManager constructor
+ *
+ * Input: mlffile - text file containing MLF formatted utterances
+ *        olist - text file containing output tokens in OpenFst format
+ *        symtab - OpenFst symbol table of output tokens
+ *
+ */
 CRF_MLFManager::CRF_MLFManager(char* mlffile, char* olist, SymbolTable* symTab)
 	: symTab(symTab){
-	// TODO Auto-generated constructor stub
 	this->readMLF(mlffile);
 }
 
+/*
+ * CRF_MLFManager destructor
+ */
 CRF_MLFManager::~CRF_MLFManager() {
-	// TODO Auto-generated destructor stub
-	cout << "in CRF_MLFManager destructor" << endl;
+	//cout << "in CRF_MLFManager destructor" << endl;
 }
 
+/*
+ * CRF_MLFManager::getKey
+ *
+ * Input: fname - string containing the file name of the utterance being searched for (e.g. "filename.lab")
+ *
+ * Returns: the key portion of the filename (e.g. "filename.lab" -> "filename")
+ */
 string CRF_MLFManager::getKey(string fname) {
-	// Takes in a filename in HTK MLF format (e.g. "*/filename.lab")
-	// Returns just the key portion (e.g. "filename")
 
 	int lastc=fname.rfind(".");
 	int firstc=fname.rfind("/");
 	return(fname.substr(firstc+1,lastc-firstc-1));
 }
 
+/*
+ * CRF_MLFManager::readMLF
+ *
+ * Input: mlffile - string containing the name of the input mlffile
+ *
+ * Reads the MLF file and stores its contents in the transcripts vector.
+ */
 void CRF_MLFManager::readMLF(char* mlffile) {
 	std::ifstream ifile;
 	ifile.open(mlffile);
@@ -95,6 +117,14 @@ void CRF_MLFManager::readMLF(char* mlffile) {
 
 }
 
+/*
+ * CRF_MLFManager::getFst
+ *
+ * Input: fname - the filename of the sequence being requested
+ *
+ * Returns: OpenFst formated VectorFst of the transcript from the MLF
+ *
+ */
 StdVectorFst* CRF_MLFManager::getFst(string fname) {
 	string key = this->getKey(fname);
 	if (key == "") {

@@ -1,25 +1,26 @@
 #ifndef CRF_LBFGSTRAINER_H_
 #define CRF_LBFGSTRAINER_H_
+/*
+ * CRF_LBFGSTrainer.h
+ *
+ * Copyright (c) 2010
+ * Author: Eric Fosler-Lussier
+ *
+ * Implements the CRF_LBFGSTrainer class
+ */
 
 #include "../CRF.h"
 #include "CRF_Trainer.h"
-
 #include "gradbuilders/CRF_GradBuilder.h"
 #include "accumulators/CRF_Pthread_GradAccumulator.h"
 #include "accumulators/CRF_GradAccumulator.h"
-/*#include "CRF_NewGradBuilder.h"
-#include "CRF_NewGradBuilderLog.h"
-#include "CRF_StdStateVector.h"
-#include "CRF_StdStateVectorLog.h"
-#include "CRF_StdNStateVector.h"
-#include "CRF_StdNStateVectorLog.h"
-*/
-//#include "CRF_StdGradBuilder.h"
-//#include "CRF_NstateGradBuilder.h"
-//#include "CRF_StdGradBuilderLog.h"
-
 #include "../utils/lbfgs.h"
 
+/*
+ * class CRF_LBFGSTrainer
+ *
+ * Used in training.  This class implements L-BFGS gradient descent training for CRFs.
+ */
 class CRF_LBFGSTrainer: public CRF_Trainer
 {
 protected:

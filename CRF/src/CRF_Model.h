@@ -1,9 +1,25 @@
 #ifndef CRFMODEL_H_
 #define CRFMODEL_H_
+/*
+ * CRF_Model.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Implements the CRF_Model class
+ */
 
 #include "CRF.h"
 #include "ftrmaps/CRF_FeatureMap.h"
 
+/*
+ * class CRF_Model
+ *
+ * Holds the relevant information about the underlying CRF model, including the topology of the model
+ * (as dictated by the node type), the interaction of the features with the model (as defined by the
+ * feature map), and the current parameters of the model (as defined by the lambda vector).  Most
+ * of the functions in this class are accessor and mutator functions for these elements.
+ */
 class CRF_Model
 {
 protected:

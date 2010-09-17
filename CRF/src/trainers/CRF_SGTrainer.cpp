@@ -1,10 +1,27 @@
+/*
+ * CRF_SGTrainer.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_SGTrainer.h"
 
+/*
+ * CRF_SGTrainer constructor
+ *
+ * See superclass CRF_Trainer for details
+ */
 CRF_SGTrainer::CRF_SGTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
 	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
 }
 
+/*
+ * CRF_SGTrainer::train
+ *
+ * Performs stochastic gradient training.
+ */
 
 void CRF_SGTrainer::train()
 {
@@ -15,71 +32,12 @@ void CRF_SGTrainer::train()
 	int iCounter=0;
 	int uCounter=0;
 	CRF_FeatureStream *ftr_str=this->ftr_strm_mgr->trn_stream;
-	//int uCounter = this->crf_ptr->getPresentations();
 	ofstream ofile;
 
-
-	/* This is now meaningless - we're always using logspace now, and the StateVector
-	 * figures out on its own what kind of state topology to use
-	 * QNUInt32 nStates = this->crf_ptr->getFeatureMap()->getNumStates();
-	 * if (this->useLogspace) {
-		gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
-		//gbuild=new CRF_FerrGradBuilder(this->crf_ptr);
-		cout << "Using Logspace training..." << endl;
-	}
-	else {
-		gbuild=new CRF_NewGradBuilder(this->crf_ptr);
-		cout << "Using Realspace training..." << endl;
-	}*/
-/*	switch (this->objective) {
-	case EXPF :
-		gbuild = new CRF_NewGradBuilder(this->crf_ptr);
-		break;
-	case EXPFSOFT :
-		gbuild = new CRF_NewGradBuilderSoft(this->crf_ptr);
-		break;
-	case FERR :
-		gbuild = new CRF_FerrGradBuilder(this->crf_ptr);
-		break;
-	default :
-		gbuild = new CRF_NewGradBuilder(this->crf_ptr);
-		break;
-	}
-	*/
-	//gbuild = new CRF_NewGradBuilder(this->crf_ptr);
-	//gbuild = new CRF_NewGradBuilderSoft(this->crf_ptr);
 	CRF_GradBuilder* gbuild = CRF_GradBuilder::create(this->crf_ptr,this->objective);
 	gbuild->setNodeList(new CRF_StateVector());
 	cout << "Using Logspace training..." << endl;
-	/*if (this->useLogspace) {
-		if (nStates==1) {
-			//gbuild=new CRF_StdGradBuilderLog(this->crf_ptr);
-			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVectorLog());
-			cout << "Using Logspace training..." << endl;
-		}
-		else {
-			gbuild=new CRF_NewGradBuilderLog(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVectorLog());
-			//cerr << "Logspace n-state training not yet implemented" << endl;
-			//exit(-1);
-		}
-	}
-	else{
-		if (nStates==1) {
-			//gbuild=new CRF_StdGradBuilder(this->crf_ptr);
-			gbuild=new CRF_NewGradBuilder(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVector());
-			cout << "Using normal space training..." << endl;
-		}
-		else {
-			gbuild=new CRF_NewGradBuilder(this->crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVector());
-			//cerr << "N-state training not yet implemented" << endl;
-			//exit(-1);
-			//gbuild=new CRF_NstateGradBuilder(this->crf_ptr);
-		}
-	}*/
+
 	double* lambda=this->crf_ptr->getLambda();
 	QNUInt32 lambdaLen = this->crf_ptr->getLambdaLen();
 	//double* lambdaAcc=new double[lambdaLen];
@@ -100,18 +58,10 @@ void CRF_SGTrainer::train()
 	if (this->useGvar) {
 		invSquareVar=1/this->gvar;
 	}
-	//invSquareVar=1/this->gvar;
-	//if (this->useGvar) {
-	//	invSquareVar=1/(this->gvar*this->gvar);
-	//}
-	//cout << "Iteration: " << iCounter << " starting" << endl;
 	ftr_str->rewind();
 	QN_SegID segid = ftr_str->nextseg();
 
-	//QNUInt32 nSegs = this->ftr_strm->num_segs();
-
     time_t rawtime;
-    //QNUInt32 seg,frm;
 
 	while (iCounter<this->maxIters) {
 		if (start) {
@@ -119,7 +69,6 @@ void CRF_SGTrainer::train()
 			start=false;
 		}
 		if (uCounter % this->uttRpt == 0) {
-			//int pos = this->ftr_strm->get_pos(&seg,&frm);
 			time(&rawtime);
 			char* time = ctime(&rawtime);
 			time[strlen(time)-1]='\0';

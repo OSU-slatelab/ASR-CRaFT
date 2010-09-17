@@ -1,9 +1,32 @@
 #ifndef CRF_INFTRSTREAM_RANDPRESENT_H_
 #define CRF_INFTRSTREAM_RANDPRESENT_H_
+/*
+ * CRF_InFtrStream_RandPresent.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains the class definitions for CRF_InFtrStream_RandPresent
+ * Uses the feature stream model/classes defined for the ICSI Quicknet neural networks
+ * package for compatibility with ICSI Quicknet.
+ */
 
 #include "../CRF.h"
 #include "CRF_FeatureStream.h"
-
+/*
+ * class CRF_InFtrStream_RandPresent
+ *
+ * Controls the presentation of input features to the CRF training and
+ * decoding code.  Features and labels are assumed to be held in two different files
+ * according to this model.  The CRF_InFtrStream_RandPresent object is based on the ICSI Quicknet
+ * feature stream objects and implements similar functionality for compatibility between
+ * the two packages.
+ *
+ * This feature stream allows access to segments in a random order.  Two possible randomization
+ * methods (no replacement and with replacement) are supported.  To use segments in sequential
+ * order, use the CRF_FeatureStream class instead.
+ *
+ */
 class CRF_InFtrStream_RandPresent : public QN_InFtrStream
 {
 protected:

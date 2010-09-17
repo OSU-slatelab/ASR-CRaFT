@@ -1,3 +1,10 @@
+/*
+ * CRF_FeatureStream.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_FeatureStream.h"
 
 // The following is to correct for the fact that QN_ALL ends up being defined as
@@ -5,7 +12,14 @@
 // maximum a 32bit integer can hold.  This should be revisited and examined.
 #define CRF_ALL 4294967295
 
-
+/*
+ * CRF_FeatureStream constructor
+ *
+ * Input: *ftr - feature stream pre-created as a QN_InFtrStream object
+ *        *lab - label stream pre-created as a QN_InLabStream object
+ *        dbg - debugging flag
+ *
+ */
 CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg)
 	: ftr_stream(ftr),
 	  lab_stream(lab),
@@ -16,6 +30,15 @@ CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, i
 {
 }
 
+/*
+ * CRF_FeatureStream constructor
+ *
+ * Input: *ftr - feature stream pre-created as a QN_InFtrStream object
+ *        dbg - debugging flag
+ *
+ * This constructor is used when a feature file has no associated label file
+ * (i.e. during decoding).
+ */
 CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, int dbg)
 	: ftr_stream(ftr),
 	  lab_stream(NULL),
@@ -26,10 +49,21 @@ CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, int dbg)
 {
 }
 
+/*
+ * CRF_FeatureStream destructor
+ */
 CRF_FeatureStream::~CRF_FeatureStream()
 {
 }
 
+/*
+ * CRF_FeatureStream::nextseg
+ *
+ * Returns: Segment id of the current segment being addressed by the feature stream
+ *
+ * Advances the feature stream to the next segment.  If a label stream is defined for
+ * the object, advances it as well.
+ */
 QN_SegID CRF_FeatureStream::nextseg()
 {
 	QN_SegID ftr_segid, lab_segid;
@@ -64,6 +98,17 @@ QN_SegID CRF_FeatureStream::nextseg()
 	return this->segid;
 }
 
+/*
+ * CRF_FeatureStream::read
+ *
+ * Input:  bs - bunch size - number of frames of features and labels to read from the file
+ *         fb - frame buffer to store read features
+ *         lb - frame buffer to store read lable
+ * Returns: Segment id of the current segment being addressed by the feature stream
+ *
+ * Advances the feature stream to the next segment.  If a label stream is defined for
+ * the object, advances it as well.
+ */
 size_t CRF_FeatureStream::read(size_t bs, float* fb, QNUInt32* lb)
 {
 	size_t ftr_cnt, lab_cnt;
@@ -83,6 +128,16 @@ size_t CRF_FeatureStream::read(size_t bs, float* fb, QNUInt32* lb)
 
 }
 
+/*
+ * CRF_FeatureStream::get_pos
+ *
+ * Input: segno - parameter to store the current segment number
+ *        frameno - parameter to store the current frame number
+ *
+ * Returns: Error code indicating success or failure in reading the current segment and
+ *          frame number
+ *
+ */
 int CRF_FeatureStream::get_pos(size_t* segno, size_t* frameno)
 {
 	size_t ftrsegno;
@@ -95,6 +150,18 @@ int CRF_FeatureStream::get_pos(size_t* segno, size_t* frameno)
 	}
 }
 
+/*
+ * CRF_FeatureStream::nextseg
+ *
+ * Input: in_stream - second independent feature stream object
+ *
+ * Returns: new feature stream object that is the concatenation of the current object
+ *          and the object passed in by the parameter in_stream
+ *
+ * Used to build larger feature streams from multiple smaller files.  The streams must
+ * match segment-wise and frame-wise for this function to work without error.
+ *
+ */
 CRF_FeatureStream* CRF_FeatureStream::join(CRF_FeatureStream* in_stream)
 {
 	QN_InFtrStream* new_stream;
@@ -103,6 +170,13 @@ CRF_FeatureStream* CRF_FeatureStream::join(CRF_FeatureStream* in_stream)
 	return new CRF_FeatureStream(new_stream,this->lab_stream);
 }
 
+/*
+ * CRF_FeatureStream::rewind
+ *
+ * Resets the stream back to the beginning.
+ *
+ * If start_offset is defined, "the beginning" is the segment determined by start_offset
+ */
 void CRF_FeatureStream::rewind()
 {
 #ifdef NON_VIEW_VERSION
@@ -139,12 +213,26 @@ void CRF_FeatureStream::rewind()
 
 }
 
+/*
+ * CRF_FeatureStream::num_ftrs
+ *
+ * Returns: Number of features in the stream
+ */
 
 QNUInt32 CRF_FeatureStream::num_ftrs()
 {
 	return this->ftr_stream->num_ftrs();
 }
 
+/*
+ * CRF_FeatureStream::set_pos
+ *
+ * Input: segno - segment number to jump to
+ *        frmno - frame number to jump to
+ *
+ *
+ * Advances the feature stream to the segment/frame defined by segno and frmno.
+ */
 void CRF_FeatureStream::set_pos(QNUInt32 segno, QNUInt32 frmno)
 {
 	//eeek!  better error handling needed
@@ -160,6 +248,11 @@ void CRF_FeatureStream::set_pos(QNUInt32 segno, QNUInt32 frmno)
 	}
 }
 
+/*
+ * CRF_FeatureStream::num_segs
+ *
+ * Returns: Total number of segments in the feature stream
+ */
 QNUInt32 CRF_FeatureStream::num_segs()
 {
 	//if (this->numsegs==QN_ALL) {
@@ -170,6 +263,13 @@ QNUInt32 CRF_FeatureStream::num_segs()
 	}
 }
 
+/*
+ * CRF_FeatureStream::display
+ *
+ * Dumps the content of the feature stream to the output stream.
+ * Debugging function.
+ *
+ */
 void CRF_FeatureStream::display() {
 
 	QNUInt32 total_segs, ftr_count;
@@ -219,6 +319,16 @@ void CRF_FeatureStream::display() {
 	}
 }
 
+/*
+ * CRF_FeatureStream::view
+ *
+ * Input: startseg - segment to use as the initial segment for the view
+ *        nsegs - total number of segments in the view
+ *
+ * Transforms the feature stream into a subset (or "view") of the overall feature stream.
+ * A view contains a portion of the segments of the full stream in the same order as they
+ * appear in the full stream.
+ */
 void CRF_FeatureStream::view(QNUInt32 startseg,QNUInt32 nsegs) {
 	QNUInt32 ftrnseg=this->ftr_stream->num_segs();
 	if (ftrnseg<startseg || startseg<0 ||

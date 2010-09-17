@@ -1,5 +1,14 @@
 #ifndef CRF_UTILS_H_
 #define CRF_UTILS_H_
+/*
+ * CRF_Utils.h
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Contains code for various utility functions that are not part of other classes.
+ */
+
 #include <iostream>
 #include <sstream>
 #include <string>

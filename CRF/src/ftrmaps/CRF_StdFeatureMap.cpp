@@ -1,20 +1,22 @@
+/*
+ * CRF_StdFeatureMap.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_StdFeatureMap.h"
 
+/*
+ * CRF_StdFeatureMap constructor
+ *
+ * Input: nlabs - number of possible labels in the CRF
+ *        nfeas - number of features per label in the CRF
+ *
+ */
 CRF_StdFeatureMap::CRF_StdFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas)
 	: CRF_FeatureMap(nlabs,nfeas)
 {
-	//this->numFtrFuncs=nlabs*nfeas + nlabs + nlabs*nlabs;
-/*	this->useStateBias=true;
-	this->useTransBias=true;
-	this->useStateFtrs=true;
-	this->useTransFtrs=false;
-	this->stateFidxStart=0;
-	this->stateFidxEnd=nfeas-1;
-	this->transFidxEnd=nlabs+1;
-	this->transFidxStart=0;
-	this->numStates=1;
-	this->stateBiasVal=1.0;
-	this->transBiasVal=1.0;*/
 	this->stateFeatureIdxCache = new QNUInt32[nlabs];
 	this->transFeatureIdxCache = new QNUInt32[nlabs*nlabs];
 
@@ -22,6 +24,14 @@ CRF_StdFeatureMap::CRF_StdFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas)
 
 }
 
+/*
+ * CRF_StdFeatureMap constructor
+ *
+ * Input: *cnf - struct containing feature mapping information
+ *
+ * Note:  This constructor is preferred for new code.
+ *
+ */
 CRF_StdFeatureMap::CRF_StdFeatureMap(CRF_FeatureMap_config* cnf)
   :CRF_FeatureMap(cnf)
 {
@@ -31,13 +41,27 @@ CRF_StdFeatureMap::CRF_StdFeatureMap(CRF_FeatureMap_config* cnf)
 	this->recalc();
 }
 
+/*
+ * CRF_StdFeatureMap destructor
+ *
+ *
+ */
 CRF_StdFeatureMap::~CRF_StdFeatureMap()
 {
 	delete[] this->stateFeatureIdxCache;
 	delete[] this->transFeatureIdxCache;
 }
 
-
+/*
+ * CRF_StdFeatureMap::computeStateArrayValue
+ *
+ * Input: *ftr_buf - vector of observed feature values for computation
+ *        *lambda - lambda vector from the CRF
+ *        clab - label to compute the CRF value for
+ *
+ * Returns: computed state value for the label clab given the set of features (ftr_buf)
+ *          and the current CRF labmda values (lambda)
+ */
 double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda, QNUInt32 clab)
 {
 	double stateValue=0.0;
@@ -56,7 +80,17 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 	return stateValue;
 }
 
-
+/*
+ * CRF_StdFeatureMap::computeTransMatrixValue
+ *
+ * Input: *ftr_buf - vector of observed feature values for computation
+ *        *lambda - lambda vector from the CRF
+ *        plab - the previous label to compute the CRF value from
+ *        clab - the current label to compute the CRF value for
+ *
+ * Returns: computed state value for the transition between labels plab and clab
+ *           given the set of features (ftr_buf) and the current CRF labmda values (lambda)
+  */
 double CRF_StdFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda, QNUInt32 plab, QNUInt32 clab)
 {
 	double transMatrixValue=0.0;
@@ -75,14 +109,31 @@ double CRF_StdFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda
 	return transMatrixValue;
 }
 
-
+/*
+ * CRF_StdFeatureMap::computeStateExpF
+ *
+ * Input: *ftr_buf - vector of observed feature values for computation
+ *        *lambda - lambda vector from the CRF
+ *        *ExpF - vector to store expected values for each state feature
+ *        *grad - vector used to store gradient values
+ *        alpha_beta - gamma value of the current label (clab)
+ *        t_clab - true label (used in training)
+ *        clab - label to compute Expected state feature values for
+ *        compute_grad - flag to control whether grad vector is updated or not
+ *
+ * Returns: log likelihood of the state features
+ *
+ * Fills the ExpF vector and gradient vector with their values using the pre-computed
+ * alpha_beta (probability of being in the state with the label clab).
+ *
+ */
 double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_clab, QNUInt32 clab, bool compute_grad)
 {
 	double logLi=0.0;
 	QNUInt32 lc = this->stateFeatureIdxCache[clab];
 	if (config->useStateFtrs) {
 #ifdef VECTOR_ROUTINES
-	// Eric and Jeremy worked this out but then remembered that
+	// Worked this out but then remembered that
     // ExpF, grad, and lambda are doubles so this code won't work
     // We're keeping this here to remind us to implement the following functions
     //
@@ -123,6 +174,26 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 	return logLi;
 }
 
+/*
+ * CRF_StdFeatureMap::computeTransExpF
+ *
+ * Input: *ftr_buf - vector of observed feature values for computation
+ *        *lambda - lambda vector from the CRF
+ *        *ExpF - vector to store expected values for each state feature
+ *        *grad - vector used to store gradient values
+ *        alpha_beta - gamma value of the current transition (plab->clab)
+ *        t_plab - true previous label (used in training)
+ *        t_clab - true label (used in training)
+ *        plab - previous label used for computing expected transition values
+ *        clab - label to compute expected transition values
+ *        compute_grad - flag to control whether grad vector is updated or not
+ *
+ * Returns: log likelihood of the state features
+ *
+ * Fills the ExpF vector and gradient vector with their values using the pre-computed
+ * alpha_beta (probability of being in the transition between plab and clab).
+ *
+ */
 double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, double* ExpF, double* grad, double alpha_beta, QNUInt32 t_plab, QNUInt32 t_clab, QNUInt32 plab, QNUInt32 clab, bool compute_grad)
 {
 	double logLi=0.0;
@@ -157,23 +228,54 @@ QNUInt32 CRF_StdFeatureMap::getNumStates()
 	return config->numStates;
 }
 
+/*
+ * CRF_StdFeatureMap::getNumStateFuncs
+ *
+ * Input: clab - label under examination
+ *
+ * Returns: total number of state functions defined for the label clab
+ *
+ * In this case, all labels have the same number of state functions
+ */
 QNUInt32 CRF_StdFeatureMap::getNumStateFuncs(QNUInt32 clab)
 {
 	return this->numStateFuncs;
 }
 
+/*
+ * CRF_StdFeatureMap::getNumTransFuncs
+ *
+ * Input: plab - previous label under examination
+ *        clab - label under examination
+ *
+ * Returns: total number of transition functions defined for the transition plab->clab
+ *
+ * For CRF_StdFeatureMap this is the same for all transitions.
+ */
 QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 {
 	return this->numTransFuncs;
 }
 
-// EFL: I rewrote this because I don't like the loop in the second part
-// JJM: Internally this function only initializes the lookup table, so it should only get called once
-//      what really needs to be done is that this needs to be moved to a private function with a
-//      new name and replaced with public functions that look at the cached indices and do the correct
-//      thing with them, rather than recomputing them on the fly
-//      ** Set back to the old code because the new code was causing a segfault with my multi-state models
-//         will explore why later.
+/*
+ * CRF_StdFeatureMap::computeStateFeatureIdx
+ *
+ * Input: clab - label under examination
+ *        fno - feature number under examination
+ *
+ * Returns: the index into the lambda vector for the input feature identified
+ *           by fno and the label identified by clab.
+ *
+ * This is a private function used to create the idxCache.  To access an index, use
+ * getStateFeatureIdx instead.
+ *
+ * EFL: I rewrote this because I don't like the loop in the second part
+ * JJM: Internally this function only initializes the lookup table, so it should only get called once
+ *      what really needs to be done is that this needs to be moved to a private function with a
+ *      new name and replaced with public functions that look at the cached indices and do the correct
+ *      thing with them, rather than recomputing them on the fly
+ * JJM: This function is now "computeStateFeatureIdx", and is a private function.
+ */
 #ifndef OLDCODE
 QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 {
@@ -222,6 +324,20 @@ QNUInt32 CRF_StdFeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno) {
 }
 #endif
 
+/*
+ * CRF_StdFeatureMap::computeTransFeatureIdx
+ *
+ * Input: clab - label under examination
+ *        plab - previous label under examination
+ *        fno - feature number under examination
+ *
+ * Returns: the index into the lambda vector for the input feature identified
+ *           by fno and the transition identified by plab->clab.
+ *
+ * This is a private function used to create the idxCache.  To access an index, use
+ * getTransFeatureIdx instead.
+ *
+ */
 QNUInt32 CRF_StdFeatureMap::computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno)
 {
 	QNUInt32 retVal=0;
@@ -245,22 +361,63 @@ QNUInt32 CRF_StdFeatureMap::computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab,
 	return retVal;
 }
 
+/*
+ * CRF_StdFeatureMap::getStateFeatureIdx
+ *
+ * Input: clab - label under examination
+ *        fno - feature number under examination
+ *
+ * Returns: index into the lambda vector for the input feature identified by fno
+ *            and the label identified by clab.
+ */
 QNUInt32 CRF_StdFeatureMap::getStateFeatureIdx(QNUInt32 clab, QNUInt32 fno) {
 	return this->stateFeatureIdxCache[clab]+fno;
 }
 
+/*
+ * CRF_StdFeatureMap::getTransFeatureIdx
+ *
+ * Input: clab - label under examination
+ *        plab - previous label under examination
+ *        fno - feature number under examination
+ *
+ * Returns: index into the lambda vector for the input feature identified by fno
+ *            and the transition identified by plab->clab
+ */
 QNUInt32 CRF_StdFeatureMap::getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno) {
 	return this->transFeatureIdxCache[plab*config->numLabs+clab]+fno;
 }
 
+/*
+ * CRF_StdFeatureMap::getStateBiasIdx
+ *
+ * Input: clab - label under examination
+ *
+ * Returns: index into the lambda vector for the state bias feature for the label clab
+ */
 QNUInt32 CRF_StdFeatureMap::getStateBiasIdx(QNUInt32 clab) {
 	return getStateFeatureIdx(clab,this->numFtrFuncs-1);
 }
 
+/*
+ * CRF_StdFeatureMap::getTransBiasIdx
+ *
+ * Input: clab - label under examination
+ *        plab - previous label under examination
+ *
+ * Returns: index into the lambda vector for the state bias feature for the transition
+ *          plab->clab
+ */
 QNUInt32 CRF_StdFeatureMap::getTransBiasIdx(QNUInt32 clab, QNUInt32 plab) {
 	return getTransFeatureIdx(clab,plab,this->numTransFuncs-1);
 }
 
+/*
+ * CRF_StdFeatureMap::recalc
+ *
+ * Recomputes internal values.  Use after using a mutator function.
+ * Returns: total number of state feature functions in the feature map.
+ */
 QNUInt32 CRF_StdFeatureMap::recalc()
 {
 	this->numActualLabels = config->numLabs/config->numStates;
@@ -308,6 +465,11 @@ QNUInt32 CRF_StdFeatureMap::recalc()
 	return this->numFtrFuncs;
 }
 
+/*
+ * CRF_FeatureMap::getMapDescriptor
+ *
+ * Returns: a string that describes the feature map for the input lambda index lambdaNum.
+ */
 string CRF_StdFeatureMap::getMapDescriptor(QNUInt32 lambdaNum) {
 	std::stringstream ss;
 	QNUInt32 stateOffset=((config->useStateFtrs)?config->numFeas:0)+
@@ -351,6 +513,12 @@ string CRF_StdFeatureMap::getMapDescriptor(QNUInt32 lambdaNum) {
 	return string("Out of range");
 }
 
+/*
+ * CRF_StdFeatureMap::accumulateFeatures
+ *
+ * Fills the vector *accumulator with features from  *ftr_buf for the label clab.
+ *   Used in training the CRF via AIS.
+ */
 void CRF_StdFeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QNUInt32 clab) {
 	int offset=clab*this->numFtrFuncs;
 	for (QNUInt32 ii=0;ii<this->numFtrFuncs;ii++) {
@@ -358,166 +526,4 @@ void CRF_StdFeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QN
 	}
 }
 
-/*
-double CRF_StdFeatureMap::computeRi(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 clab)
-{
-	double Ri=0.0;
-	QNUInt32 tmp_lc = this->stateFeatureIdxCache[clab];
-	if (this->useStateFtrs) {
-		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
-		{
-			Ri+=ftr_buf[fidx]*lambda[tmp_lc];
-			tmp_lc++;
-		}
-	}
-	if (this->useStateBias) {
-		Ri+=lambda[tmp_lc]*this->stateBiasVal;
-		tmp_lc++;
-	}
-	lc=tmp_lc;
-	return Ri;
-}
-
-double CRF_StdFeatureMap::computeMij(float* ftr_buf, double* lambda, QNUInt32& lc, QNUInt32 plab, QNUInt32 clab)
-{
-	double Mi=0.0;
-	QNUInt32 tmp_lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
-	//QNUInt32 tmp_lc = this->getTransFeatureIdx(clab,plab);
-	if (this->useTransFtrs) {
-		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
-		{
-			Mi+=ftr_buf[fidx]*lambda[tmp_lc];
-			tmp_lc++;
-		}
-	}
-	if (this->useTransBias) {
-		Mi+=lambda[tmp_lc]*this->transBiasVal;
-		tmp_lc++;
-	}
-	lc=tmp_lc;
-	return Mi;
-}
-
-double CRF_StdFeatureMap::computeExpFState(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 clab)
-{
-	double logLi=0.0;
-	QNUInt32 tmp_lc = this->stateFeatureIdxCache[clab];
-	//QNUInt32 tmp_lc = this->getStateFeatureIdx(clab);
-	if (this->useStateFtrs) {
-		for (QNUInt32 fidx=this->stateFidxStart; fidx<=this->stateFidxEnd; fidx++)
-		{
-			ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx];
-			if (match) {
-				grad[tmp_lc]+=ftr_buf[fidx];
-				logLi += lambda[tmp_lc]*ftr_buf[fidx];
-			}
-			tmp_lc++;
-		}
-	}
-	if (this->useStateBias) {
-		ExpF[tmp_lc]+=alpha_beta*this->stateBiasVal;
-		if (match) {
-			grad[tmp_lc]+=this->stateBiasVal;
-			logLi += lambda[tmp_lc]*this->stateBiasVal;
-		}
-		tmp_lc++;
-	}
-	lc=tmp_lc;
-	return logLi;
-}
-
-double CRF_StdFeatureMap::computeExpFTrans(float* ftr_buf, double* lambda, QNUInt32& lc, double* ExpF, double* grad, double alpha_beta, bool match, QNUInt32 plab, QNUInt32 clab)
-{
-	double logLi=0.0;
-	QNUInt32 tmp_lc = this->transFeatureIdxCache[plab*this->numLabs+clab];
-	//QNUInt32 tmp_lc = this->getTransFeatureIdx(clab,plab);
-	if (this->useTransFtrs) {
-		for (QNUInt32 fidx=this->transFidxStart; fidx<=this->transFidxEnd; fidx++)
-		{
-			ExpF[tmp_lc]+=alpha_beta*ftr_buf[fidx];
-			if (match) {
-				grad[tmp_lc]+=ftr_buf[fidx];
-				logLi += lambda[tmp_lc]*ftr_buf[fidx];
-			}
-			tmp_lc++;
-		}
-	}
-	if (this->useTransBias) {
-		ExpF[tmp_lc] += alpha_beta*this->transBiasVal;
-		if (match) {
-			grad[tmp_lc]+=this->transBiasVal;
-			logLi+=lambda[tmp_lc]*this->transBiasVal;
-
-		}
-		tmp_lc++;
-	}
-	lc=tmp_lc;
-	return logLi;
-}
-
-void CRF_StdFeatureMap::setStateFtrRange(QNUInt32 st, QNUInt32 end)
-{
-	this->stateFidxStart=st;
-	this->stateFidxEnd=end;
-	if (this->stateFidxEnd - this->stateFidxStart +1 >0 ) {
-		this->useStateFtrs=true;
-	}
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setTransFtrRange(QNUInt32 st, QNUInt32 end)
-{
-	this->transFidxStart=st;
-	this->transFidxEnd=end;
-	if (this->transFidxEnd - this->transFidxStart +1 > 0) {
-		this->useTransFtrs=true;
-	}
-	this->recalc();
-}
-
-
-void CRF_StdFeatureMap::setNumStates(QNUInt32 ns)
-{
-	this->numStates=ns;
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setUseStateBias(bool useState)
-{
-	this->useStateBias=useState;
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setUseTransBias(bool useTrans)
-{
-	this->useTransBias=useTrans;
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setUseStateFtrs(bool useState)
-{
-	this->useStateFtrs = useState;
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setUseTransFtrs(bool useTrans)
-{
-	this->useTransFtrs = useTrans;
-	if (this->transFidxEnd == this->numLabs+1) { // By default if it isn't set, use the same features as the state features
-		this->transFidxStart=this->stateFidxStart;
-		this->transFidxEnd=this->stateFidxEnd;
-	}
-	this->recalc();
-}
-
-void CRF_StdFeatureMap::setStateBiasVal(double stateBias)
-{
-	this->stateBiasVal=stateBias;
-}
-
-void CRF_StdFeatureMap::setTransBiasVal(double transBias)
-{
-	this->transBiasVal=transBias;
-}
-*/
 

@@ -1,13 +1,20 @@
+/*
+ * CRF_GradBuilder.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ */
 #include "CRF_GradBuilder.h"
 #include "CRF_NewGradBuilder.h"
 #include "CRF_NewGradBuilderSoft.h"
-#include "CRF_FerrGradBuilder.h"
+//#include "CRF_FerrGradBuilder.h"
 
-/*#include "CRF_NewGradBuilderLog.h"
-#include "CRF_StdStateVector.h"
-#include "CRF_StdNStateVector.h"
-#include "CRF_StdStateVectorLog.h"
-#include "CRF_StdNStateVectorLog.h"*/
+/*
+ * CRF_GradBuilder constructor
+ *
+ * Inputs: crf_in - CRF model used for gradient construction
+ */
 
 CRF_GradBuilder::CRF_GradBuilder(CRF_Model* crf_in)
 	: crf(crf_in)
@@ -20,6 +27,9 @@ CRF_GradBuilder::CRF_GradBuilder(CRF_Model* crf_in)
 	this->nodeList=NULL;
 }
 
+/*
+ * CRF_GradBuilder destructor
+ */
 CRF_GradBuilder::~CRF_GradBuilder()
 {
 	cerr << "GradBuilder destructor" << endl;
@@ -34,20 +44,27 @@ CRF_GradBuilder::~CRF_GradBuilder()
 	//cerr << "exiting GradBuilder destructor" << endl;
 }
 
+/*
+ * CRF_GradBuilder::buildGradient
+ *
+ * Input: *ftr_stream - input feature stream
+ *        *grad - gradient vector return value
+ *        *Zx_out - normalization constant return value
+ *
+ * Stub function.
+ * Computes the gradient given the current CRF model and the features in ftr_strm and returns it in
+ * grad.  Zx_out contains the normalization constant for the current sequence.
+ */
 double CRF_GradBuilder::buildGradient(CRF_FeatureStream* ftr_strm,double* grad, double* Zx_out)
 {
 	return 0.0;
 }
 
-/*double CRF_GradBuilder::computeTransMatrix(CRF_Seq* seq)
-{
-	return 0.0;
-}
-
-double CRF_GradBuilder::computeTransMatrixLog(CRF_Seq* seq)
-{
-	return 1.0;
-}*/
+/*
+ * CRF_GradBuilder::setNodeList
+ *
+ * Mutator function to set the nodelist
+ */
 
 void CRF_GradBuilder::setNodeList(CRF_StateVector* nl)
 {
@@ -57,36 +74,23 @@ void CRF_GradBuilder::setNodeList(CRF_StateVector* nl)
 	this->nodeList = nl;
 }
 
+/*
 CRF_GradBuilder *CRF_GradBuilder::create(CRF_Model *crf_ptr,bool useLogspace, int nStates) {
 	CRF_GradBuilder *gbuild;
-
-/*	if (useLogspace) {
-		if (nStates==1) {
-			gbuild=new CRF_NewGradBuilderLog(crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVectorLog());
-			//cout << "Using Logspace training..." << endl;
-		}
-		else	 {
-			gbuild=new CRF_NewGradBuilderLog(crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVectorLog());
-		}
-	}
-	else{
-		if (nStates==1) {
-			gbuild=new CRF_NewGradBuilder(crf_ptr);
-			gbuild->setNodeList(new CRF_StdStateVector());
-			//cout << "Using normal space training..." << endl;
-		}
-		else {
-			gbuild=new CRF_NewGradBuilder(crf_ptr);
-			gbuild->setNodeList(new CRF_StdNStateVector());
-		}
-	}*/
 
 	return new CRF_NewGradBuilder(crf_ptr);
 
 }
+*/
 
+/*
+ * CRF_GradBuilder::create
+ *
+ * Input: crf_ptr - pointer to CRF model
+ *        ofunc - objective function type
+ *
+ * Factory function to create a gradient builder object automatically.
+ */
 CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 {
 	CRF_GradBuilder* gbuild;
@@ -94,12 +98,12 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 	case EXPF :
 		gbuild = new CRF_NewGradBuilder(crf_ptr);
 		break;
-	case EXPFSOFT :
-		gbuild = new CRF_NewGradBuilderSoft(crf_ptr);
-		break;
-	case FERR :
-		gbuild = new CRF_FerrGradBuilder(crf_ptr);
-		break;
+	//case EXPFSOFT :
+	//	gbuild = new CRF_NewGradBuilderSoft(crf_ptr);
+	//	break;
+	//case FERR :
+	//	gbuild = new CRF_FerrGradBuilder(crf_ptr);
+	//	break;
 	default :
 		gbuild = new CRF_NewGradBuilder(crf_ptr);
 		break;
