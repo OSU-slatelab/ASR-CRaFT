@@ -1,9 +1,19 @@
+/*
+ * CRFDecode.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Command line interface for CRF Viterbi decoding using a language model
+ *  in OpenFst format.
+ * Follows command line interface model for ICSI Quicknet.
+ * Requires the OpenFst finite state library.
+ */
 #include "QN_config.h"
 #include "fst/fstlib.h"
 #include <vector>
 #include <string>
 #include <map>
-
 #include "CRF.h"
 #include "CRF_Model.h"
 #include "io/CRF_FeatureStream.h"
@@ -19,6 +29,9 @@ typedef StdArc::Weight Weight;
 
 static struct CRF_FeatureMap_config fmap_config;
 
+/*
+ * command line options
+ */
 static struct {
 	char* ftr1_file;
 	char* ftr1_format;
@@ -89,6 +102,9 @@ static struct {
 	int dummy;
 } config;
 
+/*
+ * Command line options to be presented to the screen
+ */
 QN_ArgEntry argtab[] =
 {
 	{ NULL, "ASR CRaFT CRF decoding program version " CRF_VERSION, QN_ARG_DESC },
@@ -159,6 +175,9 @@ QN_ArgEntry argtab[] =
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
+/*
+ * Default values for command line options
+ */
 static void set_defaults(void) {
 	config.ftr1_file="";
 	config.ftr1_format="pfile";
@@ -224,6 +243,9 @@ static void set_defaults(void) {
 	config.verbose=0;
 };
 
+/*
+ * Sets initial values for the feature map object based on command line config object
+ */
 static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.map_type=STDSTATE;
 	if (strcmp(config.crf_featuremap,"stdtrans")==0) { fmap_config.map_type=STDTRANS;}
@@ -270,20 +292,28 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
 };
 
-
+/*
+ * logs an error message to standard output
+ */
 void log_msg(string outstr) {
 	if (config.verbose) {
 		cout << outstr << endl;
 	}
 }
 
+/*
+ * logs an error message to standard error
+ */
 void log_errmsg(string errstr) {
 	if (config.verbose) {
 		cerr << errstr << endl;
 	}
 }
 
-
+/*
+ * Main decoding block
+ *
+ */
 int main(int argc, const char* argv[]) {
 	char* progname;
 
@@ -378,7 +408,7 @@ int main(int argc, const char* argv[]) {
 		log_msg("Mapping LM to Tropical Ring...");
 		Map(*log_fst,lm_fst,LogToStdMapper());
 		delete log_fst;
-
+		/*
 		log_msg("Removing EOW tokens from final PhoneMap/LM/Dict lattice");
 		vector<pair<StdArc::Label, StdArc::Label> >* ipairs;
 		vector<pair<StdArc::Label, StdArc::Label> >* opairs;
@@ -393,6 +423,7 @@ int main(int argc, const char* argv[]) {
 		(*ipairs).push_back(mypair3);
 		(*ipairs).push_back(mypair4);
 		Relabel(lm_fst,*ipairs,*opairs);
+		*/
 	}
 
     ftrmaptype trn_ftrmap = STDSTATE;
