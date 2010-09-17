@@ -1,7 +1,15 @@
+/*
+ * CRFTrain.cpp
+ *
+ * Copyright (c) 2010
+ * Author: Jeremy Morris
+ *
+ * Command line interface for CRF training.
+ * Follows command line interface model for ICSI Quicknet.
+ */
+
 #include "QN_config.h"
-
 #include "CRF.h"
-
 #include "fst/fstlib.h"
 #include "CRF_Model.h"
 #include "io/CRF_FeatureStreamManager.h"
@@ -10,13 +18,12 @@
 #include "trainers/CRF_AISTrainer.h"
 #include "ftrmaps/CRF_StdFeatureMap.h"
 #include "ftrmaps/CRF_StdSparseFeatureMap.h"
-//#include "CRF_StdRange.h"
-//#include "CRF_StdTransRange.h"
-//#include "CRF_StdTransFeatureMap.h"
-
 
 using namespace std;
 
+/*
+ * command line options
+ */
 static struct {
 	char* ftr1_file;
 	char* ftr1_format;
@@ -86,6 +93,9 @@ static struct {
 	int dummy;
 } config;
 
+/*
+ * Command line options to be presented to the screen
+ */
 QN_ArgEntry argtab[] =
 {
 	{ NULL, "ASR CRaFT CRF training program version " CRF_VERSION, QN_ARG_DESC },
@@ -157,7 +167,9 @@ QN_ArgEntry argtab[] =
 };
 
 static struct CRF_FeatureMap_config fmap_config;
-
+/*
+ * Default values for command line options
+ */
 static void set_defaults(void) {
 	config.ftr1_file="";
 	config.ftr1_format="pfile";
@@ -223,6 +235,9 @@ static void set_defaults(void) {
 	config.verbose=0;
 };
 
+/*
+ * Sets initial values for the feature map object based on command line config object
+ */
 static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.map_type=STDSTATE;
 	if (strcmp(config.crf_featuremap,"stdtrans")==0) { fmap_config.map_type=STDTRANS;}
@@ -272,15 +287,15 @@ static void set_fmap_config(QNUInt32 nfeas) {
 };
 
 
-
+/*
+ * Main training block
+ *
+ * The bulk of this code sets up the CRF model.  Training occurs in the call to my_trainer->train()
+ * near the end of the block.
+ */
 int main(int argc, const char* argv[]) {
 	char* progname;
 
-	cout << "SIZEOF_SIZE_T: " << QN_SIZEOF_SIZE_T;
-	cout << " QN_SIZET_BAD: " << QN_SIZET_BAD;
-	cout << " QN_SIZET_MAX: " << QN_SIZET_MAX;
-	cout << " QN_SEGID_BAD: " << QN_SEGID_BAD;
-	cout << " QN_ALL: " << QN_ALL << endl;
 	set_defaults();
 	QN_initargs(&argtab[0], &argc, &argv, &progname);
 	QN_printargs(NULL, progname, &argtab[0]);
@@ -321,14 +336,6 @@ int main(int argc, const char* argv[]) {
 							config.train_sent_range, config.cv_sent_range,
 							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
 	if (strcmp(config.ftr2_file,"") != 0) {
-
-		/*CRF_FeatureStreamManager str2(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
-							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
-							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
-							config.ftr2_delta_order, config.ftr2_delta_win,
-							config.train_sent_range, config.cv_sent_range,
-							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-		str1.join(&str2);*/
 		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
 				(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
 				config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
@@ -338,14 +345,6 @@ int main(int argc, const char* argv[]) {
 		str1.join(str2);
 	}
 	if (strcmp(config.ftr3_file,"") != 0) {
-
-		/*CRF_FeatureStreamManager str3(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
-							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
-							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
-							config.ftr3_delta_order, config.ftr3_delta_win,
-							config.train_sent_range, config.cv_sent_range,
-							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-		str1.join(&str3);*/
 		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
 									(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
 									config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
@@ -360,78 +359,6 @@ int main(int argc, const char* argv[]) {
 
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
-	/*CRF_FeatureMap* my_map=NULL;
-	if (trn_ftrmap == STDSPARSE || trn_ftrmap == STDSPARSETRANS) {
-		CRF_StdSparseFeatureMap* tmp_map=new CRF_StdSparseFeatureMap(config.crf_label_size,str1.getNumFtrs());
-		if (trn_ftrmap == STDSPARSE) {
-			if (config.crf_stateftr_end>=0) {
-				tmp_map->setStateFtrRange(config.crf_stateftr_start,config.crf_stateftr_end);
-			}
-			tmp_map->recalc();
-		}
-		else {
-			if (config.crf_stateftr_end>=0) {
-				tmp_map->setStateFtrRange(config.crf_stateftr_start,config.crf_stateftr_end);
-			}
-			tmp_map->setUseTransFtrs(true);
-			if (config.crf_transftr_end>=0) {
-				tmp_map->setTransFtrRange(config.crf_transftr_start,config.crf_transftr_end);
-			}
-			tmp_map->recalc();
-		}
-		tmp_map->setStateBiasVal(config.crf_state_bias_value);
-		tmp_map->setTransBiasVal(config.crf_trans_bias_value);
-		if (config.crf_use_state_bias != 1) {
-			tmp_map->setUseStateBias(false);
-		}
-		if (config.crf_use_trans_bias != 1) {
-			tmp_map->setUseTransBias(false);
-		}
-		my_map=tmp_map;
-	}
-	else if (trn_ftrmap == STDSTATE) {
-		CRF_StdFeatureMap* tmp_map=new CRF_StdFeatureMap(config.crf_label_size,str1.getNumFtrs());
-		if (config.crf_stateftr_end>=0) {
-			tmp_map->setStateFtrRange(config.crf_stateftr_start,config.crf_stateftr_end);
-		}
-		tmp_map->setStateBiasVal(config.crf_state_bias_value);
-		tmp_map->setTransBiasVal(config.crf_trans_bias_value);
-		if (config.crf_use_state_bias != 1) {
-			tmp_map->setUseStateBias(false);
-		}
-		if (config.crf_use_trans_bias != 1) {
-			tmp_map->setUseTransBias(false);
-		}
-		tmp_map->recalc();
-		my_map=tmp_map;
-	}
-	else if (trn_ftrmap == STDTRANS) {
-		CRF_StdFeatureMap* tmp_map=new CRF_StdFeatureMap(config.crf_label_size,str1.getNumFtrs());
-		if (config.crf_stateftr_end>=0) {
-			tmp_map->setStateFtrRange(config.crf_stateftr_start,config.crf_stateftr_end);
-		}
-		tmp_map->setUseTransFtrs(true);
-		if (config.crf_transftr_end>=0) {
-			tmp_map->setTransFtrRange(config.crf_transftr_start,config.crf_transftr_end);
-		}
-		tmp_map->setStateBiasVal(config.crf_state_bias_value);
-		tmp_map->setTransBiasVal(config.crf_trans_bias_value);
-		if (config.crf_use_state_bias != 1) {
-			tmp_map->setUseStateBias(false);
-		}
-		if (config.crf_use_trans_bias != 1) {
-			tmp_map->setUseTransBias(false);
-		}
-		tmp_map->recalc();
-		my_map=tmp_map;
-	}
-	else if (trn_ftrmap== INFILE) {
-		cerr << "Reading featuremaps from file not yet implemented" << endl;
-		exit(-1);
-	}
-	my_map->setNumStates(config.crf_states);
-	my_map->recalc();
-	my_crf.setFeatureMap(my_map);*/
 	cout << "FEATURES: " << my_crf.getLambdaLen() << endl;
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 	if (config.init_weight_file != NULL) {
