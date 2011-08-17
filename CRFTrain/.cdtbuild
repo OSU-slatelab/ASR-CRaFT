@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="CRFTrain.cdt.managedbuild.target.gnu.exe.312826237" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="CRFTrain" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1999664734" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1911106805" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2015569645" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+<option id="gnu.cpp.compiler.option.include.paths.1566973912" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080317/"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+</option>
+<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.276833589" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.425776972" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<option id="gnu.c.compiler.option.include.paths.224471992" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+</option>
+<option id="gnu.c.compiler.exe.debug.option.optimization.level.647051285" superClass="gnu.c.compiler.exe.debug.option.optimization.level" value="gnu.c.optimization.level.most" valueType="enumerated"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1460803118" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.2044526535" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+<option id="gnu.cpp.link.option.libs.664786329" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="CRF"/>
+<listOptionValue builtIn="false" value="quicknet3"/>
+<listOptionValue builtIn="false" value="cblas"/>
+<listOptionValue builtIn="false" value="atlas"/>
+</option>
+<option id="gnu.cpp.link.option.paths.1525263665" superClass="gnu.cpp.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-beta-20080317/fst/lib"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.7.8/lib/Linux_P4SSE2_4"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/Debug}&quot;"/>
+</option>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.464762575" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
+<option id="gnu.both.asm.option.include.paths.696937556" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-i586-linux"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS/include"/>
+<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+</option>
+</tool>
+<macros/>
+</toolChain>
+</configuration>
+<configuration artifactName="CRFTrain" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.841682323" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.1564100221" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1924058399" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.232849999" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.283571964" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1193905967" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.71274330" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release"/>
+<macros/>
+</toolChain>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>
