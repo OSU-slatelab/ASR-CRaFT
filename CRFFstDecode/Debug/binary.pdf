@@ -1,0 +1,38 @@
+digraph FST {
+	graph [rankdir=LR, size="8.5,11", center=1, orientation=Landscape, ranksep="0.400000006", nodesep="0.25"];
+	node [label="\N"];
+	graph [bb="0,0,1006,524"];
+	0 [label=0, shape=circle, style=bold, fontsize=14, pos="26,248", width="0.50", height="0.50"];
+	5 [label=5, shape=circle, style=solid, fontsize=14, pos="236,196", width="0.50", height="0.50"];
+	1 [label=1, shape=circle, style=solid, fontsize=14, pos="236,325", width="0.50", height="0.50"];
+	3 [label=3, shape=circle, style=solid, fontsize=14, pos="488,430", width="0.50", height="0.50"];
+	2 [label=2, shape=circle, style=solid, fontsize=14, pos="488,325", width="0.50", height="0.50"];
+	4 [label=4, shape=circle, style=solid, fontsize=14, pos="736,404", width="0.50", height="0.50"];
+	11 [label=11, shape=circle, style=solid, fontsize=14, pos="736,325", width="0.50", height="0.50"];
+	9 [label=9, shape=circle, style=solid, fontsize=14, pos="736,196", width="0.50", height="0.50"];
+	12 [label=12, shape=doublecircle, style=solid, fontsize=14, pos="974,364", width="0.67", height="0.67"];
+	7 [label=7, shape=circle, style=solid, fontsize=14, pos="488,196", width="0.50", height="0.50"];
+	6 [label=6, shape=circle, style=solid, fontsize=14, pos="488,92", width="0.50", height="0.50"];
+	8 [label=8, shape=circle, style=solid, fontsize=14, pos="736,142", width="0.50", height="0.50"];
+	10 [label=10, shape=doublecircle, style=solid, fontsize=14, pos="974,169", width="0.67", height="0.67"];
+	0 -> 5 [label="two:two/0.0626718178", fontsize=14, pos="e,218,200 44,244 80,235 165,214 208,203", lp="131,247"];
+	0 -> 1 [label="zero:zero/-0.186614394", fontsize=14, pos="e,219,319 43,254 79,268 165,299 209,315", lp="131,319"];
+	1 -> 3 [label="one:one/-0.246609688", fontsize=14, pos="e,471,424 251,335 257,338 263,342 269,345 336,378 419,407 461,421", lp="362,425"];
+	1 -> 2 [label="zero:<eps>/0.081730701", fontsize=14, pos="e,470,325 254,325 298,325 407,325 460,325", lp="362,333"];
+	2 -> 4 [label="one:one/0.000594705984", fontsize=14, pos="e,718,406 496,341 501,352 510,365 521,372 580,408 664,409 708,407", lp="612,414"];
+	2 -> 11 [label="zero:<eps>/0.0817271024", fontsize=14, pos="e,719,318 505,318 510,316 516,315 521,314 601,301 624,301 703,314 705,314 707,315 709,315", lp="612,322"];
+	3 -> 11 [label="zero:zero/0.0819130987", fontsize=14, pos="e,730,342 505,436 545,448 643,471 703,426 722,412 711,398 718,377 721,369 724,360 726,352", lp="612,460"];
+	3 -> 9 [label="two:two/-0.246375978", fontsize=14, pos="e,733,214 490,412 493,393 501,363 521,349 554,324 673,360 703,334 711,327 724,262 731,224", lp="612,357"];
+	3 -> 4 [label="one:<eps>/0.0835697055", fontsize=14, pos="e,733,422 495,447 501,457 509,470 521,476 593,512 635,519 703,476 719,466 727,448 731,432", lp="612,513"];
+	4 -> 12 [label="one:<eps>/0.0834491029", fontsize=14, pos="e,951,371 754,402 789,398 869,389 935,375 937,375 939,374 941,373", lp="852,407"];
+	5 -> 7 [label="three:three/-0.000775528024", fontsize=14, pos="e,470,196 254,196 298,196 407,196 460,196", lp="362,204"];
+	5 -> 6 [label="two:<eps>/0.0835785195", fontsize=14, pos="e,471,98 251,186 257,183 263,179 269,176 336,144 419,115 461,101", lp="362,187"];
+	6 -> 8 [label="three:three/-0.000779127993", fontsize=14, pos="e,732,124 497,76 503,68 511,59 521,54 595,21 637,8 703,54 713,61 723,91 729,114", lp="612,65"];
+	6 -> 9 [label="two:<eps>/-0.163618878", fontsize=14, pos="e,725,181 506,89 546,84 645,77 703,125 719,139 709,151 718,169 719,170 719,171 720,172", lp="612,133"];
+	7 -> 11 [label="zero:zero/0.0813302994", fontsize=14, pos="e,730,308 503,206 509,210 515,213 521,216 599,253 631,235 703,283 713,289 719,293 724,299", lp="612,291"];
+	7 -> 9 [label="two:two/-0.164201275", fontsize=14, pos="e,718,196 506,196 549,196 656,196 708,196", lp="612,204"];
+	7 -> 8 [label="three:<eps>/0.0814115703", fontsize=14, pos="e,718,143 503,185 508,182 515,178 521,176 585,153 666,145 708,143", lp="612,187"];
+	8 -> 10 [label="three:<eps>/-0.165427029", fontsize=14, pos="e,951,161 754,142 789,143 869,145 935,157 937,157 939,158 941,159", lp="852,165"];
+	9 -> 10 [label="three:three/-0.247617722", fontsize=14, pos="e,950,175 754,195 789,193 869,188 935,177 937,177 938,176 940,176", lp="852,204"];
+	11 -> 12 [label="one:one/0.000474105997", fontsize=14, pos="e,950,360 754,328 793,335 889,350 940,358", lp="852,363"];
+}
