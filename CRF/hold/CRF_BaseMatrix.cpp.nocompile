@@ -1,0 +1,69 @@
+#include "CRF_BaseMatrix.h"
+
+CRF_BaseMatrix::CRF_BaseMatrix(CRF_Model* crf_in, double* arr_in, QNUInt32 arr_len)
+	: crf(crf_in)
+{
+	this->array=NULL;
+}
+
+CRF_BaseMatrix::~CRF_BaseMatrix()
+{
+	if (this->array != NULL) { delete [] this->array; }
+}
+
+double* CRF_BaseMatrix::toDoubleArray()
+{
+	return this->array;
+}
+
+void CRF_BaseMatrix::fromDoubleArray(double* arr_in, QNUInt32 arr_len)
+{
+	if (arr_len != this->numComponents) {
+		throw runtime_error("CRF_StateVector::fromDoubleArray - input length does not match array length");
+		return;
+	}
+	memcpy(arr_in,this->array,sizeof(double)*arr_len);
+}
+
+
+void CRF_BaseMatrix::componentExp()
+{
+	for (QNUInt32 i=0; i<this->numComponents; i++) {
+		try {
+			this->array[i]=expE(this->array[i]);
+		}
+		catch(exception &e) {
+			throw runtime_error(e.what());
+			return;
+		}
+	}
+}
+
+void CRF_BaseMatrix::componentLog()
+{
+	for (QNUInt32 i=0; i<this->numComponents; i++) {
+		try {
+			this->array[i]=logE(this->array[i]);
+		}
+		catch(exception &e) {
+			throw runtime_error(e.what());
+			return;
+		}
+	}
+}
+
+double CRF_BaseMatrix::componentSum()
+{
+	double sum=0;
+	for (QNUInt32 i=0; i<this->numComponents; i++) {
+		sum+=this->array[i];
+	}
+	return sum;
+}
+
+void CRF_BaseMatrix::componentScale(double sf)
+{
+	for (QNUInt32 i=0; i<this->numComponents; i++) {
+		this->array[i]=this->array[i]/sf;
+	}
+}

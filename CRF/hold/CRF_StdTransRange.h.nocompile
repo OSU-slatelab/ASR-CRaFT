@@ -1,0 +1,18 @@
+#ifndef CRF_STDTRANSRANGE_H_
+#define CRF_STDTRANSRANGE_H_
+#include "CRF_StdRange.h"
+
+class CRF_StdTransRange : public CRF_StdRange
+{
+protected:
+	//CRF_RangeNode** transRangeArray;
+	//QNUInt32* transRangeArray;
+	vector<QNUInt32> transRangeVector;
+public:
+	CRF_StdTransRange(QNUInt32 nl, QNUInt32 nf);
+	virtual ~CRF_StdTransRange();
+	virtual vector<QNUInt32> getRange(QNUInt32 prev_lab, QNUInt32 cur_lab);
+	virtual QNUInt32 getNumFtrs();
+};
+
+#endif /*CRF_STDTRANSRANGE_H_*/

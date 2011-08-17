@@ -1,0 +1,20 @@
+#ifndef CRF_TRANSITIONMATRIXLOG_H_
+#define CRF_TRANSITIONMATRIXLOG_H_
+
+#include "CRF_TransitionMatrix.h"
+#include "CRF_StateVectorLog.h"
+
+class CRF_TransitionMatrixLog : public CRF_TransitionMatrix
+{
+protected:
+	double* logAddAcc;
+public:
+	CRF_TransitionMatrixLog(CRF_Model* crf_in, double* arr_in=NULL, QNUInt32 arr_len=0);
+	virtual ~CRF_TransitionMatrixLog();
+	virtual CRF_TransitionMatrixLog* componentMult(CRF_TransitionMatrixLog* mult, CRF_TransitionMatrixLog* result);
+	virtual CRF_StateVectorLog* alphaMult(CRF_StateVectorLog* alpha, CRF_StateVectorLog* result);
+	virtual CRF_StateVectorLog* betaMult(CRF_StateVectorLog* beta, CRF_StateVectorLog* result);
+	
+};
+
+#endif /*CRF_TRANSITIONMATRIXLOG_H_*/
