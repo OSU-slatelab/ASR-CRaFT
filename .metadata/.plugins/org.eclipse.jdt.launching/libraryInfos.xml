@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraryInfos>
+<libraryInfo home="/u/morrijer/JDK/jdk1.5.0_05" version="1.5.0_05">
+<bootpath>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/rt.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/i18n.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/sunrsasign.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/jsse.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/jce.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/charsets.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/classes"/>
+</bootpath>
+<extensionDirs>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/ext"/>
+</extensionDirs>
+<endorsedDirs>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/endorsed"/>
+</endorsedDirs>
+</libraryInfo>
+<libraryInfo home="/u/morrijer/JDK/jdk1.5.0_05/jre" version="1.5.0_05">
+<bootpath>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/rt.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/i18n.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/sunrsasign.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/jsse.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/jce.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/charsets.jar"/>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/classes"/>
+</bootpath>
+<extensionDirs>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/ext"/>
+</extensionDirs>
+<endorsedDirs>
+<entry path="/u/morrijer/JDK/jdk1.5.0_05/jre/lib/endorsed"/>
+</endorsedDirs>
+</libraryInfo>
+</libraryInfos>
