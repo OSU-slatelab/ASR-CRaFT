@@ -16,11 +16,11 @@ ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
 endif
-ifneq ($(strip $(CC_DEPS)),)
--include $(CC_DEPS)
-endif
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
+endif
+ifneq ($(strip $(CC_DEPS)),)
+-include $(CC_DEPS)
 endif
 ifneq ($(strip $(CPP_DEPS)),)
 -include $(CPP_DEPS)
@@ -44,13 +44,13 @@ all: CRFFstAlign
 CRFFstAlign: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/u/drspeech/src/quicknet-v3_20/H-i586-linux -L/u/drspeech/opt/OpenFst-beta-20080317/fst/lib -L/u/drspeech/src/ATLAS/lib/Linux_P4SSE2_4 -L/u/drspeech/src/quicknet-v3_20 -L/u/morrijer/workspaces/CRF_cpp/CRF/Debug -o"CRFFstAlign" $(OBJS) $(USER_OBJS) $(LIBS)
+	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -L"/home3/hey/segmental-branch/CRF/Debug" -L/u/drspeech/src/quicknet-v3_20/H-x86_64 -L/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L/u/drspeech/opt/OpenFst-1.1/x86_64/lib -o "CRFFstAlign" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C++_DEPS)$(EXECUTABLES)$(CC_DEPS)$(C_DEPS)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) CRFFstAlign
+	-$(RM) $(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) CRFFstAlign
 	-@echo ' '
 
 .PHONY: all clean dependents

@@ -9,6 +9,14 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir.mk
+-include src/utils/subdir.mk
+-include src/trainers/gradbuilders/subdir.mk
+-include src/trainers/accumulators/subdir.mk
+-include src/trainers/subdir.mk
+-include src/nodes/subdir.mk
+-include src/io/subdir.mk
+-include src/ftrmaps/subdir.mk
+-include src/decoders/subdir.mk
 -include src/subdir.mk
 -include objects.mk
 
@@ -16,11 +24,11 @@ ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
 endif
-ifneq ($(strip $(CC_DEPS)),)
--include $(CC_DEPS)
-endif
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
+endif
+ifneq ($(strip $(CC_DEPS)),)
+-include $(CC_DEPS)
 endif
 ifneq ($(strip $(CPP_DEPS)),)
 -include $(CPP_DEPS)
@@ -44,13 +52,13 @@ all: libCRF.a
 libCRF.a: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC Archiver'
-	ar -r "libCRF.a" $(OBJS) $(USER_OBJS) $(LIBS)
+	ar -r  "libCRF.a" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(ARCHIVES)$(C++_DEPS)$(CC_DEPS)$(C_DEPS)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) libCRF.a
+	-$(RM) $(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(ARCHIVES)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) libCRF.a
 	-@echo ' '
 
 .PHONY: all clean dependents

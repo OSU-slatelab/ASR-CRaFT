@@ -16,11 +16,11 @@ ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
 endif
-ifneq ($(strip $(CC_DEPS)),)
--include $(CC_DEPS)
-endif
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
+endif
+ifneq ($(strip $(CC_DEPS)),)
+-include $(CC_DEPS)
 endif
 ifneq ($(strip $(CPP_DEPS)),)
 -include $(CPP_DEPS)
@@ -44,13 +44,13 @@ all: CRFDecode
 CRFDecode: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/u/drspeech/src/quicknet-v3_20/H-i586-linux -L"/u/morrijer/workspaces/CRF_cpp_new/CRF/Debug" -L/u/drspeech/src/quicknet-v3_20 -L/u/drspeech/src/ATLAS-3.7.8/lib/Linux_P4SSE2_4 -o"CRFDecode" $(OBJS) $(USER_OBJS) $(LIBS)
+	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -L"/home3/hey/segmental-branch/CRF/Debug" -L/home0/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L/home0/drspeech/src/quicknet-v3_20/H-x86_64 -L/home0/drspeech/opt/OpenFst-1.1/x86_64/lib -o "CRFDecode" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C++_DEPS)$(EXECUTABLES)$(CC_DEPS)$(C_DEPS)$(CPP_DEPS)$(CXX_DEPS)$(C_UPPER_DEPS) CRFDecode
+	-$(RM) $(OBJS)$(C++_DEPS)$(C_DEPS)$(CC_DEPS)$(CPP_DEPS)$(EXECUTABLES)$(CXX_DEPS)$(C_UPPER_DEPS) CRFDecode
 	-@echo ' '
 
 .PHONY: all clean dependents

@@ -17,7 +17,7 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I/u/drspeech/src/quicknet-v3_20/H-i586-linux -I/u/morrijer/workspaces/CRF_cpp/CRF/src -I/u/drspeech/opt/OpenFst-beta-20080317/ -I/u/drspeech/src/quicknet-v3_20 -I/u/drspeech/src/ATLAS/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -I"/home3/hey/segmental-branch/CRF/src" -I/u/drspeech/opt/OpenFst-1.1/include -I/u/drspeech/src/quicknet-v3_20/H-x86_64 -I/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/include -I/u/drspeech/src/ATLAS-3.8.2/include -I/u/drspeech/src/quicknet-v3_20 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
