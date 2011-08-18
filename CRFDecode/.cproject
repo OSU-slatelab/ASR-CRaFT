@@ -59,9 +59,9 @@
 								</option>
 								<option id="gnu.cpp.link.option.paths.1947671730" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="stringList">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="/home0/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib"/>
-									<listOptionValue builtIn="false" value="/home0/drspeech/src/quicknet-v3_20/H-x86_64"/>
-									<listOptionValue builtIn="false" value="/home0/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.shared.1625546756" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1054141200" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

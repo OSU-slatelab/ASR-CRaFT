@@ -73,8 +73,8 @@
 									<listOptionValue builtIn="false" value="cblas"/>
 								</option>
 								<option id="gnu.cpp.link.option.paths.1947671730" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="stringList">
-									<listOptionValue builtIn="false" value="/home0/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
-									<listOptionValue builtIn="false" value="/home0/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/Debug}&quot;"/>
 								</option>
@@ -84,7 +84,7 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.678471722" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
-								<option id="gnu.both.asm.option.include.paths.868319050" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
+								<option id="gnu.both.asm.option.include.paths.868319050" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1386762887" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1699176437" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
