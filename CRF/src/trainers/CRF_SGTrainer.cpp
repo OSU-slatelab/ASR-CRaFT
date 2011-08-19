@@ -75,8 +75,16 @@ void CRF_SGTrainer::train()
 			cout << time << " Beginning Utt: " << uCounter << " SegID: " << segid <<  endl;
 			//delete time;
 		}
+
 		tmp_Zx=uCounter%this->uttRpt; // Added for Ferr testing
 		tmpLogLi=gbuild->buildGradient(ftr_str,grad,&tmp_Zx);
+
+
+		//Added by Ryan
+		//Parameter tying.
+		//this->crf_ptr->getFeatureMap()->tieGradient(grad, 11, 488);
+		this->crf_ptr->getFeatureMap()->tieGradient(grad);
+
 		//tmpLogLi=logLi;
 		logLi=tmpLogLi - tmp_Zx;
 		totLogLi += logLi;
@@ -100,6 +108,7 @@ void CRF_SGTrainer::train()
 			grad[i]=0.0;
 		}
 		accCnt++;
+
 		//cout << "Utterance " << uCounter << ": Lambda[0]: " << lambda[0] << endl;
 		//cout << "Utterance " << uCounter << ": Acc Lambda[0]: " << (lambdaAcc[0]/accCnt) << endl;
 		segid = ftr_str->nextseg();

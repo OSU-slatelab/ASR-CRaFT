@@ -334,7 +334,9 @@ double CRF_HNStateNode::computeAlphaAlignedSum()
 		Zx=logAdd(&(this->alphaArrayAligned),nLabs);
 	}
 	catch (exception& e) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		string errstr="CRF_HNStateNode::computeAlphaAlignedSum() threw exception: "+string(e.what());
 		throw runtime_error(errstr);
 	}
 	return Zx;

@@ -301,7 +301,7 @@ QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 			}
 		}
 	}
-	retVal+=fno;
+	retVal+=fno;  //Ryan, I think this has problems when fno > 0 since it adds fno twice.
 	return retVal;
 }
 #else
@@ -357,7 +357,7 @@ QNUInt32 CRF_StdFeatureMap::computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab,
 			}
 		}
 	}
-	retVal+=fno;
+	retVal+=fno;   //Ryan, I think this has problems when fno > 0 since it adds fno twice.
 	return retVal;
 }
 
@@ -396,7 +396,10 @@ QNUInt32 CRF_StdFeatureMap::getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNU
  * Returns: index into the lambda vector for the state bias feature for the label clab
  */
 QNUInt32 CRF_StdFeatureMap::getStateBiasIdx(QNUInt32 clab) {
-	return getStateFeatureIdx(clab,this->numFtrFuncs-1);
+	//return getStateFeatureIdx(clab,this->numFtrFuncs-1);
+
+	//Changed by Ryan, I think it should be this:
+	return getStateFeatureIdx(clab,this->numStateFuncs-1);
 }
 
 /*
@@ -527,3 +530,129 @@ void CRF_StdFeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QN
 }
 
 
+/*
+ * Added by Ryan
+ *
+ * CRF_StdFeatureMap::tieGradient
+ *
+ * Input: *grad - vector of gradient values
+ *        maxDur - the maximum duration for the all phone-duration labels
+ *        durFtrStart - the start index of the binary-coded features which
+ *                      are not for tying
+ *
+ * Tie gradients for tied parameters. Currently this function only applies to single
+ * state model. And the tied parameters are hardcoded as the ones for state features
+ * and transition features for the phone-duration labels with the same phone, e.g.,
+ * parameters are tied for labels ah-1, ah-2, ah-3, ..., ah-maxDur, except for the
+ * duration features, which are binary-coded features with index starting from
+ * durFtrStart.
+ *
+ *
+ */
+//void CRF_StdFeatureMap::tieGradient(double* grad, QNUInt32 maxDur, QNUInt32 durFtrStart)
+void CRF_StdFeatureMap::tieGradient(double* grad)
+{
+
+	//cout << "Tying Parameter. maxDur=" << maxDur << " durFtrStart=" << durFtrStart << endl;
+
+	if (config->numStates != 1)
+	{
+		string errstr="CRF_StdFeatureMap::tieGradient() threw exception: Currently the function of parameter tying only applies to single state models.";
+		throw runtime_error(errstr);
+	}
+
+	if (config->maxDur <= 0)
+		return;
+
+	//assert(config->numLabs % maxDur == 0);
+	assert(config->numLabs == config->maxDur * 48);
+	QNUInt32 durFtrEnd = config->durFtrStart + config->maxDur;  // exclusive end
+	if (config->useStateFtrs || config->useStateBias)
+	{
+		QNUInt32 stateParamStep = getStateFeatureIdx(1) - getStateFeatureIdx(0);
+		QNUInt32 clab = 0;
+		while (clab < config->numLabs)
+		{
+			for (QNUInt32 fid = 0; fid < numStateFuncs; fid++)
+			{
+				if (fid >= config->durFtrStart && fid < durFtrEnd)
+					continue;
+				QNUInt32 start = getStateFeatureIdx(clab,fid);
+				tieGradForSingleParam(grad, config->maxDur, start, stateParamStep);
+			}
+			clab += config->maxDur;
+		}
+	}
+
+	if (config->useTransFtrs || config->useTransBias)
+	{
+		QNUInt32 clabParamStep = getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0);
+		QNUInt32 clab = 0;
+		while (clab < config->numLabs)
+		{
+			for (QNUInt32 plab = 0; plab < config->numLabs; plab++)
+			{
+				for (QNUInt32 fid = 0; fid < numTransFuncs; fid++)
+				{
+					if (fid >= config->durFtrStart && fid < durFtrEnd)
+						continue;
+					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
+					tieGradForSingleParam(grad, config->maxDur, start, clabParamStep);
+				}
+			}
+			clab += config->maxDur;
+		}
+		QNUInt32 plabParamStep = getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0);
+		QNUInt32 plab = 0;
+		while (plab < config->numLabs)
+		{
+			for (QNUInt32 clab = 0; clab < config->numLabs; clab++)
+			{
+				for (QNUInt32 fid = 0; fid < numTransFuncs; fid++)
+				{
+					if (fid >= config->durFtrStart && fid < durFtrEnd)
+						continue;
+					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
+					tieGradForSingleParam(grad, config->maxDur, start, plabParamStep);
+				}
+			}
+			plab += config->maxDur;
+		}
+	}
+
+}
+
+/*
+ * Added by Ryan
+ *
+ * CRF_StdFeatureMap::tieGradForSingleParam
+ *
+ * Input: *grad - vector of gradient values
+ *        numTiedParam - the number of parameters to be tied for a single value
+ *        start - the start index of the series of parameters
+ *        step - the difference of the indice of each two consecutive tied parameters
+ *               in the series
+ *
+ * The subroutine for tying the gradients of a series of parameters to a single parameter.
+ * The index of parameters in the series increases with the same step value.
+ *
+ */
+void CRF_StdFeatureMap::tieGradForSingleParam(double* grad, QNUInt32 numTiedParam, QNUInt32 start, QNUInt32 step)
+{
+//	if (step <= 0)
+//		return;
+	assert(step > 0);
+	double gradSum = 0.0;
+	QNUInt32 gradID = start;
+	for (QNUInt32 i = 0; i < numTiedParam; i++)
+	{
+		gradSum += grad[gradID];
+		gradID += step;
+	}
+	gradID = start;
+	for (QNUInt32 i = 0; i < numTiedParam; i++)
+	{
+		grad[gradID] = gradSum;
+		gradID += step;
+	}
+}

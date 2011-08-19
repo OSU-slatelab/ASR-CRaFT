@@ -58,6 +58,11 @@ static struct {
 	int train_sent_start;
 	int train_sent_count;
 	int window_extent;
+
+	//Added by Ryan, for parameter tying
+	int label_maximum_duration;
+	int dur_ftr_start;
+
 	char* train_sent_range;
 	char* cv_sent_range;
 	char* hardtarget_file;
@@ -130,6 +135,11 @@ QN_ArgEntry argtab[] =
 	{ "ftr3_delta_win", "Delta window", QN_ARG_INT, &(config.ftr3_delta_win) },
 	{ "ftr3_norm_file", "Normalization parameters for ftr3_file", QN_ARG_STR, &(config.ftr3_norm_file) },
 	{ "window_extent", "Extent of all windows (frames)", QN_ARG_INT, &(config.window_extent) },
+
+	//Added by Ryan, for parameter tying
+	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
+	{ "dur_ftr_start", "The start index of duration features (binary coded, one-hot features) if any", QN_ARG_INT, &(config.dur_ftr_start) },
+
 	{ "train_sent_range", "Training sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.train_sent_range), QN_ARG_REQ },
 	{ "cv_sent_range", "CV sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.cv_sent_range) },
 	{ "hardtarget_file", "Target Label File", QN_ARG_STR, &(config.hardtarget_file), QN_ARG_REQ },
@@ -202,6 +212,11 @@ static void set_defaults(void) {
 	config.ftr3_delta_win=0;
 	config.ftr3_norm_file=NULL;
 	config.window_extent=1;
+
+	//Added by Ryan, for parameter tying
+	config.label_maximum_duration=0;
+	config.dur_ftr_start=0;
+
 	config.train_sent_range="";
 	config.cv_sent_range=0;
 	config.hardtarget_file="";
@@ -284,6 +299,15 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.stateBiasVal=config.crf_state_bias_value;
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
 
+	//Added by Ryan, for parameter tying
+	fmap_config.maxDur=config.label_maximum_duration;
+	if (config.dur_ftr_start > nfeas ||
+			config.dur_ftr_start + config.label_maximum_duration > nfeas)
+	{
+		string errstr="CRFTrain Main.cpp set_fmap_config() threw exception: dur_ftr_start is larger than the actual number of features.";
+		throw runtime_error(errstr);
+	}
+	fmap_config.durFtrStart=config.dur_ftr_start;
 };
 
 

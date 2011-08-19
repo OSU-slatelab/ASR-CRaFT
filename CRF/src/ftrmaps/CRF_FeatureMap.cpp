@@ -301,3 +301,31 @@ string CRF_FeatureMap::getMapDescriptor(QNUInt32 lambdaNum)
 void CRF_FeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QNUInt32 lab) {
 	return;
 }
+
+/*
+ * Added by Ryan
+ *
+ * CRF_FeatureMap::tieGradient
+ *
+ * Stub function. Tie gradients for tied parameters.
+ *
+ */
+//void CRF_FeatureMap::tieGradient(double* grad, QNUInt32 maxDur, QNUInt32 durFtrStart)
+void CRF_FeatureMap::tieGradient(double* grad)
+{
+	return;
+}
+
+/*
+ * Added by Ryan
+ *
+ * CRF_FeatureMap::tieGradForSingleParam
+ *
+ * Stub function.
+ * The subroutine for tying gradients of a series of parameters to a single parameter.
+ *
+ */
+void CRF_FeatureMap::tieGradForSingleParam(double* grad, QNUInt32 numParam, QNUInt32 start, QNUInt32 step)
+{
+	return;
+}

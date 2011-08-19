@@ -42,6 +42,9 @@ protected:
 	virtual QNUInt32 computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno=0);
 	virtual QNUInt32 computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNUInt32 fno=0);
 
+	//Added by Ryan
+	virtual void tieGradForSingleParam(double* grad, QNUInt32 numParam, QNUInt32 start, QNUInt32 step);
+
 public:
 	CRF_StdFeatureMap(QNUInt32 nlabs, QNUInt32 nfeas);
 	CRF_StdFeatureMap(CRF_FeatureMap_config* cnf);
@@ -62,6 +65,11 @@ public:
 	virtual QNUInt32 recalc();
 	virtual string getMapDescriptor(QNUInt32 lambdaNum);
 	virtual void accumulateFeatures(float *ftr_buf, double *accumulator, QNUInt32 lab);
+
+	//Added by Ryan
+	//virtual void tieGradient(double* grad, QNUInt32 maxDur, QNUInt32 durFtrStart);
+	virtual void tieGradient(double* grad);
+
 };
 
 #endif /*CRF_STDFEATUREMAP_H_*/
