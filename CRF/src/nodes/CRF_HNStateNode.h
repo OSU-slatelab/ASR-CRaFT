@@ -27,6 +27,7 @@ public:
 	virtual double* computeAlphaBeta(double Zx);
 	virtual double computeAlphaSum();
 	virtual double computeAlphaAlignedSum();
+	virtual double computeAlphaAligned(vector<double>* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label);
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 	virtual double getStateValue(QNUInt32 cur_lab);
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);

@@ -114,6 +114,10 @@ double CRF_HNStateNode::computeAlpha(double* prev_alpha)
 
 double CRF_HNStateNode::computeAlphaAligned(vector<double>* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label)
 {
+	/*
+	 * The following code has been commented out to allow for
+	 * compilation.  The code needs some revision to allow it
+	 * to perform as intended - jjm 8/29/11
 	if (prev_label != this->label) {
 		// We're in the first state - only do processing for the initial state
 		QNUInt32 tlab=this->label*nStates;
@@ -144,8 +148,11 @@ double CRF_HNStateNode::computeAlphaAligned(vector<double>* prev_alpha, QNUInt32
 			}
 
 		}
+
 	}
 	return this->alphaScale;
+	*/
+	return 0.0;
 }
 
 double CRF_HNStateNode::computeFirstAlpha(double* prev_alpha)
