@@ -19,6 +19,8 @@
 #include "CRF_InFtrStream_RandPresent.h"
 #include "CRF_InLabStream_RandPresent.h"
 #include "CRF_FeatureStream.h"
+//added by Ryan
+#include "CRF_InFtrStream_SeqMultiWindow.h"
 
 /*
  * class CRF_FeatureStreamManager

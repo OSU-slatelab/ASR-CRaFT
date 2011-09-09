@@ -162,32 +162,53 @@ void CRF_FeatureStreamManager::create()
 
     // Create training and CV windows.
     size_t bot_margin = this->window_extent - this->window_offset - this->window_len;
-	QN_InFtrStream_SeqWindow* train_winftr_str;
-	CRF_InFtrStream_RandPresent* train_randftr_str = NULL;
+
+    //changed by Ryan
+    //QN_InFtrStream_SeqWindow* train_winftr_str;
+    CRF_InFtrStream_SeqMultiWindow* train_winftr_str;
+
+    CRF_InFtrStream_RandPresent* train_randftr_str = NULL;
 
 	switch ( this->train_seq_type )
 	{
 		case RANDOM_NO_REPLACE:
 			train_randftr_str =
 				new CRF_InFtrStream_RandPresent(this->debug, this->dbgname, this->dbgname,*train_ftr_str,RANDOM_NO_REPLACE,this->rseed);
+
+			//changed by Ryan
+//			train_winftr_str =
+//        		new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
+//                                     *train_randftr_str, this->window_len,
+//                                      this->window_offset, bot_margin);
 			train_winftr_str =
-        		new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
-                                     *train_randftr_str, this->window_len,
-                                      this->window_offset, bot_margin);
+				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
+                        *train_randftr_str, this->window_len,
+                         this->window_offset, bot_margin);
 			break;
 		case RANDOM_REPLACE:
 			train_randftr_str =
 				new CRF_InFtrStream_RandPresent(this->debug, this->dbgname, this->dbgname,*train_ftr_str,RANDOM_REPLACE,this->rseed);
+
+			//changed by Ryan
+//			train_winftr_str =
+//        		new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
+//                                     *train_randftr_str, this->window_len,
+//                                      this->window_offset, bot_margin);
 			train_winftr_str =
-        		new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
-                                     *train_randftr_str, this->window_len,
-                                      this->window_offset, bot_margin);
+				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
+						*train_randftr_str, this->window_len,
+						 this->window_offset, bot_margin);
 			break;
 		case SEQUENTIAL:
-   			train_winftr_str =
-   				new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
-   						*train_ftr_str, this->window_len,
-   						this->window_offset, bot_margin);
+			//changed by Ryan
+//   			train_winftr_str =
+//   				new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
+//   						*train_ftr_str, this->window_len,
+//   						this->window_offset, bot_margin);
+			train_winftr_str =
+				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
+						*train_ftr_str, this->window_len,
+						 this->window_offset, bot_margin);
    			break;
    		default:
    			cerr << "Invalid training sequence type! ABORT!" << endl;
@@ -197,11 +218,16 @@ void CRF_FeatureStreamManager::create()
    QN_InFtrStream_SeqWindow* cv_winftr_str;
 
 	if (cv_ftr_str != NULL ) {
-    cv_winftr_str =
-        new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
-                                      *cv_ftr_str, this->window_len,
-	                                  this->window_offset, bot_margin
-                                      );
+	//changed by Ryan
+//    cv_winftr_str =
+//        new QN_InFtrStream_SeqWindow(this->debug, this->dbgname,
+//                                      *cv_ftr_str, this->window_len,
+//	                                  this->window_offset, bot_margin
+//                                      );
+		cv_winftr_str =
+				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
+										*cv_ftr_str, this->window_len,
+										 this->window_offset, bot_margin);
 	}
 	else {
 		cv_winftr_str=NULL;

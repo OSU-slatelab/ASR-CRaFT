@@ -121,7 +121,10 @@ size_t CRF_FeatureStream::read(size_t bs, float* fb, QNUInt32* lb)
 		lab_cnt=this->lab_stream->read_labs(bs,lb);
 	}
 	//cout << "Feature Count: " << ftr_cnt << "Label Count: " << lab_cnt << endl;
-	assert (ftr_cnt == lab_cnt);
+
+	//commented out by Ryan, since ftr_cnt might be larger than lab_cnt for segmental features extraction
+	//assert (ftr_cnt == lab_cnt);
+
 	/*if (ftr_cnt != lab_cnt)
 		ftr_cnt=-1;*/ // This doesn't work - size_t is unsigned - need a different indicator of failure here.
 	return ftr_cnt;
