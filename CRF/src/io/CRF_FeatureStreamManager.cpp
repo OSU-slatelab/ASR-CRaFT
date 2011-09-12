@@ -215,7 +215,9 @@ void CRF_FeatureStreamManager::create()
    			exit(-1);
 	}
 
-   QN_InFtrStream_SeqWindow* cv_winftr_str;
+	//changed by Ryan
+    //QN_InFtrStream_SeqWindow* cv_winftr_str;
+	CRF_InFtrStream_SeqMultiWindow* cv_winftr_str;
 
 	if (cv_ftr_str != NULL ) {
 	//changed by Ryan
@@ -238,8 +240,11 @@ void CRF_FeatureStreamManager::create()
 
 
     // Create Label Streams
-    QN_InLabStream_SeqWindow* cv_winlab_str=NULL;
-    QN_InLabStream_SeqWindow* train_winlab_str=NULL;
+	// Changed by Ryan
+    //QN_InLabStream_SeqWindow* cv_winlab_str=NULL;
+    //QN_InLabStream_SeqWindow* train_winlab_str=NULL;
+	CRF_InLabStream_SeqMultiWindow* cv_winlab_str=NULL;
+	CRF_InLabStream_SeqMultiWindow* train_winlab_str=NULL;
     if (this->hardtarget_filename != 0) {
     	FILE* hardtarget_fp=NULL;
 		enum { LABFILE_BUF_SIZE = 0x8000 };
@@ -276,7 +281,10 @@ void CRF_FeatureStreamManager::create()
 	    // Create training and CV windows.
 	    CRF_InLabStream_RandPresent* train_randlab_str =NULL;
 	    const size_t window_len = 1;
-    	bot_margin = window_extent - this->hardtarget_window_offset - window_len;
+
+	    // Changed by Ryan
+    	//bot_margin = window_extent - this->hardtarget_window_offset - window_len;
+    	bot_margin = window_extent - this->hardtarget_window_offset - this->window_len;
 
 		switch ( this->train_seq_type )
 		{
@@ -287,10 +295,16 @@ void CRF_FeatureStreamManager::create()
         		//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
                 //       	              *train_randlab_str, window_len,
                 //            	          this->window_offset, bot_margin);
+
+				// Changed by Ryan
+				//train_winlab_str =
+        		//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
+                //        	              *train_randlab_str, window_len,
+                //            	          this->hardtarget_window_offset, bot_margin);
 				train_winlab_str =
-        			new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
-                        	              *train_randlab_str, window_len,
-                            	          this->hardtarget_window_offset, bot_margin);
+					new CRF_InLabStream_SeqMultiWindow(this->debug, this->dbgname,
+										  *train_randlab_str, this->window_len,
+										  this->hardtarget_window_offset, bot_margin);
 				break;
 			case RANDOM_REPLACE:
 				train_randlab_str =
@@ -299,20 +313,32 @@ void CRF_FeatureStreamManager::create()
         		//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
                 //        	              *train_randlab_str, window_len,
                 //            	          this->window_offset, bot_margin);
+
+				// Changed by Ryan
+				//train_winlab_str =
+        		//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
+                //        	              *train_randlab_str, window_len,
+                //            	          this->hardtarget_window_offset, bot_margin);
 				train_winlab_str =
-        			new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
-                        	              *train_randlab_str, window_len,
-                            	          this->hardtarget_window_offset, bot_margin);
+					new CRF_InLabStream_SeqMultiWindow(this->debug, this->dbgname,
+										  *train_randlab_str, this->window_len,
+										  this->hardtarget_window_offset, bot_margin);
 				break;
 			case SEQUENTIAL:
 				//train_winlab_str =
 				//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
 				//							*train_lab_str, window_len,
 				//							this->window_offset, bot_margin);
+
+				// Changed by Ryan
+				//train_winlab_str =
+				//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
+				//							*train_lab_str, window_len,
+				//							this->hardtarget_window_offset, bot_margin);
 				train_winlab_str =
-					new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
-											*train_lab_str, window_len,
-											this->hardtarget_window_offset, bot_margin);
+					new CRF_InLabStream_SeqMultiWindow(this->debug, this->dbgname,
+										  *train_lab_str, this->window_len,
+										  this->hardtarget_window_offset, bot_margin);
 				break;
    			default:
    				cerr << "Invalid training sequence type! ABORT!" << endl;
@@ -325,11 +351,17 @@ void CRF_FeatureStreamManager::create()
 //           	                          *cv_lab_str, window_len,
 //                	                      this->window_offset, bot_margin
 //                    	                  );
+
+			// Changed by Ryan
+    		//cv_winlab_str =
+        	//	new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
+           	//                          *cv_lab_str, window_len,
+            //    	                      this->hardtarget_window_offset, bot_margin
+            //        	                  );
     		cv_winlab_str =
-        		new QN_InLabStream_SeqWindow(this->debug, this->dbgname,
-           	                          *cv_lab_str, window_len,
-                	                      this->hardtarget_window_offset, bot_margin
-                    	                  );
+				new CRF_InLabStream_SeqMultiWindow(this->debug, this->dbgname,
+									  *cv_lab_str, this->window_len,
+									  this->hardtarget_window_offset, bot_margin);
 
 		}
 		else {

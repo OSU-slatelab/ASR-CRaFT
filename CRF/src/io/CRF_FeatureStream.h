@@ -11,6 +11,11 @@
  * package for compatibility with ICSI Quicknet.
  */
 
+// Added by Ryan
+#ifndef CRF_LAB_BAD
+#define CRF_LAB_BAD (0xffffffff)
+#endif
+
 #include "QuickNet.h"
 #include "QN_streams.h"
 #include "QN_seqgen.h"

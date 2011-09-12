@@ -6,7 +6,6 @@
  */
 
 #include "CRF_InFtrStream_SeqMultiWindow.h"
-#include <math.h>
 
 CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
         QN_InFtrStream& a_str,
@@ -216,7 +215,7 @@ float* CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* in_win_buf, float* ftr
 
 	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
-		cout << "cur_win_len=" << cur_win_len << " frameSteps:";
+		//cout << "cur_win_len=" << cur_win_len << " frameSteps:";
 		float* cur_sample_frame_buf_ptr = cur_win_buf_ptr;
 		float* cur_sample_frame_ftrs_ptr = cur_win_ftrs_ptr;
 		float one_tenth_win_len = cur_win_len * 0.1;
@@ -231,11 +230,11 @@ float* CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* in_win_buf, float* ftr
 				cur_sample_frame_ftrs_ptr += in_width;
 			}
 			cur_sample_frame_buf_ptr = cur_win_buf_ptr;
-			cout << " " << frameStep;
+			//cout << " " << frameStep;
 		}
 		cur_win_buf_ptr -= in_width;
 		cur_win_ftrs_ptr += out_width;
-		cout << endl;
+		//cout << endl;
 	}
 
 	return ftrs + 5 * in_width;	    //TODO: Currently hard-coded. Need to be parameterized.

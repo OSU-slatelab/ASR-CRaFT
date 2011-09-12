@@ -21,6 +21,7 @@
 #include "CRF_FeatureStream.h"
 //added by Ryan
 #include "CRF_InFtrStream_SeqMultiWindow.h"
+#include "CRF_InLabStream_SeqMultiWindow.h"
 
 /*
  * class CRF_FeatureStreamManager
