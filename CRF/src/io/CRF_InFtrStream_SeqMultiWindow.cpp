@@ -138,11 +138,11 @@ size_t CRF_InFtrStream_SeqMultiWindow::read_ftrs(size_t cnt, float* ftrs)
 
 	size_t numWrittenFtrPerWin = 0;   // the total number of features that have been written to each output window.
 
-	numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	//numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
 	numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	//numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	//numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	//numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
 
 	if (cur_avail_max_win_len < max_win_len)   //for leading frames
 	{
