@@ -596,7 +596,6 @@ int main(int argc, const char* argv[]) {
 			else {
 				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
 			}
-
 			if (config.crf_lat_outdir != NULL) {
 				// Dump the lattice to a file in openfst format
 				string fst_fname=string(config.crf_lat_outdir)+"/fst."+stringify(count)+".final.fst";

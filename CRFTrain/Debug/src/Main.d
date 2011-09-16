@@ -128,6 +128,8 @@ src/Main.d src/Main.o: ../src/Main.cpp \
  /u/drspeech/src/quicknet-v3_20/QN_streams.h \
  /u/drspeech/src/quicknet-v3_20/QN_seqgen.h \
  /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_RandPresent.h \
+ /home3/hey/segmental-branch/CRF/src/io/CRF_InFtrStream_SeqMultiWindow.h \
+ /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_SeqMultiWindow.h \
  /home3/hey/segmental-branch/CRF/src/trainers/CRF_SGTrainer.h \
  /home3/hey/segmental-branch/CRF/src/trainers/../CRF.h \
  /home3/hey/segmental-branch/CRF/src/trainers/CRF_Trainer.h \
@@ -429,6 +431,10 @@ src/Main.d src/Main.o: ../src/Main.cpp \
 /u/drspeech/src/quicknet-v3_20/QN_seqgen.h:
 
 /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_RandPresent.h:
+
+/home3/hey/segmental-branch/CRF/src/io/CRF_InFtrStream_SeqMultiWindow.h:
+
+/home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_SeqMultiWindow.h:
 
 /home3/hey/segmental-branch/CRF/src/trainers/CRF_SGTrainer.h:
 

@@ -24,6 +24,10 @@ class CRF_Model
 {
 protected:
 	QNUInt32 nlabs;
+
+	//Added by Ryan
+	QNUInt32 lab_max_dur;
+
 	double* lambda;  // Holds the lambda weight values for the CRF
 	double* lambdaAcc;  // Holds the lambda accumlation values for averaging
 	QNUInt32 lambda_len; // Holds the size of the lambda vector
@@ -52,6 +56,11 @@ public:
 	virtual bool writeToFile(const char* fname,double* lam, QNUInt32 ll);
 	virtual bool readFromFile(const char* fname);
 	virtual bool readAverageFromFile(const char* fname, int present);
+
+	//Added by Ryan
+	virtual void setLabMaxDur(QNUInt32 max_duration);
+	virtual QNUInt32 getLabMaxDur();
+
 	virtual void setUseLog(bool isLog);
 	virtual void setUseMask(bool isMasked);
 	virtual void setNodeType();

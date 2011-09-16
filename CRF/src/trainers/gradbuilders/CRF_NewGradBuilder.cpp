@@ -50,7 +50,11 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 	QNUInt32 lambda_len = this->crf->getLambdaLen();
 
 	double logLi = 0.0;
-	size_t bunch_size = 3;
+
+	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size.
+	//size_t bunch_size = 3;
+	size_t bunch_size = 1;
+
 	size_t num_ftrs=ftr_strm->num_ftrs();
 	if (this->ftr_buf==NULL) {  // First pass through initialize the buffers
 		this->ftr_buf = new float[num_ftrs*bunch_size];

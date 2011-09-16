@@ -72,6 +72,21 @@ double CRF_StateNode::computeAlpha(double* prev_alpha)
 	return 0;
 }
 
+// Added by Ryan
+/*
+ * CRF_StateNode::computeAlpha
+ *
+ * Input: prev_alpha - vector of alpha vectors of a few previous nodes
+ *
+ * Stub function.
+ * Should compute the alpha vector for the forward backward computation for this node.
+ */
+double CRF_StateNode::computeAlpha(double** prev_alpha)
+{
+	return 0;
+}
+
+
 /*
  * CRF_StateNode::computeFirstAlpha
  *
@@ -80,6 +95,21 @@ double CRF_StateNode::computeAlpha(double* prev_alpha)
  * node in the sequence.
  */
 double CRF_StateNode::computeFirstAlpha(double* prev_alpha)
+{
+	return this->computeAlpha(prev_alpha);
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::computeFirstAlpha
+ *
+ * This version is to match the input type of computeAlpha(double** prev_alpha).
+ *
+ * Stub function.
+ * Should compute the alpha vector for this node for the special case where the node is the first
+ * node in the sequence.
+ */
+double CRF_StateNode::computeFirstAlpha(double** prev_alpha)
 {
 	return this->computeAlpha(prev_alpha);
 }
@@ -96,6 +126,23 @@ double CRF_StateNode::computeFirstAlpha(double* prev_alpha)
  * Should compute the beta vector for the node before this one and store it in result_beta
  */
 double CRF_StateNode::computeBeta(double* result_beta, double scale)
+{
+	return 0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::computeBeta
+ *
+ * Inputs: result_beta - vector of vectors to store the result of beta vectors of a few previous nodes
+ *         scale - scaling constant for result_beta array
+ *
+ * Returns:
+ *
+ * Stub function.
+ * Should compute the beta vector for the node before this one and store it in result_beta
+ */
+double CRF_StateNode::computeBeta(double** result_beta, double scale)
 {
 	return 0;
 }
@@ -141,6 +188,27 @@ void CRF_StateNode::setTailBeta()
  *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
  */
 double CRF_StateNode::computeExpF(double* ExpF, double* grad, double Zx, double* prev_alpha, QNUInt32 prev_lab)
+{
+	return 0;
+}
+
+/*
+ * CRF_StateNode::computeExpF
+ *
+ * Inputs: *ExpF - vector to store expected values of feature functions
+ *         *grad - vector to store computed gradient values
+ *         Zx - normalization constant
+ *         **prev_alpha - vector of vectors of alpha values from a few previous nodes (for use in transition feature
+ *            ExpF computation
+ *         prev_lab - previous node label (transition feature ExpF computation)
+ *
+ * Returns:
+ *
+ * Stub function.
+ * Should compute gradient and expected values for features in this node and store them in *grad and
+ *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
+ */
+double CRF_StateNode::computeExpF(double* ExpF, double* grad, double Zx, double** prev_alpha, QNUInt32 prev_lab)
 {
 	return 0;
 }

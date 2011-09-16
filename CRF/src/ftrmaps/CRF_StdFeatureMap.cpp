@@ -565,30 +565,42 @@ void CRF_StdFeatureMap::tieGradient(double* grad)
 		return;
 
 	//assert(config->numLabs % maxDur == 0);
-	assert(config->numLabs == config->maxDur * 48);
+	//assert(config->numLabs == config->maxDur * 48);
+	if (config->numLabs % config->maxDur != 0) {
+		string errstr="CRF_StdFeatureMap::tieGradient() threw exception: numLabs and maxDur do not correspond.";
+		throw runtime_error(errstr);
+	}
+	QNUInt32 nPureLabs = config->numLabs / config->maxDur;
+	assert(nPureLabs == 48);    //this statement is just for debugging: currently the number of labels is 48. It should be commented out later.
+
 	QNUInt32 durFtrEnd = config->durFtrStart + config->maxDur;  // exclusive end
 	if (config->useStateFtrs || config->useStateBias)
 	{
-		QNUInt32 stateParamStep = getStateFeatureIdx(1) - getStateFeatureIdx(0);
+		//QNUInt32 stateParamStep = getStateFeatureIdx(1) - getStateFeatureIdx(0);
+		QNUInt32 stateParamStep = (getStateFeatureIdx(1) - getStateFeatureIdx(0)) * nPureLabs;
 		QNUInt32 clab = 0;
-		while (clab < config->numLabs)
+		//while (clab < config->numLabs)
+		while (clab < nPureLabs)
 		{
 			for (QNUInt32 fid = 0; fid < numStateFuncs; fid++)
 			{
 				if (fid >= config->durFtrStart && fid < durFtrEnd)
 					continue;
 				QNUInt32 start = getStateFeatureIdx(clab,fid);
-				tieGradForSingleParam(grad, config->maxDur, start, stateParamStep);
+				tieGradForSingleParam(grad, start, stateParamStep, config->maxDur);
 			}
-			clab += config->maxDur;
+			//clab += config->maxDur;
+			clab++;
 		}
 	}
 
 	if (config->useTransFtrs || config->useTransBias)
 	{
-		QNUInt32 clabParamStep = getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0);
+		//QNUInt32 clabParamStep = getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0);
+		QNUInt32 clabParamStep = (getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0)) * nPureLabs;
 		QNUInt32 clab = 0;
-		while (clab < config->numLabs)
+		//while (clab < config->numLabs)
+		while (clab < nPureLabs)
 		{
 			for (QNUInt32 plab = 0; plab < config->numLabs; plab++)
 			{
@@ -597,14 +609,17 @@ void CRF_StdFeatureMap::tieGradient(double* grad)
 					if (fid >= config->durFtrStart && fid < durFtrEnd)
 						continue;
 					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
-					tieGradForSingleParam(grad, config->maxDur, start, clabParamStep);
+					tieGradForSingleParam(grad, start, clabParamStep, config->maxDur);
 				}
 			}
-			clab += config->maxDur;
+			//clab += config->maxDur;
+			clab++;
 		}
-		QNUInt32 plabParamStep = getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0);
+		//QNUInt32 plabParamStep = getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0);
+		QNUInt32 plabParamStep = (getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0)) * nPureLabs;
 		QNUInt32 plab = 0;
-		while (plab < config->numLabs)
+		//while (plab < config->numLabs)
+		while (plab < nPureLabs)
 		{
 			for (QNUInt32 clab = 0; clab < config->numLabs; clab++)
 			{
@@ -613,10 +628,11 @@ void CRF_StdFeatureMap::tieGradient(double* grad)
 					if (fid >= config->durFtrStart && fid < durFtrEnd)
 						continue;
 					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
-					tieGradForSingleParam(grad, config->maxDur, start, plabParamStep);
+					tieGradForSingleParam(grad, start, plabParamStep, config->maxDur);
 				}
 			}
-			plab += config->maxDur;
+			//plab += config->maxDur;
+			plab++;
 		}
 	}
 
@@ -637,7 +653,7 @@ void CRF_StdFeatureMap::tieGradient(double* grad)
  * The index of parameters in the series increases with the same step value.
  *
  */
-void CRF_StdFeatureMap::tieGradForSingleParam(double* grad, QNUInt32 numTiedParam, QNUInt32 start, QNUInt32 step)
+void CRF_StdFeatureMap::tieGradForSingleParam(double* grad, QNUInt32 start, QNUInt32 step, QNUInt32 numTiedParam)
 {
 //	if (step <= 0)
 //		return;

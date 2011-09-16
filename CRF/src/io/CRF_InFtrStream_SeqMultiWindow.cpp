@@ -27,7 +27,9 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 	  first_line_ptr(&max_win_buf[top_margin*in_width]),
 	  segno(-1)
 {
-	out_width = 488 + max_win_len;  //TODO: Currently hard-coded. Need to be parameterized.
+	//out_width = 8 * in_width + max_win_len;  //TODO: Currently hard-coded. Need to be parameterized.
+	//out_width = 488 + max_win_len;
+	out_width = in_width;
 
 	if (bunch_frames<(top_margin+bot_margin+max_win_len))
 		log.error("Insufficient bunch length for size of window.");
@@ -134,13 +136,13 @@ size_t CRF_InFtrStream_SeqMultiWindow::read_ftrs(size_t cnt, float* ftrs)
 
 	size_t multi_win_count = cur_avail_max_win_len;
 
-	float* vals = ftrs;       // Where to put windowed data for each individual features.
+	size_t numWrittenFtrPerWin = 0;   // the total number of features that have been written to each output window.
 
-	vals = sample_ftrs(cur_line_ptr, vals, multi_win_count);
-	vals = avg_ftrs(cur_line_ptr, vals, multi_win_count);
-	vals = max_ftrs(cur_line_ptr, vals, multi_win_count);
-	vals = min_ftrs(cur_line_ptr, vals, multi_win_count);
-	vals = dur_ftrs(vals, multi_win_count);
+	numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
 
 	if (cur_avail_max_win_len < max_win_len)   //for leading frames
 	{
@@ -207,44 +209,62 @@ QN_SegID CRF_InFtrStream_SeqMultiWindow::set_pos(size_t segno, size_t frameno)
 
 // Each individual window-based feature function
 
-float* CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len)
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::sample_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* out_ftr_buf, size_t avail_max_win_len)
 {
 	//for win_len=1
-	float* cur_win_buf_ptr = cur_line_ptr + (avail_max_win_len - 1) * in_width;
-	float* cur_win_ftrs_ptr = ftrs;
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
 
 	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		//cout << "cur_win_len=" << cur_win_len << " frameSteps:";
-		float* cur_sample_frame_buf_ptr = cur_win_buf_ptr;
-		float* cur_sample_frame_ftrs_ptr = cur_win_ftrs_ptr;
+		float* cur_sample_frame_in_buf = cur_win_in_buf;
+		float* cur_sample_frame_out_buf = cur_win_out_buf;
 		float one_tenth_win_len = cur_win_len * 0.1;
 		for (int i = 1; i < 10; i += 2)  //sample frames at 10%, 30%, 50%, 70% and 90% points
 		{
 			QNUInt32 frameStep = (QNUInt32)ceil(one_tenth_win_len * i) - 1;   //it might be not accurate for some integral value since it is floating point calculation
 			//QNUInt32 frameStep = (QNUInt32)(one_tenth_win_len * i);   //it might be not accurate for some integral value since it is floating point calculation
-			cur_sample_frame_buf_ptr += in_width * frameStep;
-			if (cur_sample_frame_ftrs_ptr != NULL)
+			cur_sample_frame_in_buf += in_width * frameStep;
+			if (cur_sample_frame_out_buf != NULL)
 			{
-				qn_copy_vf_vf(in_width, cur_sample_frame_buf_ptr, cur_sample_frame_ftrs_ptr);
-				cur_sample_frame_ftrs_ptr += in_width;
+				qn_copy_vf_vf(in_width, cur_sample_frame_in_buf, cur_sample_frame_out_buf);
+				cur_sample_frame_out_buf += in_width;
 			}
-			cur_sample_frame_buf_ptr = cur_win_buf_ptr;
+			cur_sample_frame_in_buf = cur_win_in_buf;
 			//cout << " " << frameStep;
 		}
-		cur_win_buf_ptr -= in_width;
-		cur_win_ftrs_ptr += out_width;
+		cur_win_in_buf -= in_width;
+		cur_win_out_buf += out_width;
 		//cout << endl;
 	}
 
-	return ftrs + 5 * in_width;	    //TODO: Currently hard-coded. Need to be parameterized.
+	return 5 * in_width;	    //TODO: Currently hard-coded. Need to be parameterized.
 }
 
-float* CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len)
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::avg_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* out_ftr_buf, size_t avail_max_win_len)
 {
 	//for win_len=1
-	float* cur_win_buf_ptr = cur_line_ptr + (avail_max_win_len - 1) * in_width;
-	float* cur_win_ftrs_ptr = ftrs;
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
 
 	float* acc_sum_ftrs(new float[in_width]);
 	for (size_t acc_i = 0; acc_i < in_width; acc_i++)
@@ -256,81 +276,108 @@ float* CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* in_win_buf, float* ftrs, 
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
-			acc_sum_ftrs[ftr_i] += cur_win_buf_ptr[ftr_i];
-			cur_win_ftrs_ptr[ftr_i] = acc_sum_ftrs[ftr_i] / cur_win_len;
+			acc_sum_ftrs[ftr_i] += cur_win_in_buf[ftr_i];
+			cur_win_out_buf[ftr_i] = acc_sum_ftrs[ftr_i] / cur_win_len;
 		}
-		cur_win_buf_ptr -= in_width;
-		cur_win_ftrs_ptr += out_width;
+		cur_win_in_buf -= in_width;
+		cur_win_out_buf += out_width;
 	}
 
 	delete [] acc_sum_ftrs;
-	return ftrs + in_width;        //TODO: Currently hard-coded. Need to be parameterized.
+	return in_width;        //TODO: Currently hard-coded. Need to be parameterized.
 }
 
-float* CRF_InFtrStream_SeqMultiWindow::max_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len)
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::max_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::max_ftrs(float* out_ftr_buf, size_t avail_max_win_len)
 {
 	//for win_len=1
-	float* cur_win_buf_ptr = cur_line_ptr + (avail_max_win_len - 1) * in_width;
-	float* cur_win_ftrs_ptr = ftrs;
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
 
 	float* acc_max_ftrs(new float[in_width]);
 	for (size_t acc_i = 0; acc_i < in_width; acc_i++)
 	{
-		acc_max_ftrs[acc_i] = cur_win_buf_ptr[acc_i];
+		acc_max_ftrs[acc_i] = cur_win_in_buf[acc_i];
 	}
 
 	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
-			if (cur_win_buf_ptr[ftr_i] > acc_max_ftrs[ftr_i])
+			if (cur_win_in_buf[ftr_i] > acc_max_ftrs[ftr_i])
 			{
-				acc_max_ftrs[ftr_i] = cur_win_buf_ptr[ftr_i];
+				acc_max_ftrs[ftr_i] = cur_win_in_buf[ftr_i];
 			}
-			cur_win_ftrs_ptr[ftr_i] = acc_max_ftrs[ftr_i];
+			cur_win_out_buf[ftr_i] = acc_max_ftrs[ftr_i];
 		}
-		cur_win_buf_ptr -= in_width;
-		cur_win_ftrs_ptr += out_width;
+		cur_win_in_buf -= in_width;
+		cur_win_out_buf += out_width;
 	}
 
 	delete [] acc_max_ftrs;
-	return ftrs + in_width;       //TODO: Currently hard-coded. Need to be parameterized.
+	return in_width;       //TODO: Currently hard-coded. Need to be parameterized.
 }
 
-float* CRF_InFtrStream_SeqMultiWindow::min_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len)
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::min_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::min_ftrs(float* out_ftr_buf, size_t avail_max_win_len)
 {
 	//for win_len=1
-	float* cur_win_buf_ptr = cur_line_ptr + (avail_max_win_len - 1) * in_width;
-	float* cur_win_ftrs_ptr = ftrs;
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
 
 	float* acc_min_ftrs(new float[in_width]);
 	for (size_t acc_i = 0; acc_i < in_width; acc_i++)
 	{
-		acc_min_ftrs[acc_i] = cur_win_buf_ptr[acc_i];
+		acc_min_ftrs[acc_i] = cur_win_in_buf[acc_i];
 	}
 
 	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
-			if (cur_win_buf_ptr[ftr_i] < acc_min_ftrs[ftr_i])
+			if (cur_win_in_buf[ftr_i] < acc_min_ftrs[ftr_i])
 			{
-				acc_min_ftrs[ftr_i] = cur_win_buf_ptr[ftr_i];
+				acc_min_ftrs[ftr_i] = cur_win_in_buf[ftr_i];
 			}
-			cur_win_ftrs_ptr[ftr_i] = acc_min_ftrs[ftr_i];
+			cur_win_out_buf[ftr_i] = acc_min_ftrs[ftr_i];
 		}
-		cur_win_buf_ptr -= in_width;
-		cur_win_ftrs_ptr += out_width;
+		cur_win_in_buf -= in_width;
+		cur_win_out_buf += out_width;
 	}
 
 	delete [] acc_min_ftrs;
-	return ftrs + in_width;      //TODO: Currently hard-coded. Need to be parameterized.
+	return in_width;      //TODO: Currently hard-coded. Need to be parameterized.
 }
 
-float* CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* ftrs, size_t avail_max_win_len)
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::dur_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* out_ftr_buf, size_t avail_max_win_len)
 {
 	//for win_len=1
-	float* cur_win_ftrs_ptr = ftrs;
+	float* cur_win_out_buf = out_ftr_buf;
 
 	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
@@ -338,15 +385,15 @@ float* CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* ftrs, size_t avail_max_wi
 		{
 			if (tmp_win_len == cur_win_len)
 			{
-				cur_win_ftrs_ptr[tmp_win_len-1] = 1;
+				cur_win_out_buf[tmp_win_len-1] = 1;
 			}
 			else
 			{
-				cur_win_ftrs_ptr[tmp_win_len-1] = 0;
+				cur_win_out_buf[tmp_win_len-1] = 0;
 			}
 		}
-		cur_win_ftrs_ptr += out_width;
+		cur_win_out_buf += out_width;
 	}
 
-	return ftrs + max_win_len;   //TODO: Currently hard-coded. Need to be parameterized.
+	return max_win_len;   //TODO: Currently hard-coded. Need to be parameterized.
 }

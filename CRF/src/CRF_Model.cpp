@@ -16,6 +16,9 @@
 CRF_Model::CRF_Model(QNUInt32 num_labs)
 	: nlabs(num_labs)
 {
+	//Added by Ryan
+	this->lab_max_dur=1;
+
 	this->useLog=true;
 	this->useMask=false;
 	this->init_present=0;
@@ -277,6 +280,28 @@ bool CRF_Model::readAverageFromFile(const char* fname, int present)
 QNUInt32 CRF_Model::getPresentations()
 {
 	return this->init_present;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::setLabMaxDur
+ *
+ * Mutator function to set the maximum duration of labels
+ *
+ */
+void CRF_Model::setLabMaxDur(QNUInt32 max_duration) {
+	this->lab_max_dur=max_duration;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::getLabMaxDur
+ *
+ * Returns: The maximum duration of labels defined for the CRF Model
+ */
+QNUInt32 CRF_Model::getLabMaxDur()
+{
+	return this->lab_max_dur;
 }
 
 /*

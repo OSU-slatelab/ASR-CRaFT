@@ -55,11 +55,11 @@ protected:
     // The number of the current segment (for debugging).
     long segno;
 
-    float* sample_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len);
-    float* avg_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len);
-    float* max_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len);
-    float* min_ftrs(float* in_win_buf, float* ftrs, size_t avail_max_win_len);
-    float* dur_ftrs(float* ftrs, size_t avail_max_win_len);
+    size_t sample_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
+    size_t avg_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
+    size_t max_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
+    size_t min_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
+    size_t dur_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
 
 public:
 	CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,

@@ -76,6 +76,12 @@ public:
 	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual float *getFtrBuffer();
 	virtual QNUInt32 getFtrBufferSize();
+
+	// Added by Ryan
+	virtual double computeAlpha(double** prev_alpha);
+	virtual double computeFirstAlpha(double** prev_alpha);
+	virtual double computeBeta(double** result_beta, double scale=1.0);
+	virtual double computeExpF(double* ExpF, double* grad, double Zx, double** prev_alpha, QNUInt32 prev_lab);
 };
 
 #endif /*CRF_STATENODE_H_*/
