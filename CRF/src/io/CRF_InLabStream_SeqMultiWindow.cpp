@@ -57,16 +57,22 @@ size_t CRF_InLabStream_SeqMultiWindow::groupLabels(
 	size_t dur = nextWinStartFrame - lastWinStartFrame;
 	if (dur <= max_win_len)
 	{
-		out_lab_buf[num_out_win] = lastWinLab;
-		out_t_start_buf[num_out_win] = lastWinStartFrame;
-		out_t_end_buf[num_out_win] = nextWinStartFrame - 1;
-		out_broken_flag_buf[num_out_win] = 0;
-		num_out_win++;
+		out_lab_buf[num_out_wins] = lastWinLab;
+		out_t_start_buf[num_out_wins] = lastWinStartFrame;
+		out_t_end_buf[num_out_wins] = nextWinStartFrame - 1;
+		out_broken_flag_buf[num_out_wins] = 0;
+		num_out_wins++;
 		ret_numWin++;
 	}
 	else    //split the long window
 	{
-		size_t numPieces = dur / max_win_len + 1;
+		size_t numPieces;
+		if (dur % max_win_len == 0) {
+			numPieces = dur / max_win_len;
+		} else {
+			numPieces = dur / max_win_len + 1;
+		}
+		assert(numPieces <= dur);
 		size_t pieceDur = dur / numPieces;
 		size_t remainder = dur % numPieces;
 		size_t pieceStart = lastWinStartFrame;
@@ -75,24 +81,26 @@ size_t CRF_InLabStream_SeqMultiWindow::groupLabels(
 		for (size_t r = 0; r < remainder; r++)
 		{
 			pieceEnd = pieceStart + pieceDur - 1;
-			out_lab_buf[num_out_win] = lastWinLab;
-			out_t_start_buf[num_out_win] = pieceStart;
-			out_t_end_buf[num_out_win] = pieceEnd;
-			out_broken_flag_buf[num_out_win] = 1;
+			assert(pieceEnd >= pieceStart);
+			out_lab_buf[num_out_wins] = lastWinLab;
+			out_t_start_buf[num_out_wins] = pieceStart;
+			out_t_end_buf[num_out_wins] = pieceEnd;
+			out_broken_flag_buf[num_out_wins] = 1;
 			pieceStart = pieceEnd + 1;
-			num_out_win++;
+			num_out_wins++;
 			ret_numWin++;
 		}
 		pieceDur--;
 		for (size_t r = 0; r < numPieces - remainder; r++)
 		{
 			pieceEnd = pieceStart + pieceDur - 1;
-			out_lab_buf[num_out_win] = lastWinLab;
-			out_t_start_buf[num_out_win] = pieceStart;
-			out_t_end_buf[num_out_win] = pieceEnd;
-			out_broken_flag_buf[num_out_win] = 1;
+			assert(pieceEnd >= pieceStart);
+			out_lab_buf[num_out_wins] = lastWinLab;
+			out_t_start_buf[num_out_wins] = pieceStart;
+			out_t_end_buf[num_out_wins] = pieceEnd;
+			out_broken_flag_buf[num_out_wins] = 1;
 			pieceStart = pieceEnd + 1;
-			num_out_win++;
+			num_out_wins++;
 			ret_numWin++;
 		}
 		assert (pieceStart == nextWinStartFrame);
@@ -114,15 +122,17 @@ QN_SegID CRF_InLabStream_SeqMultiWindow::nextseg()
 
 	segid = in_str.nextseg();
 
-	num_out_win = 0;
+	num_out_wins = 0;
 	cur_out_win = 0;
-	cur_frame = 0;
+	num_in_frames = 0;
+	cur_in_frame = top_margin;
 
 	if (segid!=QN_SEGID_BAD)
 	{
 		QNUInt32 lastFrameLab = CRF_LAB_BAD;  // QN_UINT32_MAX doesn't work because it is wrongly defined as "0xffffffffu;" with an extra semi-colon.
 		size_t winStartFrame = 0;
 		size_t totalBufFrames = in_str.read_labs(max_in_buf_size, in_buf);
+		num_in_frames += totalBufFrames;
 		size_t curBufFrame = top_margin;
 		size_t curInStrFrame = top_margin;
 
@@ -158,6 +168,7 @@ QN_SegID CRF_InLabStream_SeqMultiWindow::nextseg()
 			size_t blankFrames = max_in_buf_size - old_frames;
 			size_t new_frames = in_str.read_labs(blankFrames,
 					  &in_buf[old_frames]);
+			num_in_frames += new_frames;
 			totalBufFrames = old_frames + new_frames;
 
 			curBufFrame = 0;
@@ -170,6 +181,16 @@ QN_SegID CRF_InLabStream_SeqMultiWindow::nextseg()
 
 		segno++;
 	}
+
+	if (num_in_frames <= bot_margin)
+	{
+		end_in_frame = 0;
+	}
+	else
+	{
+		end_in_frame = num_in_frames - bot_margin;
+	}
+
 	log.log(QN_LOG_PER_SENT, "Moved on to segment %li.", segno);
 	return segid;
 }
@@ -183,28 +204,39 @@ size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs)
 		log.error("Trying to read before start of first sentence.");
 
 	size_t ret_num_lab = 0;
-	size_t ret_lab_idx = 0;
-	//for (size_t frameMove = 0; frameMove < cnt; frameMove++)
-	//{
-		QNUInt32 win_t_end = out_t_end_buf[cur_out_win];
-		if (cur_frame == win_t_end)
-		{
-			labs[ret_lab_idx++] = out_lab_buf[cur_out_win];
-			labs[ret_lab_idx++] = out_t_start_buf[cur_out_win];
-			labs[ret_lab_idx++] = out_t_end_buf[cur_out_win];
-			labs[ret_lab_idx++] = out_broken_flag_buf[cur_out_win];
-			cur_out_win++;
-		}
-		else
-		{
-			labs[ret_lab_idx++] = CRF_LAB_BAD;
-			labs[ret_lab_idx++] = CRF_LAB_BAD;
-			labs[ret_lab_idx++] = CRF_LAB_BAD;
-			labs[ret_lab_idx++] = CRF_LAB_BAD;
-		}
-		ret_num_lab++;
-		cur_frame++;
-	//}
+
+	if (cur_out_win < num_out_wins && cur_in_frame < end_in_frame)
+	{
+		//just for debugging
+//		cout << cur_in_frame << "\t"
+//				<< out_lab_buf[cur_out_win] << "\t"
+//				<< out_t_start_buf[cur_out_win] << "\t"
+//				<< out_t_end_buf[cur_out_win] << "\t"
+//				<< out_broken_flag_buf[cur_out_win] << endl;
+
+		size_t ret_lab_idx = 0;
+		//for (size_t frameMove = 0; frameMove < cnt; frameMove++)
+		//{
+			QNUInt32 win_t_end = out_t_end_buf[cur_out_win];
+			if (cur_in_frame == win_t_end)
+			{
+				labs[ret_lab_idx++] = out_lab_buf[cur_out_win];
+				labs[ret_lab_idx++] = out_t_start_buf[cur_out_win];
+				labs[ret_lab_idx++] = out_t_end_buf[cur_out_win];
+				labs[ret_lab_idx++] = out_broken_flag_buf[cur_out_win];
+				cur_out_win++;
+			}
+			else
+			{
+				labs[ret_lab_idx++] = CRF_LAB_BAD;
+				labs[ret_lab_idx++] = CRF_LAB_BAD;
+				labs[ret_lab_idx++] = CRF_LAB_BAD;
+				labs[ret_lab_idx++] = CRF_LAB_BAD;
+			}
+			ret_num_lab++;
+			cur_in_frame++;
+		//}
+	}
 
 	return ret_num_lab;
 }

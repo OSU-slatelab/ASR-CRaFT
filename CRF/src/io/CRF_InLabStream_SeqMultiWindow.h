@@ -40,11 +40,15 @@ protected:
 	// The buffer to store the flag of broken labels to indicate if each label is broken or complete.
 	QNUInt32* out_broken_flag_buf;
 	// The number of windows in win_lab and win_t_end.
-	size_t num_out_win;
+	size_t num_out_wins;
 	// The current window in win_lab and win_t_end.
 	size_t cur_out_win;
+	// The total number of frames in current sentence.
+	size_t num_in_frames;
 	// The current frame that read_labs() is going to read from.
-	size_t cur_frame;
+	size_t cur_in_frame;
+	// The exclusive end frame of the sentence excluding bottom margin.
+	size_t end_in_frame;
 
 	// The number of the current segment (for debugging).
 	long segno;
