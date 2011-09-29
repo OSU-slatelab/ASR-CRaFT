@@ -37,11 +37,13 @@ struct CRF_FeatureMap_config {
 	double stateBiasVal;
 	double transBiasVal;
 
-	//Added by Ryan, for parameter tying
+	//Added by Ryan, for parameter tying and segmental CRFs
 	//the maximum duration if labels are phone-duration combination
 	QNUInt32 maxDur;
 	//the start index of duration features (binary coded, one-hot features) if any
 	QNUInt32 durFtrStart;
+	//the number of actual labels (without duration)
+	QNUInt32 nActualLabs;
 };
 /*
  * class CRF_FeatureMap

@@ -160,6 +160,13 @@ void CRF_FeatureStreamManager::create()
 
     nseg=train_ftr_str->num_segs();
 
+    // Added by Ryan
+    if (this->window_offset + this->window_len > this->window_extent)
+    {
+    	string errstr="CRF_FeatureStreamManager::create() caught exception: this->window_offset + this->window_len > this->window_extent.";
+		throw runtime_error(errstr);
+    }
+
     // Create training and CV windows.
     size_t bot_margin = this->window_extent - this->window_offset - this->window_len;
 
@@ -285,8 +292,21 @@ void CRF_FeatureStreamManager::create()
 
 	    // Changed by Ryan
 //	    const size_t window_len = 1;
-//    	bot_margin = window_extent - this->hardtarget_window_offset - window_len;
-    	bot_margin = window_extent - this->hardtarget_window_offset - this->window_len;
+//    	bot_margin = this->window_extent - this->hardtarget_window_offset - window_len;
+		bot_margin = this->window_extent - this->hardtarget_window_offset - this->window_len;
+
+	    // Added by Ryan
+//	    if (this->hardtarget_window_offset + window_len > this->window_extent)
+//		{
+//			string errstr="CRF_FeatureStreamManager::create() caught exception: this->hardtarget_window_offset + window_len > this->window_extent.";
+//			throw runtime_error(errstr);
+//		}
+	    if (this->hardtarget_window_offset + this->window_len > this->window_extent)
+		{
+			string errstr="CRF_FeatureStreamManager::create() caught exception: this->hardtarget_window_offset + this->window_len > this->window_extent.";
+			throw runtime_error(errstr);
+		}
+
 
 		switch ( this->train_seq_type )
 		{

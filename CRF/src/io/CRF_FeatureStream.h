@@ -58,6 +58,9 @@ public:
 	virtual QNUInt32 num_segs();
 	virtual void display();
 	virtual void view(QNUInt32 startseg,QNUInt32 nsegs);
+
+	// Added by Ryan
+	virtual QNUInt32 num_labs();
 };
 
 #endif /*CRF_FEATURESTREAM2_H_*/

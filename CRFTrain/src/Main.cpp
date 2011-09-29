@@ -59,9 +59,10 @@ static struct {
 	int train_sent_count;
 	int window_extent;
 
-	//Added by Ryan, for parameter tying
+	//Added by Ryan, for parameter tying and segmental CRFs
 	int label_maximum_duration;
 	int dur_ftr_start;
+	int num_actual_labs;
 
 	char* train_sent_range;
 	char* cv_sent_range;
@@ -136,9 +137,10 @@ QN_ArgEntry argtab[] =
 	{ "ftr3_norm_file", "Normalization parameters for ftr3_file", QN_ARG_STR, &(config.ftr3_norm_file) },
 	{ "window_extent", "Extent of all windows (frames)", QN_ARG_INT, &(config.window_extent) },
 
-	//Added by Ryan, for parameter tying
+	//Added by Ryan, for parameter tying and segmental CRFs
 	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
 	{ "dur_ftr_start", "The start index of duration features (binary coded, one-hot features) if any", QN_ARG_INT, &(config.dur_ftr_start) },
+	{ "num_actual_labs", "The number of actual labels (without duration)", QN_ARG_INT, &(config.num_actual_labs) },
 
 	{ "train_sent_range", "Training sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.train_sent_range), QN_ARG_REQ },
 	{ "cv_sent_range", "CV sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.cv_sent_range) },
@@ -213,9 +215,10 @@ static void set_defaults(void) {
 	config.ftr3_norm_file=NULL;
 	config.window_extent=1;
 
-	//Added by Ryan, for parameter tying
-	config.label_maximum_duration=0;
+	//Added by Ryan, for parameter tying and segmental CRFs
+	config.label_maximum_duration=1;
 	config.dur_ftr_start=0;
+	config.num_actual_labs=0;
 
 	config.train_sent_range="";
 	config.cv_sent_range=0;
@@ -299,15 +302,16 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	fmap_config.stateBiasVal=config.crf_state_bias_value;
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
 
-	//Added by Ryan, for parameter tying
+	//Added by Ryan, for parameter tying and segmental CRFs
 	fmap_config.maxDur=config.label_maximum_duration;
-	if (config.dur_ftr_start > nfeas ||
-			config.dur_ftr_start + config.label_maximum_duration > nfeas)
-	{
-		string errstr="CRFTrain Main.cpp set_fmap_config() threw exception: dur_ftr_start is larger than the actual number of features.";
-		throw runtime_error(errstr);
-	}
+//	if (config.dur_ftr_start > nfeas ||
+//			config.dur_ftr_start + config.label_maximum_duration > nfeas)
+//	{
+//		string errstr="CRFTrain Main.cpp set_fmap_config() threw exception: dur_ftr_start is larger than the actual number of features.";
+//		throw runtime_error(errstr);
+//	}
 	fmap_config.durFtrStart=config.dur_ftr_start;
+	fmap_config.nActualLabs=config.num_actual_labs;
 };
 
 
@@ -324,6 +328,22 @@ int main(int argc, const char* argv[]) {
 	QN_initargs(&argtab[0], &argc, &argv, &progname);
 	QN_printargs(NULL, progname, &argtab[0]);
 	cout << "IN LABELS: " << config.crf_label_size << endl;
+
+	// Added by Ryan, for segmental CRFs
+	if (config.label_maximum_duration <= 0)
+	{
+		string errstr="main() in CRFTrain caught exception: the maximum duration of labels must be larger than 0.";
+		throw runtime_error(errstr);
+	}
+	if (config.num_actual_labs == 0)
+	{
+		config.num_actual_labs = config.crf_label_size;
+	}
+	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
+	{
+		string errstr="main() in CRFTrain caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
+		throw runtime_error(errstr);
+	}
 
 	seqtype trn_seq = RANDOM_REPLACE;
 	ftrmaptype trn_ftrmap = STDSTATE;
@@ -381,6 +401,12 @@ int main(int argc, const char* argv[]) {
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 
+	// Added by Ryan, for segmental CRFs
+	my_crf.setLabMaxDur(config.label_maximum_duration);
+	my_crf.setNActualLabs(config.num_actual_labs);
+	cout << "LABEL_MAXIMUM_DURATION: " << my_crf.getLabMaxDur() << endl;
+	cout << "ACTUAL_LABELS: " << my_crf.getNActualLabs() << endl;
+
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
 	cout << "FEATURES: " << my_crf.getLambdaLen() << endl;
@@ -425,6 +451,7 @@ int main(int argc, const char* argv[]) {
 	if (config.crf_gauss_var != 0.0) {
 		my_trainer->setGaussVar(config.crf_gauss_var);
 	}
+
 	try {
 		my_trainer->train();
 	}

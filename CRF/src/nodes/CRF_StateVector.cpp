@@ -44,6 +44,28 @@ void CRF_StateVector::set(QNUInt32 idx, float* new_buf, QNUInt32 num_ftrs, QNUIn
 	}
 }
 
+// Added by Ryan
+/*
+ * CRF_StateVector::set
+ *
+ * Input: idx - index for current state node being created/set
+ *        new_buf, num_ftrs, lab_buf, crf_in,
+ *        nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs
+ *        - see constructor for CRF_StateNode
+ */
+void CRF_StateVector::set(QNUInt32 idx, float* new_buf, QNUInt32 num_ftrs,
+		QNUInt32 lab_buf, CRF_Model* crf_in, QNUInt32 nodeMaxDur,
+		QNUInt32 prevNode_nLabs, QNUInt32 nextNode_nActualLabs)
+{
+	if (idx >= this->size() ) {
+		this->push_back( CRF_StateNode::createStateNode(new_buf,num_ftrs,lab_buf,crf_in,nodeMaxDur,prevNode_nLabs,nextNode_nActualLabs));
+	}
+	else {
+		// By Ryan: For CRF_StdSegStateNode, the parameters nodeMaxDur, prevNode_nLabs and nextNode_nActualLabs should not be changed for the same node index.
+		this->at(idx)->reset(new_buf,num_ftrs,lab_buf,crf_in);
+	}
+}
+
 /*
  * CRF_StateVector::setNodeCount
  *

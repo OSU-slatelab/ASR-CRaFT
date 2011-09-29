@@ -19,16 +19,45 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	: crf(crf_in),
 	  ftr_strm(ftr_strm_in)
 {
+	// just for debugging
+	//cout << "beginning of CRF_LatticeBuilder constructor." << endl;
+
 	this->nodeList= new CRF_StateVector();
+
+	// Commented by Ryan, bunch_size can be only equal to 1 for
+	// CRF_InFtrStream_SeqMultiWindow and CRF_InLabStream_SeqMultiWindow.
 	this->bunch_size=1;
+
 	this->num_ftrs=this->ftr_strm->num_ftrs();
 	this->num_labs=this->crf->getNLabs();
+
+	// Changed by Ryan
+#ifndef SEGMENTAL_CRF
 	this->ftr_buf = new float[num_ftrs*bunch_size];
 	this->lab_buf = new QNUInt32[bunch_size];
+#else
+	this->lab_max_dur = this->crf->getLabMaxDur();
+	this->ftr_buf_size = num_ftrs * lab_max_dur;
+	this->ftr_buf = new float[ftr_buf_size];
+	this->labs_width = ftr_strm->num_labs();
+	this->lab_buf_size = labs_width * lab_max_dur;
+	if (this->labs_width == 0)
+	{
+		this->lab_buf = NULL;
+	} else {
+		this->lab_buf = new QNUInt32[lab_buf_size];
+	}
+	this->nActualLabs = this->crf->getNActualLabs();
+	this->nodeStartStates = new vector<QNUInt32>();
+#endif
+
 	this->alpha_base = new double[this->num_labs];
 	for (QNUInt32 i=0; i<this->num_labs; i++) {
 		this->alpha_base[i]=0.0;
 	}
+
+	// just for debugging
+	//cout << "end of CRF_LatticeBuilder constructor." << endl;
 }
 
 /*
@@ -41,6 +70,11 @@ CRF_LatticeBuilder::~CRF_LatticeBuilder()
 	delete [] this->lab_buf;
 	delete [] this->alpha_base;
 	delete this->nodeList;
+
+	// Added by Ryan
+#ifdef SEGMENTAL_CRF
+	delete this->nodeStartStates;
+#endif
 }
 
 /*

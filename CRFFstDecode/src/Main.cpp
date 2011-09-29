@@ -107,6 +107,11 @@ static struct {
 	int crf_self_window;
 	int verbose;
 	int dummy;
+
+	//Added by Ryan, for segmental CRFs
+	int label_maximum_duration;
+	int num_actual_labs;
+
 } config;
 
 /*
@@ -184,6 +189,11 @@ QN_ArgEntry argtab[] =
 	{ "crf_self_window","Maximum window size to allow a self loop", QN_ARG_INT, &(config.crf_self_window) },
 	{ "crf_pruning_thresh","Delta minimum to allow a transition", QN_ARG_FLOAT, &(config.crf_pruning_thresh) },
 	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
+
+	//Added by Ryan, for segmental CRFs
+	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
+	{ "num_actual_labs", "The number of actual labels (without duration)", QN_ARG_INT, &(config.num_actual_labs) },
+
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
@@ -260,6 +270,10 @@ static void set_defaults(void) {
 	config.crf_pruning_thresh=0;
 	config.crf_self_window=0;
 	config.verbose=0;
+
+	//Added by Ryan, for segmental CRFs
+	config.label_maximum_duration=1;
+	config.num_actual_labs=0;
 };
 
 /*
@@ -309,6 +323,10 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	}
 	fmap_config.stateBiasVal=config.crf_state_bias_value;
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
+
+	//Added by Ryan, for segmental CRFs
+	fmap_config.maxDur=config.label_maximum_duration;
+	fmap_config.nActualLabs=config.num_actual_labs;
 };
 
 /*
@@ -350,6 +368,22 @@ int main(int argc, const char* argv[]) {
 
 	cout << "IN LABELS: " << config.crf_label_size << endl;
 
+	// Added by Ryan, for segmental CRFs
+	if (config.label_maximum_duration <= 0)
+	{
+		string errstr="main() in CRFFstDecode caught exception: the maximum duration of labels must be larger than 0.";
+		throw runtime_error(errstr);
+	}
+	if (config.num_actual_labs == 0)
+	{
+		config.num_actual_labs = config.crf_label_size;
+	}
+	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
+	{
+		string errstr="main() in CRFFstDecode caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
+		throw runtime_error(errstr);
+	}
+
 	if (strcmp(config.crf_decode_mode,"align")==0) { alignMode=true; }
 
     if (strcmp(config.hardtarget_file,"")==0) { config.hardtarget_file=NULL; }
@@ -364,6 +398,8 @@ int main(int argc, const char* argv[]) {
     	exit(-1);
     }
 
+    // just for debugging
+    //cout << "before creating an QN_OutLabStream object." << endl;
 
 	FILE* outl=NULL;
 	QN_OutLabStream* labout=NULL;
@@ -372,6 +408,9 @@ int main(int argc, const char* argv[]) {
 		//labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 255, 1);
 		labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 8192, 1);
 	}
+
+	// just for debugging
+	//cout << "after creating an QN_OutLabStream object." << endl;
 
 	CRF_MLFManager* mlfManager = NULL;
     ofstream mlfstream;
@@ -558,6 +597,12 @@ int main(int argc, const char* argv[]) {
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 
+	// Added by Ryan, for segmental CRFs
+	my_crf.setLabMaxDur(config.label_maximum_duration);
+	my_crf.setNActualLabs(config.num_actual_labs);
+	cout << "LABEL_MAXIMUM_DURATION: " << my_crf.getLabMaxDur() << endl;
+	cout << "ACTUAL_LABELS: " << my_crf.getNActualLabs() << endl;
+
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
 	bool openchk=my_crf.readFromFile(config.weight_file);
@@ -567,6 +612,9 @@ int main(int argc, const char* argv[]) {
 	}
 
 
+	// just for debugging
+	//cout << "Before new CRF_LatticeBuilder." << endl;
+
 	CRF_LatticeBuilder lb(crf_ftr_str,&my_crf);
 	crf_ftr_str->rewind();
 	QN_SegID segid = crf_ftr_str->nextseg();
@@ -575,7 +623,9 @@ int main(int argc, const char* argv[]) {
 	StdVectorFst final_result;
 	while (segid != QN_SEGID_BAD) {
 #ifndef NEWLAT
-		if (count %100 == 0) {
+		// Changed by Ryan
+//		if (count %100 == 0) {
+		if (count %10 == 0) {
 			cout << "Processing segment " << count << endl;
 		}
 		if (config.crf_olist != NULL) {
@@ -591,7 +641,16 @@ int main(int argc, const char* argv[]) {
 			VectorFst<StdArc>* lab_lat=new VectorFst<StdArc>();
 			int nodeCnt=0;
 			if (config.crf_states == 1) {
-				lb.buildLattice(phn_lat,alignMode,lab_lat);
+
+				// just for debugging
+				//cout << "Before lb.buildLattice." << endl;
+
+				// Changed by Ryan, just for debugging
+				//lb.buildLattice(phn_lat,alignMode,lab_lat);
+				lb.buildLattice(phn_lat,alignMode,lab_lat, false);
+
+				// just for debugging
+				//cout << "After lb.buildLattice." << endl;
 			}
 			else {
 				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
@@ -620,6 +679,10 @@ int main(int argc, const char* argv[]) {
 					TopSort(shortest_fst);
 				}
 				QNUInt32 num_labels = shortest_fst->NumStates() - 1;
+
+				// just for debugging
+				//cout << "segid: " << segid << ", num_labels: " << num_labels << endl;
+
 				QNUInt32* labarr = new QNUInt32[num_labels];
 				//Gets the initial state; if kNoState => empty FST.
 				StateId initial_state = shortest_fst->Start();
@@ -628,11 +691,19 @@ int main(int argc, const char* argv[]) {
 				for (StateIterator<StdFst> siter(*shortest_fst); !siter.Done(); siter.Next())
 				{
 	  				StateId state_id = siter.Value();
+
+					// just for debugging
+					//cout << "segid: " << segid << ", FST state id: " << state_id << endl;
+
 	  				//Iterates over state state_id's arcs.
 	  				for (ArcIterator<StdFst> aiter(*shortest_fst, state_id); !aiter.Done(); aiter.Next())
 					{
 	  					const StdArc &arc = aiter.Value();
 	  					labarr[frm_no]=arc.olabel-1;
+
+	  					// just for debugging
+						//cout << "segid: " << segid << ", FST arc label: " << arc.olabel-1 << ", frame no: " << frm_no << endl;
+
 	  					frm_no++;
 					}
 				}

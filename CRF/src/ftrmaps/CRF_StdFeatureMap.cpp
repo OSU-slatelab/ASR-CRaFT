@@ -69,11 +69,17 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 	if (config->useStateFtrs) {
 		for (QNUInt32 fidx=config->stateFidxStart; fidx<=config->stateFidxEnd; fidx++)
 		{
+			// just for debugging
+//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")" << endl;
+
 			stateValue+=ftr_buf[fidx]*lambda[lc];
 			lc++;
 		}
 	}
 	if (config->useStateBias) {
+		// just for debugging
+//		cout << "stateValue+=lambda[" << lc << "](" << lambda[lc] << ")*config->stateBiasVal(" << config->stateBiasVal << ")" << endl;
+
 		stateValue+=lambda[lc]*config->stateBiasVal;
 		lc++;
 	}

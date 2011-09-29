@@ -34,6 +34,11 @@ public:
 	virtual void setNodeCount(QNUInt32 cnt);
 	virtual QNUInt32 getNodeCount();
 	virtual void deleteAll();
+
+	// Added by Ryan
+	virtual void set(QNUInt32 idx, float* new_buf, QNUInt32 num_ftrs,
+			QNUInt32 lab_buf, CRF_Model* crf_in, QNUInt32 nodeMaxDur,
+			QNUInt32 prevNode_nLabs, QNUInt32 nextNode_nActualLabs);
 };
 
 #endif /*CRF_STATEVECTOR_H_*/

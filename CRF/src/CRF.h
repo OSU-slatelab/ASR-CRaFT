@@ -46,4 +46,14 @@ enum objfunctype {EXPF,EXPFSOFT,FERR};
 enum nodetype { STD_STATE, STD_NSTATE, STD_STATELOG, STD_NSTATELOG, STD_STATEMASKED,
 	            STD_NSTATEMASKED, STD_STATELOGMASKED, STD_NSTATELOGMASKED};
 
+// Added by Ryan
+#ifndef CRF_UINT32_MAX
+#define CRF_UINT32_MAX (0xffffffff)
+#endif
+
+// Added by Ryan
+#ifndef SEGMENTAL_CRF
+#define SEGMENTAL_CRF
+#endif
+
 #endif /*CRF_H_*/

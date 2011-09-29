@@ -55,15 +55,29 @@ CRF_StdStateNode::~CRF_StdStateNode()
  */
 double CRF_StdStateNode::computeTransMatrix()
 {
+	// Added by Ryan, just for debugging
+	//cout << "CRF_StdStateNode::computeTransMatrix(): " << endl;
+
 	double result=0.0;
 
 	double* lambda = this->crf_ptr->getLambda();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(this->ftrBuf,lambda,clab);
+
+		// Added by Ryan, just for debugging
+		//cout << "clab=" << clab << endl << "TransMatrix: plab=";
+
 		for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			QNUInt32 idx=plab*nLabs+clab;
 			this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,plab,clab);
+
+			// Added by Ryan, just for debugging
+			//cout << "[" << plab << "]=" << this->transMatrix[idx] << " ";
 		}
+
+		// Added by Ryan, just for debugging
+		//cout << endl;
+		//cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
 	}
 	return result;
 }
@@ -317,6 +331,9 @@ double CRF_StdStateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
  */
 double CRF_StdStateNode::getStateValue(QNUInt32 cur_lab)
 {
+	// Added by Ryan, just for debugging
+	//cout << "getStateValue(" << cur_lab << "): " << this->stateArray[cur_lab] << " ";
+
 	return this->stateArray[cur_lab];
 }
 
@@ -328,8 +345,16 @@ double CRF_StdStateNode::getStateValue(QNUInt32 cur_lab)
  */
 double CRF_StdStateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
+	// Added by Ryan, just for debugging
+	//cout << "CRF_StdStateNode::getFullTransValue(): " << endl;
+
+	// Added by Ryan, just for debugging
+	//cout << "getFullTransValue(" << prev_lab << ", " << cur_lab << "): " << this->transMatrix[prev_lab*nLabs+cur_lab]+this->stateArray[cur_lab] << " ";
+
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	return this->transMatrix[prev_lab*nLabs+cur_lab]+this->stateArray[cur_lab];
+
+
 }
 
 /*

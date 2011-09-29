@@ -16,13 +16,14 @@
 CRF_Model::CRF_Model(QNUInt32 num_labs)
 	: nlabs(num_labs)
 {
-	//Added by Ryan
-	this->lab_max_dur=1;
-
 	this->useLog=true;
 	this->useMask=false;
 	this->init_present=0;
 	this->node_type=STD_STATE;
+
+	//Added by Ryan, default values. It should be nlabs = nActualLabs * lab_max_dur.
+	this->lab_max_dur = 1;
+	this->nActualLabs = num_labs;
 }
 
 /*
@@ -290,6 +291,11 @@ QNUInt32 CRF_Model::getPresentations()
  *
  */
 void CRF_Model::setLabMaxDur(QNUInt32 max_duration) {
+	if (max_duration == 0)
+	{
+		string errstr="CRF_Model::setLabMaxDur() caught exception: the maximum duration of labels must be larger than 0.";
+		throw runtime_error(errstr);
+	}
 	this->lab_max_dur=max_duration;
 }
 
@@ -302,6 +308,30 @@ void CRF_Model::setLabMaxDur(QNUInt32 max_duration) {
 QNUInt32 CRF_Model::getLabMaxDur()
 {
 	return this->lab_max_dur;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::setNActualLabs
+ *
+ * Mutator function to set the number of actual labels (without duration)
+ *
+ */
+void CRF_Model::setNActualLabs(QNUInt32 num_actual_labs)
+{
+	this->nActualLabs = num_actual_labs;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::getNActualLabs
+ *
+ * Returns: the number of actual labels (without duration)
+ *
+ */
+QNUInt32 CRF_Model::getNActualLabs()
+{
+	return this->nActualLabs;
 }
 
 /*

@@ -60,7 +60,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1611004786" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.215172457" name="CRF_StdSegStateNode.h" rcbsApplicability="disable" resourcePath="src/nodes/CRF_StdSegStateNode.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.397832930" name="CRF_HNStateNode.h" rcbsApplicability="disable" resourcePath="src/nodes/CRF_HNStateNode.h" toolsToInvoke="">
 						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.679499565" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1161138351" name="Resource Custom Build Step Input Type">
@@ -69,11 +68,9 @@
 							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.864743941" name="Resource Custom Build Step Output Type"/>
 						</tool>
 					</fileInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.1878815597" name="CRF_StdSegStateNode.cpp" rcbsApplicability="disable" resourcePath="src/nodes/CRF_StdSegStateNode.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841.1415094091">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841.1415094091" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841"/>
-					</fileInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.215172457" name="CRF_StdSegStateNode.h" rcbsApplicability="disable" resourcePath="src/nodes/CRF_StdSegStateNode.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="src/nodes/CRF_StdSegStateNode.cpp|src/nodes/CRF_StdSegStateNode.h|src/depricated|src/nodes/CRF_HNStateNode.cpp|src/nodes/CRF_HNStateNode.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/depricated|src/nodes/CRF_HNStateNode.cpp|src/nodes/CRF_HNStateNode.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

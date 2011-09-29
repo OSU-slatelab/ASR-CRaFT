@@ -344,3 +344,20 @@ void CRF_FeatureStream::view(QNUInt32 startseg,QNUInt32 nsegs) {
 	this->numsegs=nsegs;
 	this->rewind();
 }
+
+
+// Added by Ryan
+/*
+ * CRF_FeatureStream::num_labs
+ *
+ * Returns: the width of the label stream
+ */
+QNUInt32 CRF_FeatureStream::num_labs()
+{
+	if (this->lab_stream == NULL) {
+		return 0;
+	}
+	else {
+		return this->lab_stream->num_labs();
+	}
+}

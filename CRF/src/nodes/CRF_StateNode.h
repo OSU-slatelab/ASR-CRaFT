@@ -43,6 +43,14 @@ protected:
 	double alphaScale;
 	QNUInt32 nLabs;
 	double* prevAlpha;
+
+	// Added by Ryan
+	CRF_StateNode** prevNodes;
+	CRF_StateNode** nextNodes;
+	QNUInt32 numPrevNodes;
+	QNUInt32 numNextNodes;
+	QNUInt32 numAvailLabs;
+
 public:
 	vector<uint> viterbiPhnIds;
 	vector<int> viterbiPointers;
@@ -78,10 +86,19 @@ public:
 	virtual QNUInt32 getFtrBufferSize();
 
 	// Added by Ryan
-	virtual double computeAlpha(double** prev_alpha);
-	virtual double computeFirstAlpha(double** prev_alpha);
-	virtual double computeBeta(double** result_beta, double scale=1.0);
-	virtual double computeExpF(double* ExpF, double* grad, double Zx, double** prev_alpha, QNUInt32 prev_lab);
+	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab,
+			CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs,
+			QNUInt32 nextNode_nActualLabs);
+	virtual double computeAlpha();
+	virtual double computeFirstAlpha();
+	virtual double computeBeta(double scale=1.0);
+	virtual double computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab);
+	virtual void setPrevNodes(CRF_StateNode** prev_nodes_ptr, QNUInt32 numPrevNodes);
+	virtual void setNextNodes(CRF_StateNode** next_nodes_ptr, QNUInt32 numNextNodes);
+	virtual CRF_StateNode** getPrevNodes();
+	virtual CRF_StateNode** getNextNodes();
+	virtual QNUInt32 getNLabs();
+	virtual QNUInt32 getNumAvailLabs();
 };
 
 #endif /*CRF_STATENODE_H_*/
