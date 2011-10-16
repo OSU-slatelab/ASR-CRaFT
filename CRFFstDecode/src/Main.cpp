@@ -378,11 +378,12 @@ int main(int argc, const char* argv[]) {
 	{
 		config.num_actual_labs = config.crf_label_size;
 	}
-	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
-	{
-		string errstr="main() in CRFFstDecode caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
-		throw runtime_error(errstr);
-	}
+	// commented out by Ryan for the class CRF_StdSegNode_WithoutDurLab
+//	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
+//	{
+//		string errstr="main() in CRFFstDecode caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
+//		throw runtime_error(errstr);
+//	}
 
 	if (strcmp(config.crf_decode_mode,"align")==0) { alignMode=true; }
 
@@ -681,7 +682,7 @@ int main(int argc, const char* argv[]) {
 				QNUInt32 num_labels = shortest_fst->NumStates() - 1;
 
 				// just for debugging
-				//cout << "segid: " << segid << ", num_labels: " << num_labels << endl;
+//				cout << "segid: " << segid << ", num_labels: " << num_labels << endl;
 
 				QNUInt32* labarr = new QNUInt32[num_labels];
 				//Gets the initial state; if kNoState => empty FST.
@@ -693,7 +694,7 @@ int main(int argc, const char* argv[]) {
 	  				StateId state_id = siter.Value();
 
 					// just for debugging
-					//cout << "segid: " << segid << ", FST state id: " << state_id << endl;
+//					cout << "segid: " << segid << ", FST state id: " << state_id << endl;
 
 	  				//Iterates over state state_id's arcs.
 	  				for (ArcIterator<StdFst> aiter(*shortest_fst, state_id); !aiter.Done(); aiter.Next())
@@ -702,7 +703,7 @@ int main(int argc, const char* argv[]) {
 	  					labarr[frm_no]=arc.olabel-1;
 
 	  					// just for debugging
-						//cout << "segid: " << segid << ", FST arc label: " << arc.olabel-1 << ", frame no: " << frm_no << endl;
+//						cout << "segid: " << segid << ", FST arc label: " << arc.olabel-1 << ", frame no: " << frm_no << endl;
 
 	  					frm_no++;
 					}

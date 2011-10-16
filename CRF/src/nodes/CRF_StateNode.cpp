@@ -11,6 +11,7 @@
 #include "CRF_StdStateNode.h"
 #include "CRF_StdNStateNode.h"
 #include "CRF_StdSegStateNode.h"
+#include "CRF_StdSegStateNode_WithoutDurLab.h"
 
 /*
  * CRF_StateNode constructor
@@ -274,7 +275,11 @@ double CRF_StateNode::computeAlphaAlignedSum()
 void CRF_StateNode::reset(float *fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in)
 {
 	//memcpy(fb,this->ftrBuf,sizeof_fb);
-	if (this->ftrBuf != NULL) { delete[] this->ftrBuf; }
+
+	if (this->ftrBuf != NULL) {
+		delete [] this->ftrBuf;
+	}
+
 	this->ftrBuf=fb;
 	this->ftrBuf_size=sizeof_fb;
 	this->label=lab;
@@ -469,7 +474,8 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
 	}
 	else {
-		return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		//return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		//return new CRF_StdStateNode(fb, sizeof_fb, lab, crf);
 	}
 }
@@ -572,4 +578,70 @@ QNUInt32 CRF_StateNode::getNLabs()
 QNUInt32 CRF_StateNode::getNumAvailLabs()
 {
 	return this->numAvailLabs;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getTransValue
+ *
+ */
+double CRF_StateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getStateValue
+ *
+ */
+double CRF_StateNode::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getFullTransValue
+ *
+ */
+double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getTempBeta
+ *
+ */
+double CRF_StateNode::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::deleteFtrBuf
+ *
+ */
+void CRF_StateNode::deleteFtrBuf()
+{
+	// just for debugging
+	cout << "before delete ftrBuf. ";
+
+	if (this->ftrBuf != NULL) {
+
+		// just for debugging
+		cout << "why this ftrBuf cannot be deleted???" << endl;
+		for (QNUInt32 ftrID = 0; ftrID < this->ftrBuf_size; ftrID++)
+		{
+			cout << "ftrBuf[" << ftrID << "]=" << ftrBuf[ftrID] << endl;
+		}
+
+		delete [] this->ftrBuf;
+	}
+
+	// just for debugging
+	cout << "after delete ftrBuf" << endl;
 }

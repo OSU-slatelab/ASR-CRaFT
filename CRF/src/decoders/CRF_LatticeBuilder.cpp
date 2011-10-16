@@ -40,7 +40,8 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	this->ftr_buf_size = num_ftrs * lab_max_dur;
 	this->ftr_buf = new float[ftr_buf_size];
 	this->labs_width = ftr_strm->num_labs();
-	this->lab_buf_size = labs_width * lab_max_dur;
+	//this->lab_buf_size = labs_width * lab_max_dur;
+	this->lab_buf_size = labs_width;
 	if (this->labs_width == 0)
 	{
 		this->lab_buf = NULL;

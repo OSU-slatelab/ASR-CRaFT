@@ -44,6 +44,8 @@ CRF_StdStateNode::~CRF_StdStateNode()
 	delete [] this->betaArray;
 	delete [] this->tempBeta;
 	delete [] this->logAddAcc;
+
+	// Ryan: why not deleting alphaBetaArray?
 }
 
 
@@ -208,10 +210,16 @@ double* CRF_StdStateNode::computeAlphaBeta(double Zx)
  */
 void CRF_StdStateNode::setTailBeta()
 {
+	// just for debugging
+//	cout << "Before setTailBeta()." << endl;
+
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->betaArray[clab]=0.0;
 	}
+
+	// just for debugging
+//	cout << "Tail betas have been set." << endl;
 }
 
 /*

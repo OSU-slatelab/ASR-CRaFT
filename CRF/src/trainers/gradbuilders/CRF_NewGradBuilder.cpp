@@ -58,19 +58,19 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 	size_t num_ftrs=ftr_strm->num_ftrs();
 
 	// Added by Ryan
-	size_t labs_width = ftr_strm->num_labs();
 	QNUInt32 lab_max_dur = this->crf->getLabMaxDur();
-	QNUInt32 ftr_buf_size = num_ftrs * lab_max_dur;
-	QNUInt32 lab_buf_size = labs_width * lab_max_dur;
 	QNUInt32 nActualLabs = this->crf->getNActualLabs();
 
 	if (this->ftr_buf==NULL) {  // First pass through initialize the buffers
 		// Changed by Ryan
-		// TODO: Where are these buffers deleted?
-		// - They are newed every time buildGradient is called,
-		// but it seems they are deleted only when the CRF_NewGradBuilder object is destructed.
+		// - Note: They are newed only when buildGradient() is called first time,
+		// and they are deleted only when the CRF_NewGradBuilder object is destructed.
 //		this->ftr_buf = new float[num_ftrs*bunch_size];
 //		this->lab_buf = new QNUInt32[bunch_size];
+		size_t labs_width = ftr_strm->num_labs();
+		QNUInt32 ftr_buf_size = num_ftrs * lab_max_dur;
+		//QNUInt32 lab_buf_size = labs_width * lab_max_dur;
+		QNUInt32 lab_buf_size = labs_width;
 		this->ftr_buf = new float[ftr_buf_size];
 		this->lab_buf = new QNUInt32[lab_buf_size];
 	}
@@ -154,6 +154,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 //			cout << "QNUInt32 cur_ftr_buf_size = num_ftrs * ftr_count = " << num_ftrs << " * " << ftr_count << " = " << cur_ftr_buf_size << endl;
 
 			float* new_buf = new float[cur_ftr_buf_size];
+
 			for (QNUInt32 j=0; j<cur_ftr_buf_size; j++) {
 				new_buf[j]=this->ftr_buf[j];
 				//cout << " " << new_buf[j];
@@ -285,7 +286,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 			// just for debugging
 //			cout << "nodeList access 4(at): " << nodeCnt << endl;
 
-			double value=this->nodeList->at(nodeCnt)->computeTransMatrix();
+			this->nodeList->at(nodeCnt)->computeTransMatrix();
 			double scale;
 			if (nodeCnt == 0) {
 
@@ -306,8 +307,8 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 			//double sum = this->nodeList.at(nodeCnt)->computeAlphaSum();
 			//double* alpha=this->nodeList.at(nodeCnt)->getAlpha();
 
-			// just debugging
-			//cout << "Computed alpha for node[" << nodeCnt << "]." << endl;
+			// just for debugging
+//			cout << "Computed alpha for node[" << nodeCnt << "]." << endl;
 
 			logLi-=scale;
 			nodeCnt++;
@@ -470,6 +471,8 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 		if (nextNodes != NULL)
 			delete [] nextNodes;
 
+//		this->nodeList->at(nodeCnt)->deleteFtrBuf();
+
 		if (nodeCnt==0) { stop=true;} // nodeCnt is unsigned, so we can't do the obvious loop control here
 		nodeCnt--;
 	}
@@ -479,6 +482,7 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 	}
 	*Zx_out=Zx;
 	//logLi-=Zx;
+
 
 	// just for debugging
 //	cout << endl;

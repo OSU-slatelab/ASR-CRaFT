@@ -329,6 +329,12 @@ int main(int argc, const char* argv[]) {
 	QN_printargs(NULL, progname, &argtab[0]);
 	cout << "IN LABELS: " << config.crf_label_size << endl;
 
+	// Added by Ryan
+	if (strcmp(config.init_weight_file, "") == 0)
+		config.init_weight_file = NULL;
+	if (strcmp(config.avg_weight_file, "") == 0)
+		config.avg_weight_file = NULL;
+
 	// Added by Ryan, for segmental CRFs
 	if (config.label_maximum_duration <= 0)
 	{
@@ -339,11 +345,13 @@ int main(int argc, const char* argv[]) {
 	{
 		config.num_actual_labs = config.crf_label_size;
 	}
-	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
-	{
-		string errstr="main() in CRFTrain caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
-		throw runtime_error(errstr);
-	}
+
+	// commented out by Ryan, for CRF_StdSegStateNode_WithoutDurLab
+//	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
+//	{
+//		string errstr="main() in CRFTrain caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
+//		throw runtime_error(errstr);
+//	}
 
 	seqtype trn_seq = RANDOM_REPLACE;
 	ftrmaptype trn_ftrmap = STDSTATE;
@@ -372,6 +380,9 @@ int main(int argc, const char* argv[]) {
 	}
 	CRF_FeatureStreamManager* str2=NULL;
 	CRF_FeatureStreamManager* str3=NULL;
+
+	// Added by Ryan, just for debugging
+//	cout << "crf_train_order: " << trn_seq << endl;
 
 	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file, config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
@@ -459,4 +470,6 @@ int main(int argc, const char* argv[]) {
 		cerr << "Exception: " << e.what() << endl;
 		exit(-1);
 	}
+
+	return 0;
 }

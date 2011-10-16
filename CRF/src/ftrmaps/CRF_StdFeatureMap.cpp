@@ -69,18 +69,20 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 	if (config->useStateFtrs) {
 		for (QNUInt32 fidx=config->stateFidxStart; fidx<=config->stateFidxEnd; fidx++)
 		{
-			// just for debugging
-//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")" << endl;
-
 			stateValue+=ftr_buf[fidx]*lambda[lc];
+
+			// just for debugging
+//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+
 			lc++;
 		}
 	}
 	if (config->useStateBias) {
-		// just for debugging
-//		cout << "stateValue+=lambda[" << lc << "](" << lambda[lc] << ")*config->stateBiasVal(" << config->stateBiasVal << ")" << endl;
-
 		stateValue+=lambda[lc]*config->stateBiasVal;
+
+		// just for debugging
+//		cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+
 		lc++;
 	}
 	return stateValue;
@@ -160,8 +162,22 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 		for (QNUInt32 fidx=config->stateFidxStart; fidx<=config->stateFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
+
+			//just for debugging
+//			if (lc == 0)
+//			{
+//				cout << "StateFeature for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
+//			}
+
 			if (compute_grad && (t_clab == clab)) {
 				grad[lc]+=ftr_buf[fidx];
+
+				//just for debugging
+//				if (lc == 0)
+//				{
+//					cout << "StateFeature for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
+//				}
+
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
 			lc++;
@@ -171,8 +187,16 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 
 	if (config->useStateBias) {
 		ExpF[lc]+=alpha_beta*config->stateBiasVal;
+
+		//just for debugging
+//		cout << "StateBias for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << config->stateBiasVal << "=" << ExpF[lc] << endl;
+
 		if (compute_grad && (t_clab == clab)) {
 			grad[lc]+=config->stateBiasVal;
+
+			//just for debugging
+//			cout << "StateBias for lab=" << clab << ": grad[" << lc << "]+=" << config->stateBiasVal << "=" << grad[lc] << endl;
+
 			logLi += lambda[lc]*config->stateBiasVal;
 		}
 		lc++;

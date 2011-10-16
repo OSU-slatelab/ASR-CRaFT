@@ -76,14 +76,19 @@ void CRF_SGTrainer::train()
 			//delete time;
 		}
 
+		// just for debugging
+//		cout << "before buildGradient()" << endl;
+
 		tmp_Zx=uCounter%this->uttRpt; // Added for Ferr testing
 		tmpLogLi=gbuild->buildGradient(ftr_str,grad,&tmp_Zx);
 
+		// just for debugging
+//		cout << "after buildGradient()" << endl;
 
 		//Added by Ryan
 		//Parameter tying.
 		//this->crf_ptr->getFeatureMap()->tieGradient(grad, 11, 488);
-		this->crf_ptr->getFeatureMap()->tieGradient(grad);
+//		this->crf_ptr->getFeatureMap()->tieGradient(grad);
 
 		//tmpLogLi=logLi;
 		logLi=tmpLogLi - tmp_Zx;
@@ -109,9 +114,16 @@ void CRF_SGTrainer::train()
 		}
 		accCnt++;
 
+		// just for debugging
+//		cout << "before nextseg()" << endl;
+
 		//cout << "Utterance " << uCounter << ": Lambda[0]: " << lambda[0] << endl;
 		//cout << "Utterance " << uCounter << ": Acc Lambda[0]: " << (lambdaAcc[0]/accCnt) << endl;
 		segid = ftr_str->nextseg();
+
+		// just for debugging
+//		cout << "after nextseg()" << endl;
+
 		if (segid == QN_SEGID_BAD) {
 			cout << "Iteration: " << iCounter << " ending" << endl;
 			cout << "Iteration: " << iCounter << " applying lambda updates" << endl;

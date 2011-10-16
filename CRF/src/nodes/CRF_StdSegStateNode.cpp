@@ -39,11 +39,12 @@ CRF_StdSegStateNode::CRF_StdSegStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32
 		sprintf(errstr, "CRF_StdSegStateNode constructor caught exception: the maximum duration of labels for this node (%lu) is larger than the maximum possible duration of labels for all nodes (%lu).",(unsigned long)this->nodeLabMaxDur,(unsigned long)this->labMaxDur);
 		throw runtime_error(errstr);
 	}
-	if (this->nLabs % this->labMaxDur != 0) {
-		char errstr[1024];
-		sprintf(errstr, "CRF_StdSegStateNode constructor caught exception: the number of all labels (%lu) and the maximum duration of labels (%lu)do not correspond.", (unsigned long)this->nLabs, (unsigned long)this->labMaxDur);
-		throw runtime_error(errstr);
-	}
+	// commented out by Ryan, for CRF_StdSegStateNode_WithoutDurLab
+//	if (this->nLabs % this->labMaxDur != 0) {
+//		char errstr[1024];
+//		sprintf(errstr, "CRF_StdSegStateNode constructor caught exception: the number of all labels (%lu) and the maximum duration of labels (%lu)do not correspond.", (unsigned long)this->nLabs, (unsigned long)this->labMaxDur);
+//		throw runtime_error(errstr);
+//	}
 	this->nActualLabs = nLabs/this->labMaxDur;
 	this->numAvailLabs = this->nActualLabs * this->nodeLabMaxDur;
 
@@ -159,12 +160,13 @@ double CRF_StdSegStateNode::computeTransMatrix()
 
 			clab++;
 		}
+		seg_ftr_buf += this->nFtrsPerSeg;
 	}
 	return result;
 }
 
 /*
- * CRF_StateNode::computeAlpha
+ * CRF_StdSegStateNode::computeAlpha
  *
  * Read alpha vectors of previous nodes directly from prevNode and store the result of the alpha vector in alphaArray.
  *
@@ -264,7 +266,7 @@ double CRF_StdSegStateNode::computeFirstAlpha()
 	for (QNUInt32 clab = 0; clab < this->numAvailLabs; clab++)
 	{
 		// just for debugging
-//		cout << "stateArray[" << clab << "]=" << this->stateArray[clab] << " ";
+//		cout << "alphaArray[" << clab << "]=stateArray[" << clab << "]=" << this->stateArray[clab] << " ";
 
 		this->alphaArray[clab]=this->stateArray[clab];
 	}
