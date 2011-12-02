@@ -20,6 +20,8 @@
 #include "ftrmaps/CRF_StdFeatureMap.h"
 #include "ftrmaps/CRF_StdSparseFeatureMap.h"
 #include "decoders/CRF_LatticeBuilder.h"
+#include "decoders/CRF_LatticeBuilder_StdSeg.h"
+#include "decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h"
 #include "io/CRF_MLFManager.h"
 
 
@@ -111,6 +113,7 @@ static struct {
 	//Added by Ryan, for segmental CRFs
 	int label_maximum_duration;
 	int num_actual_labs;
+	char* crf_model_type;
 
 } config;
 
@@ -193,7 +196,7 @@ QN_ArgEntry argtab[] =
 	//Added by Ryan, for segmental CRFs
 	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
 	{ "num_actual_labs", "The number of actual labels (without duration)", QN_ARG_INT, &(config.num_actual_labs) },
-
+	{ "crf_model_type", "CRF model structure (stdframe|stdseg|stdseg_no_dur)", QN_ARG_STR, &(config.crf_model_type) },
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
@@ -274,6 +277,7 @@ static void set_defaults(void) {
 	//Added by Ryan, for segmental CRFs
 	config.label_maximum_duration=1;
 	config.num_actual_labs=0;
+	config.crf_model_type="stdframe";
 };
 
 /*
@@ -377,6 +381,11 @@ int main(int argc, const char* argv[]) {
 	if (config.num_actual_labs == 0)
 	{
 		config.num_actual_labs = config.crf_label_size;
+	}
+	if (strcmp(config.crf_model_type,"stdframe")==0 && config.label_maximum_duration != 1)
+	{
+		string errstr="main() in CRFFstDecode caught exception: the maximum duration of labels must be 1 for \"stdframe\" CRF model.";
+		throw runtime_error(errstr);
 	}
 	// commented out by Ryan for the class CRF_StdSegNode_WithoutDurLab
 //	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
@@ -604,6 +613,27 @@ int main(int argc, const char* argv[]) {
 	cout << "LABEL_MAXIMUM_DURATION: " << my_crf.getLabMaxDur() << endl;
 	cout << "ACTUAL_LABELS: " << my_crf.getNActualLabs() << endl;
 
+	// Added by Ryan, for segmental CRFs
+	modeltype mtype;
+	if (strcmp(config.crf_model_type,"stdframe")==0)
+	{
+			mtype = STDFRAME;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg")==0)
+	{
+			mtype = STDSEG;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur")==0)
+	{
+			mtype = STDSEG_NO_DUR;
+	}
+	else
+	{
+			mtype = STDFRAME;
+	}
+	my_crf.setModelType(mtype);
+	cout << "MODEL_TYPE: " << config.crf_model_type << endl;
+
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
 	bool openchk=my_crf.readFromFile(config.weight_file);
@@ -616,7 +646,43 @@ int main(int argc, const char* argv[]) {
 	// just for debugging
 	//cout << "Before new CRF_LatticeBuilder." << endl;
 
-	CRF_LatticeBuilder lb(crf_ftr_str,&my_crf);
+	// changed by Ryan
+//	CRF_LatticeBuilder lb(crf_ftr_str,&my_crf);
+	CRF_LatticeBuilder* lb = NULL;
+	if (strcmp(config.crf_model_type,"stdframe")==0)
+	{
+		lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
+
+		// just for debugging
+//		cout << "lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);" << endl;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg")==0)
+	{
+		lb = new CRF_LatticeBuilder_StdSeg(crf_ftr_str,&my_crf);
+
+		// just for debugging
+//		cout << "lb = new CRF_LatticeBuilder_StdSeg(crf_ftr_str,&my_crf);" << endl;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur")==0)
+	{
+		lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab(crf_ftr_str,&my_crf);
+
+		// just for debugging
+//		cout << "lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab(crf_ftr_str,&my_crf);" << endl;
+	}
+	else
+	{
+		// default class: stdframe
+		lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
+
+		// just for debugging
+//		cout << "lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);" << endl;
+	}
+
+//	CRF_LatticeBuilder_StdSeg_WithoutDurLab<StdArc>* lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab<StdArc>(crf_ftr_str,&my_crf);
+
+//	CRF_LatticeBuilder<StdArc> lb(crf_ftr_str,&my_crf);
+
 	crf_ftr_str->rewind();
 	QN_SegID segid = crf_ftr_str->nextseg();
 	int count=0;
@@ -644,17 +710,43 @@ int main(int argc, const char* argv[]) {
 			if (config.crf_states == 1) {
 
 				// just for debugging
-				//cout << "Before lb.buildLattice." << endl;
+//				cout << "Before lb.buildLattice." << endl;
 
-				// Changed by Ryan, just for debugging
+				// Changed by Ryan
 				//lb.buildLattice(phn_lat,alignMode,lab_lat);
-				lb.buildLattice(phn_lat,alignMode,lab_lat, false);
+//				lb.buildLattice(phn_lat,alignMode,lab_lat, false);
+
+//				lb->buildLattice(phn_lat,alignMode,lab_lat, false);
+
+				if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab*>(lb))
+				{
+					// just for debugging
+//					cout << "((CRF_LatticeBuilder_StdSeg_WithoutDurLab*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
+
+					((CRF_LatticeBuilder_StdSeg_WithoutDurLab*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);
+				}
+				else if (dynamic_cast<CRF_LatticeBuilder_StdSeg*>(lb))
+				{
+					// just for debugging
+//					cout << "((CRF_LatticeBuilder_StdSeg*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
+
+					((CRF_LatticeBuilder_StdSeg*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);
+				}
+				else
+				{
+					// just for debugging
+//					cout << "lb->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
+
+					lb->buildLattice(phn_lat,alignMode,lab_lat, false);
+				}
 
 				// just for debugging
-				//cout << "After lb.buildLattice." << endl;
+//				cout << "After lb.buildLattice." << endl;
 			}
 			else {
-				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
+				// Changed by Ryan
+//				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
+				nodeCnt=lb->nStateBuildLattice(phn_lat,alignMode,lab_lat);
 			}
 			if (config.crf_lat_outdir != NULL) {
 				// Dump the lattice to a file in openfst format
@@ -941,4 +1033,7 @@ int main(int argc, const char* argv[]) {
 	if (dict_fst != NULL) {delete dict_fst; }
 	if (phn_fst != NULL) {delete phn_fst; }
 	if (mlfstream.is_open()) { mlfstream.close(); }
+
+	// added by Ryan
+	delete lb;
 }

@@ -36,6 +36,8 @@ protected:
 	QNUInt32 lab_max_dur;
 	// TODO: set up different nActualLabs for different kinds of nodes.
 	QNUInt32 nActualLabs;
+	modeltype model_type;
+	bool use_broken_class_label;
 
 public:
 	CRF_Model(QNUInt32 num_labs);
@@ -68,6 +70,10 @@ public:
 	virtual QNUInt32 getLabMaxDur();
 	virtual void setNActualLabs(QNUInt32 num_actual_labs);
 	virtual QNUInt32 getNActualLabs();
+	virtual void setModelType(modeltype mtype);
+	virtual modeltype getModelType();
+	virtual void setBrokenClassLabel(bool useBrokenClass);
+	virtual bool ifUseBrokenClassLabel();
 };
 
 #endif /*CRF_H_*/

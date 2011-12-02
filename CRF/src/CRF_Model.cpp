@@ -24,6 +24,8 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 	//Added by Ryan, default values. It should be nlabs = nActualLabs * lab_max_dur.
 	this->lab_max_dur = 1;
 	this->nActualLabs = num_labs;
+	this->model_type = STDFRAME;
+	this->use_broken_class_label = false;
 }
 
 /*
@@ -332,6 +334,50 @@ void CRF_Model::setNActualLabs(QNUInt32 num_actual_labs)
 QNUInt32 CRF_Model::getNActualLabs()
 {
 	return this->nActualLabs;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::setModelType
+ *
+ * Mutator function to set the model type
+ *
+ */
+void CRF_Model::setModelType(modeltype mtype)
+{
+	this->model_type = mtype;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::getModelType
+ *
+ * Accessor function to get the model type
+ */
+modeltype CRF_Model::getModelType()
+{
+	return this->model_type;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::setBrokenClassLabel
+ *
+ * Mutator function to set whether to use broken-class label
+ *
+ */
+void CRF_Model::setBrokenClassLabel(bool useBrokenClass) {
+	this->use_broken_class_label = useBrokenClass;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::ifUseBrokenClassLabel
+ *
+ * Accessor function to get whether to use broken-class label
+ */
+bool CRF_Model::ifUseBrokenClassLabel() {
+	return this->use_broken_class_label;
 }
 
 /*

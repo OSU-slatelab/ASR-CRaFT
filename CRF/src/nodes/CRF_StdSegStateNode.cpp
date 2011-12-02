@@ -434,7 +434,7 @@ double* CRF_StdSegStateNode::computeAlphaBeta(double Zx)
 double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab)
 {
 	// Added by Ryan, just for debugging
-//	cout << "Very beginning!!" << endl;
+//	cout << "CRF_StdSegStateNode::computeExpF(): Very beginning!!" << endl;
 
 	checkNumPrevNodes();
 

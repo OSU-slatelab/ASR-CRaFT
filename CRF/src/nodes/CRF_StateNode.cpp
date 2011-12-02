@@ -12,6 +12,7 @@
 #include "CRF_StdNStateNode.h"
 #include "CRF_StdSegStateNode.h"
 #include "CRF_StdSegStateNode_WithoutDurLab.h"
+#include "CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.h"
 
 /*
  * CRF_StateNode constructor
@@ -440,6 +441,13 @@ double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 
 CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf) {
 
+	modeltype mtype = crf->getModelType();
+	if (mtype != STDFRAME)
+	{
+		string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for segment-level model.";
+		throw runtime_error(errstr);
+	}
+
 	if (crf->getFeatureMap()->getNumStates()>1) {
 		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
 	}
@@ -474,8 +482,37 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
 	}
 	else {
-		return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
-		//return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		modeltype mtype = crf->getModelType();
+
+		// just for debugging
+		//cout << "Inside segmental CRF_StateNode::createStateNode()" << endl;
+
+		if (mtype == STDSEG)
+		{
+			// just for debugging
+			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode" << endl;
+
+			return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR)
+		{
+			// just for debugging
+			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
+
+			return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
+		{
+			// just for debugging
+			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
+
+			return new CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for frame-level model.";
+			throw runtime_error(errstr);
+		}
 		//return new CRF_StdStateNode(fb, sizeof_fb, lab, crf);
 	}
 }
@@ -620,28 +657,28 @@ double CRF_StateNode::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
 	return 0.0;
 }
 
-// Added by Ryan
-/*
- * CRF_StateNode::deleteFtrBuf
- *
- */
-void CRF_StateNode::deleteFtrBuf()
-{
-	// just for debugging
-	cout << "before delete ftrBuf. ";
-
-	if (this->ftrBuf != NULL) {
-
-		// just for debugging
-		cout << "why this ftrBuf cannot be deleted???" << endl;
-		for (QNUInt32 ftrID = 0; ftrID < this->ftrBuf_size; ftrID++)
-		{
-			cout << "ftrBuf[" << ftrID << "]=" << ftrBuf[ftrID] << endl;
-		}
-
-		delete [] this->ftrBuf;
-	}
-
-	// just for debugging
-	cout << "after delete ftrBuf" << endl;
-}
+//// Added by Ryan
+///*
+// * CRF_StateNode::deleteFtrBuf
+// *
+// */
+//void CRF_StateNode::deleteFtrBuf()
+//{
+//	// just for debugging
+//	cout << "before delete ftrBuf. ";
+//
+//	if (this->ftrBuf != NULL) {
+//
+//		// just for debugging
+//		cout << "why this ftrBuf cannot be deleted???" << endl;
+//		for (QNUInt32 ftrID = 0; ftrID < this->ftrBuf_size; ftrID++)
+//		{
+//			cout << "ftrBuf[" << ftrID << "]=" << ftrBuf[ftrID] << endl;
+//		}
+//
+//		delete [] this->ftrBuf;
+//	}
+//
+//	// just for debugging
+//	cout << "after delete ftrBuf" << endl;
+//}

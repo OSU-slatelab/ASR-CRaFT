@@ -60,6 +60,8 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1611004786" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base"/>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.2007716701" name="CRF_LatticeBuilder_StdSeg_WithoutDurLab.h" rcbsApplicability="disable" resourcePath="src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.915407781" name="CRF_LatticeBuilder_StdSeg.h" rcbsApplicability="disable" resourcePath="src/decoders/CRF_LatticeBuilder_StdSeg.h" toolsToInvoke=""/>
 					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.397832930" name="CRF_HNStateNode.h" rcbsApplicability="disable" resourcePath="src/nodes/CRF_HNStateNode.h" toolsToInvoke="">
 						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.679499565" name="Resource Custom Build Step">
 							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1161138351" name="Resource Custom Build Step Input Type">
@@ -69,6 +71,11 @@
 						</tool>
 					</fileInfo>
 					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.215172457" name="CRF_StdSegStateNode.h" rcbsApplicability="disable" resourcePath="src/nodes/CRF_StdSegStateNode.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.1989308848" name="CRF_Pthread_CountAccumulator.h" rcbsApplicability="disable" resourcePath="src/trainers/accumulators/CRF_Pthread_CountAccumulator.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.521732466" name="CRF_CountAccumulator.h" rcbsApplicability="disable" resourcePath="src/trainers/accumulators/CRF_CountAccumulator.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.1476862330" name="CRF_FerrGradBuilder.h" rcbsApplicability="disable" resourcePath="src/trainers/gradbuilders/CRF_FerrGradBuilder.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.844938854" name="CRF_NewGradBuilderSoft.h" rcbsApplicability="disable" resourcePath="src/trainers/gradbuilders/CRF_NewGradBuilderSoft.h" toolsToInvoke=""/>
+					<fileInfo id="cdt.managedbuild.config.gnu.lib.debug.368787323.245265498" name="CRF_AISTrainer.h" rcbsApplicability="disable" resourcePath="src/trainers/CRF_AISTrainer.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="src/depricated|src/nodes/CRF_HNStateNode.cpp|src/nodes/CRF_HNStateNode.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>

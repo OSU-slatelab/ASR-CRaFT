@@ -7,7 +7,10 @@
  */
 #include "CRF_GradBuilder.h"
 #include "CRF_NewGradBuilder.h"
-#include "CRF_NewGradBuilderSoft.h"
+#include "CRF_NewGradBuilder_StdSeg.h"
+#include "CRF_NewGradBuilder_StdSeg_BrokenClass.h"
+#include "CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h"
+//#include "CRF_NewGradBuilderSoft.h"
 //#include "CRF_FerrGradBuilder.h"
 
 /*
@@ -94,9 +97,35 @@ CRF_GradBuilder *CRF_GradBuilder::create(CRF_Model *crf_ptr,bool useLogspace, in
 CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 {
 	CRF_GradBuilder* gbuild;
+
+	// Added by Ryan
+	modeltype mtype = crf_ptr->getModelType();
+	bool useBrokenClassLabel = crf_ptr->ifUseBrokenClassLabel();
+
 	switch (ofunc) {
 	case EXPF :
-		gbuild = new CRF_NewGradBuilder(crf_ptr);
+		// Changed by Ryan
+		//gbuild = new CRF_NewGradBuilder(crf_ptr);
+		if (mtype == STDFRAME)
+		{
+			gbuild = new CRF_NewGradBuilder(crf_ptr);
+		} else if (mtype == STDSEG || mtype == STDSEG_NO_DUR) {
+			if (useBrokenClassLabel) {
+				gbuild = new CRF_NewGradBuilder_StdSeg_BrokenClass(crf_ptr);
+			} else {
+				gbuild = new CRF_NewGradBuilder_StdSeg(crf_ptr);
+			}
+		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR) {
+			if (useBrokenClassLabel) {
+				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
+				throw runtime_error(errstr);
+			} else {
+				gbuild = new CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(crf_ptr);
+			}
+		} else {
+			gbuild = new CRF_NewGradBuilder(crf_ptr);
+		}
+
 		break;
 	//case EXPFSOFT :
 	//	gbuild = new CRF_NewGradBuilderSoft(crf_ptr);
@@ -105,7 +134,28 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 	//	gbuild = new CRF_FerrGradBuilder(crf_ptr);
 	//	break;
 	default :
-		gbuild = new CRF_NewGradBuilder(crf_ptr);
+		// Changed by Ryan
+		//gbuild = new CRF_NewGradBuilder(crf_ptr);
+		if (mtype == STDFRAME)
+		{
+			gbuild = new CRF_NewGradBuilder(crf_ptr);
+		} else if (mtype == STDSEG || mtype == STDSEG_NO_DUR) {
+			if (useBrokenClassLabel) {
+				gbuild = new CRF_NewGradBuilder_StdSeg_BrokenClass(crf_ptr);
+			} else {
+				gbuild = new CRF_NewGradBuilder_StdSeg(crf_ptr);
+			}
+		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR) {
+			if (useBrokenClassLabel) {
+				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
+				throw runtime_error(errstr);
+			} else {
+				gbuild = new CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(crf_ptr);
+			}
+		} else {
+			gbuild = new CRF_NewGradBuilder(crf_ptr);
+		}
+
 		break;
 	}
 	return gbuild;

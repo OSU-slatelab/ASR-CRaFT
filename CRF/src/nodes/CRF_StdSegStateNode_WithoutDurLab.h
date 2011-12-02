@@ -29,9 +29,6 @@ public:
 //	virtual double* computeAlphaBeta(double Zx);
 //	virtual double computeAlphaSum();
 //	virtual double computeAlphaAlignedSum();
-////	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
-////	virtual double getStateValue(QNUInt32 cur_lab);
-////	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 
 //	virtual QNUInt32 getNActualLabs();
 //	virtual bool checkNumPrevNodes();
@@ -43,9 +40,16 @@ public:
 //	virtual double computeBeta(double* result_beta, double scale=1.0);
 //	virtual double computeExpF(double* ExpF, double* grad, double Zx, double* prev_alpha, QNUInt32 prev_lab);
 
+	// These are the correct versions for CRF_StdSegStateNode_WithoutDurLab.
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
 	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 dur);
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
+
+	// Disable all these functions by overriding them with exception handling. Use their modified versions above.
+	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
+	virtual double getStateValue(QNUInt32 cur_lab);
+	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
+
 	virtual double getTempBeta(QNUInt32 cur_lab, QNUInt32 dur);
 };
 

@@ -15,7 +15,10 @@
 #include "io/CRF_FeatureStreamManager.h"
 #include "trainers/CRF_SGTrainer.h"
 #include "trainers/CRF_LBFGSTrainer.h"
+
+// Commented by Ryan
 #include "trainers/CRF_AISTrainer.h"
+
 #include "ftrmaps/CRF_StdFeatureMap.h"
 #include "ftrmaps/CRF_StdSparseFeatureMap.h"
 
@@ -63,6 +66,8 @@ static struct {
 	int label_maximum_duration;
 	int dur_ftr_start;
 	int num_actual_labs;
+	char* crf_model_type;
+	int use_broken_class_label;
 
 	char* train_sent_range;
 	char* cv_sent_range;
@@ -141,6 +146,8 @@ QN_ArgEntry argtab[] =
 	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
 	{ "dur_ftr_start", "The start index of duration features (binary coded, one-hot features) if any", QN_ARG_INT, &(config.dur_ftr_start) },
 	{ "num_actual_labs", "The number of actual labels (without duration)", QN_ARG_INT, &(config.num_actual_labs) },
+	{ "crf_model_type", "CRF model structure (stdframe|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr)", QN_ARG_STR, &(config.crf_model_type) },
+	{ "use_broken_class_label", "Use broken-class labels", QN_ARG_BOOL, &(config.use_broken_class_label) },
 
 	{ "train_sent_range", "Training sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.train_sent_range), QN_ARG_REQ },
 	{ "cv_sent_range", "CV sentence indices in QN_Range(3) format", QN_ARG_STR, &(config.cv_sent_range) },
@@ -219,6 +226,8 @@ static void set_defaults(void) {
 	config.label_maximum_duration=1;
 	config.dur_ftr_start=0;
 	config.num_actual_labs=0;
+	config.crf_model_type="stdframe";
+	config.use_broken_class_label=0;
 
 	config.train_sent_range="";
 	config.cv_sent_range=0;
@@ -345,6 +354,17 @@ int main(int argc, const char* argv[]) {
 	{
 		config.num_actual_labs = config.crf_label_size;
 	}
+	if (strcmp(config.crf_model_type,"stdframe")==0 && config.label_maximum_duration != 1)
+	{
+		string errstr="main() in CRFTrain caught exception: the maximum duration of labels must be 1 for \"stdframe\" CRF model.";
+		throw runtime_error(errstr);
+	}
+	if (strcmp(config.crf_model_type,"stdseg_no_dur_no_transftr")==0 &&
+			strcmp(config.crf_featuremap, "stdstate") != 0)
+	{
+		string errstr="main() in CRFTrain caught exception: crf_featuremap must be \"stdstate\" for \"stdseg_no_dur_no_transftr\" CRF model.";
+		throw runtime_error(errstr);
+	}
 
 	// commented out by Ryan, for CRF_StdSegStateNode_WithoutDurLab
 //	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
@@ -418,6 +438,40 @@ int main(int argc, const char* argv[]) {
 	cout << "LABEL_MAXIMUM_DURATION: " << my_crf.getLabMaxDur() << endl;
 	cout << "ACTUAL_LABELS: " << my_crf.getNActualLabs() << endl;
 
+	// Added by Ryan, for segmental CRFs
+	modeltype mtype;
+	if (strcmp(config.crf_model_type,"stdframe")==0)
+	{
+		mtype = STDFRAME;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg")==0)
+	{
+		mtype = STDSEG;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur")==0)
+	{
+		mtype = STDSEG_NO_DUR;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur_no_transftr")==0)
+	{
+		mtype = STDSEG_NO_DUR_NO_TRANSFTR;
+	}
+	else
+	{
+		mtype = STDFRAME;
+	}
+	my_crf.setModelType(mtype);
+	cout << "MODEL_TYPE: " << config.crf_model_type << endl;
+	if (config.use_broken_class_label == 0)
+	{
+		my_crf.setBrokenClassLabel(false);
+	}
+	else
+	{
+		my_crf.setBrokenClassLabel(true);
+	}
+	cout << "USE_BROKEN_CLASS_LABEL: " << config.use_broken_class_label << endl;
+
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
 	cout << "FEATURES: " << my_crf.getLambdaLen() << endl;
@@ -445,10 +499,13 @@ int main(int argc, const char* argv[]) {
 		my_trainer = new CRF_LBFGSTrainer(&my_crf,&str1,config.out_weight_file);
 		((CRF_LBFGSTrainer *)my_trainer)->setObjectiveFunction(ofunc_type);
 		break;
+
+	// Commented by Ryan
 	case AISTRAIN :
 		my_trainer = new CRF_AISTrainer(&my_crf,&str1,config.out_weight_file);
 		((CRF_AISTrainer *)my_trainer)->setl1alpha(config.crf_ais_l1alpha);
 		break;
+
 	case SGTRAIN :
 	default:
 		my_trainer = new CRF_SGTrainer(&my_crf,&str1,config.out_weight_file);

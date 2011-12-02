@@ -177,12 +177,15 @@ double CRF_StdSegStateNode_WithoutDurLab::computeAlpha()
 			QNUInt32 logAddID = 0;
 
 			//this->logAddAcc[0]=prev_adj_seg_alpha[0]+this->transMatrix[0+clab];
-			this->logAddAcc[0]=prev_adj_seg_alpha[0]+transMatrixForCurDur[0+lab];
+			this->logAddAcc[0]=prev_adj_seg_alpha[0]+transMatrixForCurDur[0 * this->nActualLabs + lab];
 			logAddID++;
 			double maxv=this->logAddAcc[0];
 
 			// just for debugging
-//			cout << "lab=" << lab << ", dur=" << dur << endl << "alphaArray_WithDur = logAdd([prev alpha + trans], " << this->nodeLabMaxDur << "): plab=[0]=" << this->logAddAcc[0] << " ";
+//			cout << "lab=" << lab << ", dur=" << dur << endl << "alphaArray_WithDur = logAdd([prev alpha + trans], " << prevAdjacentSeg->getNumAvailLabs() << "): ";
+//			cout << "plab=[0]=" << prev_adj_seg_alpha[0] <<
+//					")+(" << transMatrixForCurDur[0 * this->nActualLabs + lab] <<
+//					")=" << this->logAddAcc[0] << " ";
 
 			//TODO: for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNLabs(); plab++) {  //full implementation. But not working now because logAdd() cannot do calculation on LOG0 yet.
 			for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNumAvailLabs(); plab++) {   //faster implementation, not guaranteed to work for all classes of previous nodes.
@@ -191,7 +194,9 @@ double CRF_StdSegStateNode_WithoutDurLab::computeAlpha()
 				this->logAddAcc[logAddID]=prev_adj_seg_alpha[plab]+transMatrixForCurDur[plab * this->nActualLabs + lab];
 
 				// just for debugging
-//				cout << "[" << plab << "]=" << this->logAddAcc[plab] << " ";
+//				cout << "plab=[" << plab << "]=(" << prev_adj_seg_alpha[plab] <<
+//						")+(" << transMatrixForCurDur[plab * this->nActualLabs + lab] <<
+//						")=" << this->logAddAcc[plab] << " ";
 
 				if (this->logAddAcc[logAddID]>maxv) {
 					maxv=logAddAcc[logAddID];
@@ -206,7 +211,7 @@ double CRF_StdSegStateNode_WithoutDurLab::computeAlpha()
 				this->alphaArray_WithDur[lab*this->nodeLabMaxDur + dur - 1] = logAdd(this->logAddAcc,maxv,logAddID);   //faster implementation, not guaranteed to work for all classes of previous nodes.
 			}
 			catch (exception &e) {
-				string errstr="CRF_StdSegStateNode::computeAlpha() caught exception: "+string(e.what())+" while computing alpha";
+				string errstr="CRF_StdSegStateNode_WithoutDurLab::computeAlpha() caught exception: "+string(e.what())+" while computing alpha";
 				throw runtime_error(errstr);
 				return(-1);
 			}
@@ -251,6 +256,9 @@ double CRF_StdSegStateNode_WithoutDurLab::computeAlpha()
 	}
 
 //	delete [] tempAlphaArray;
+
+	// just for debugging
+//	cout << endl;
 
 	return this->alphaScale;
 
@@ -457,8 +465,49 @@ double CRF_StdSegStateNode_WithoutDurLab::computeBeta(double scale)
 //		}
 //	}
 
+	// just for debugging
+//	cout << endl;
+
 	return this->alphaScale;
 }
+
+///*
+// * CRF_StdSegStateNode_WithoutDurLab::setTailBeta
+// *
+// * Sets the beta value and the *tempbeta* value in this node to the special case for the end of the sequence.
+// */
+//void CRF_StdSegStateNode_WithoutDurLab::setTailBeta()
+//{
+//	// just for debugging
+//	cout << "CRF_StdSegStateNode_WithoutDurLab::setTailBeta()." << endl;
+//
+//	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
+//	for (QNUInt32 clab=0; clab<nLabs; clab++) {
+//		this->betaArray[clab]=0.0;
+//
+//		// just for debugging
+//		cout << "this->betaArray[clab=" << clab << "]=0.0;" << endl;
+//	}
+//
+//	for (QNUInt32 clab = 0; clab < this->nActualLabs; clab++)
+//	{
+//		// this->numNextNodes would be 0 for the last node of the sequence
+//		//for (QNUInt32 dur = 1; dur <= this->numNextNodes; dur++)
+//		for (QNUInt32 dur = 1; dur <= this->nodeLabMaxDur; dur++)
+//		{
+//			this->tempBeta[this->nActualLabs * (dur - 1) + clab] = 0.0;
+//
+//			// just for debugging
+//			cout << "this->tempBeta[clab=" << clab << ", dur=" << dur << "]=0.0;" << endl;
+//		}
+//	}
+//
+//	// just for debugging
+//	cout << "Tail betas have been set." << endl;
+//
+//	// just for debugging
+//	cout << endl;
+//}
 
 /*
  * CRF_StdSegStateNode_WithoutDurLab::computeExpF
@@ -483,15 +532,24 @@ double CRF_StdSegStateNode_WithoutDurLab::computeExpF(double* ExpF, double* grad
 
 	checkNumPrevNodes();
 
+	// Added by Ryan, just for debugging
+//	cout << "checkNumPrevNodes() passed." << endl;
+
 	QNUInt32 actualLab = this->label;
 	QNUInt32 labDur = CRF_LAB_BAD;
 	QNUInt32 actualPLab = prev_lab;
 	QNUInt32 plabDur = CRF_LAB_BAD;
+
+	// Added by Ryan, just for debugging
+//	cout << "Before label conversion:" << endl;
+//	cout << "actualLab=" << actualLab << endl;
+//	cout << "actualPLab=" << actualPLab << endl;
+
 	if (actualLab != CRF_LAB_BAD)
 	{
 		if (actualLab >= this->nActualLabs * this->labMaxDur)
 		{
-			string errstr="CRF_StdSegStateNode_WithoutDurLab::computeExpF() threw exception: the label is larger than "+ (this->nActualLabs * this->labMaxDur);
+			string errstr="CRF_StdSegStateNode_WithoutDurLab::computeExpF() threw exception: the label is larger than "+ stringify(this->nActualLabs * this->labMaxDur);
 			throw runtime_error(errstr);
 		}
 		actualLab = this->label % this->nActualLabs;
@@ -501,12 +559,17 @@ double CRF_StdSegStateNode_WithoutDurLab::computeExpF(double* ExpF, double* grad
 	{
 		if (actualPLab >= this->nActualLabs * this->labMaxDur)
 		{
-			string errstr="CRF_StdSegStateNode_WithoutDurLab::computeExpF() threw exception: the previous label is larger than "+ (this->nActualLabs * this->labMaxDur);
+			string errstr="CRF_StdSegStateNode_WithoutDurLab::computeExpF() threw exception: the previous label is larger than "+ stringify(this->nActualLabs * this->labMaxDur);
 			throw runtime_error(errstr);
 		}
 		actualPLab = prev_lab % this->nActualLabs;
 		plabDur = prev_lab / this->nActualLabs + 1;
 	}
+
+	// Added by Ryan, just for debugging
+//	cout << "After label conversion:" << endl;
+//	cout << "actualLab=" << actualLab << endl;
+//	cout << "actualPLab=" << actualPLab << endl;
 
 	double logLi=0.0;
 	double alpha_beta=0.0;
@@ -672,12 +735,18 @@ double CRF_StdSegStateNode_WithoutDurLab::computeExpF(double* ExpF, double* grad
 		string errstr="CRF_StdSegStateNode_WithoutDurLab::computeExpF() threw exception: Trans Probability sums less than 0.0 "+stringify(alpha_beta_trans_tot);
 		throw runtime_error(errstr);
 	}
+
+	// just for debugging
+//	cout << endl;
+
 	return logLi;
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getTransValue
+ * CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ *
+ * Correct getTransValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
 double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
@@ -694,7 +763,9 @@ double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUIn
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getStateValue
+ * CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
+ *
+ * Correct getStateValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
 double CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
@@ -704,7 +775,9 @@ double CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getFullTransValue
+ * CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ *
+ * Correct getFullTransValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
 double CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
@@ -714,11 +787,51 @@ double CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, Q
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getTempBeta
+ * CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
  *
  */
 double CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
 {
 	return this->tempBeta[this->nActualLabs * (dur - 1) + cur_lab];
+}
+
+// Disable all these functions by overriding them with exception handling. Use their modified version below.
+// Added by Ryan
+/*
+ * CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
+ *
+ * Disabled in CRF_StdSegStateNode_WithoutDurLab, use getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur) instead.
+ *
+ */
+double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
+{
+	string errstr="Error: use CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur) instead.";
+	throw runtime_error(errstr);
+}
+
+// Added by Ryan
+/*
+ * CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab)
+ *
+ * Disabled in CRF_StdSegStateNode_WithoutDurLab, use getStateValue(QNUInt32 cur_lab, QNUInt32 dur) instead.
+ *
+ */
+double CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab)
+{
+	string errstr="Error: use CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 dur) instead.";
+	throw runtime_error(errstr);
+}
+
+// Added by Ryan
+/*
+ * CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
+ *
+ * Disabled in CRF_StdSegStateNode_WithoutDurLab, use getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur) instead.
+ *
+ */
+double CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
+{
+	string errstr="Error: use CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur) instead.";
+	throw runtime_error(errstr);
 }
 

@@ -27,9 +27,16 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 	  first_line_ptr(&max_win_buf[top_margin*in_width]),
 	  segno(-1)
 {
-	out_width = 8 * in_width + max_win_len;  //TODO: Currently hard-coded. Need to be parameterized.
-	//out_width = 488 + max_win_len;
-//	out_width = in_width;
+	if (max_win_len == 0)
+		log.error("Window size must be larger than 0.");
+
+	if (max_win_len == 1)
+	{
+		out_width = in_width;
+	} else {
+		out_width = 8 * in_width + max_win_len;  //TODO: Currently hard-coded. Need to be parameterized.
+		//out_width = 488 + max_win_len;
+	}
 
 	if (bunch_frames<(top_margin+bot_margin+max_win_len))
 		log.error("Insufficient bunch length for size of window.");
@@ -138,11 +145,16 @@ size_t CRF_InFtrStream_SeqMultiWindow::read_ftrs(size_t cnt, float* ftrs)
 
 	size_t numWrittenFtrPerWin = 0;   // the total number of features that have been written to each output window.
 
-	numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
-	numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	if (max_win_len == 1)
+	{
+		numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	} else {
+		numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+		numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+		numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+		numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+		numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count);
+	}
 
 	if (cur_avail_max_win_len < max_win_len)   //for leading frames
 	{

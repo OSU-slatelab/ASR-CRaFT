@@ -103,7 +103,7 @@ public:
 	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 dur);
 	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
 	virtual double getTempBeta(QNUInt32 cur_lab, QNUInt32 dur);
-	virtual void deleteFtrBuf();
+//	virtual void deleteFtrBuf();
 };
 
 #endif /*CRF_STATENODE_H_*/

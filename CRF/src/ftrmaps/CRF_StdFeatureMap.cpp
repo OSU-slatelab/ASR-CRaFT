@@ -72,7 +72,7 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 			stateValue+=ftr_buf[fidx]*lambda[lc];
 
 			// just for debugging
-//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+			//cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
 
 			lc++;
 		}
@@ -81,7 +81,7 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 		stateValue+=lambda[lc]*config->stateBiasVal;
 
 		// just for debugging
-//		cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+		//cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
 
 		lc++;
 	}
@@ -242,8 +242,16 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 	}
 	if (config->useTransBias) {
 		ExpF[lc] += alpha_beta*config->transBiasVal;
+
+		//just for debugging
+//		cout << "TransBias for (plab=" << plab << ",clab=" << clab << "): ExpF[" << lc << "]+=" << alpha_beta << "*" << config->transBiasVal << "=" << ExpF[lc] << endl;
+
 		if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
 			grad[lc]+=config->transBiasVal;
+
+			//just for debugging
+//			cout << "TransBias for (plab=" << plab << ",clab=" << clab << "): grad[" << lc << "]+=" << config->transBiasVal << "=" << grad[lc] << endl;
+
 			logLi+=lambda[lc]*config->transBiasVal;
 		}
 		lc++;

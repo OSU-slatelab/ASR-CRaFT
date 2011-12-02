@@ -152,16 +152,19 @@ void CRF_SGTrainer::train()
 				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
 				exit(-1);
 			}
-			stringstream svar;
-			svar << this->weight_fname << ".i" << iCounter << ".var.out";
-			svar >> fname;
-			cout << "Writing Iteration " << iCounter << " weight variance to file " << fname << endl;
-			cout << "Writing after " << (float) accCnt << " samples" << endl;
-			chkwrite=this->crf_ptr->writeToFile(fname.c_str(),lambdaVar,lambdaLen);
-			if (!chkwrite) {
-				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
-				exit(-1);
-			}
+
+			// commented out by Ryan: not outputting the variance to file for saving space
+//			stringstream svar;
+//			svar << this->weight_fname << ".i" << iCounter << ".var.out";
+//			svar >> fname;
+//			cout << "Writing Iteration " << iCounter << " weight variance to file " << fname << endl;
+//			cout << "Writing after " << (float) accCnt << " samples" << endl;
+//			chkwrite=this->crf_ptr->writeToFile(fname.c_str(),lambdaVar,lambdaLen);
+//			if (!chkwrite) {
+//				cerr << "ERROR! File " << fname << " unable to be opened for writing.  ABORT!" << endl;
+//				exit(-1);
+//			}
+
 			ftr_str->rewind();
 			ftr_str->nextseg();
 			iCounter++;
