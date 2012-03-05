@@ -15,8 +15,8 @@ CRF_LatticeBuilder_StdSeg::CRF_LatticeBuilder_StdSeg(CRF_FeatureStream* ftr_strm
 
 //	this->nodeList= new CRF_StateVector();
 
-	// bunch_size can be only equal to 1 for
-	// CRF_InFtrStream_SeqMultiWindow and CRF_InLabStream_SeqMultiWindow.
+	// bunch_size (number of windows ending at next frame) for CRF_InFtrStream_SeqMultiWindow,
+	// starts from 1, and is added by 1 in each iteration, until being equal to lab_max_dur.
 	this->bunch_size=1;
 
 //	this->num_ftrs=this->ftr_strm->num_ftrs();

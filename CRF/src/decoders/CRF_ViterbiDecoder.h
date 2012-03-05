@@ -36,9 +36,17 @@ public:
 	uint wrd_label; // This is the word label into the state (if it exists)
 	uint state; // This is the state_id number from the fst
 	float weight; // This is the pruning weight for the state (state-internal weights stored separately)
-	uint end_idx;
-	CRF_ViterbiState(uint st, uint lab, float wt, uint idx) :
+
+	// Changed by Ryan. change uint to int, so that end_idx can be a null pointer -1
+//	uint end_idx;
+	int end_idx;
+
+	// Changed by Ryan
+//	CRF_ViterbiState(uint st, uint lab, float wt, uint idx) :
+//		label(lab), state(st), weight(wt), end_idx(idx) { wrd_label=0;}
+	CRF_ViterbiState(uint st, uint lab, float wt, int idx) :
 		label(lab), state(st), weight(wt), end_idx(idx) { wrd_label=0;}
+
 	bool operator == (const CRF_ViterbiState p) const {
 		return (state==p.state && label==p.label);
 	}
@@ -52,6 +60,30 @@ public:
 		}
 		else {
 			return (state<p.state);
+		}
+	}
+};
+
+// Added by Ryan
+class CRF_ComposedLatState {
+public:
+	uint state; // This is the state_id number from the lm/dict fst
+	uint phn_id; // This is the phone id used in phone fst
+
+	CRF_ComposedLatState(uint st, uint phn) : state(st), phn_id(phn) {}
+	bool operator == (const CRF_ComposedLatState p) const {
+		return (state==p.state && phn_id==p.phn_id);
+	}
+
+	bool operator < (const CRF_ComposedLatState p) const {
+		// definite order - order by state, then by label
+		// order is independent of weight and two ViterbiStates with different weights
+		// can be considered the same state
+		if (state == p.state) {
+			return (phn_id < p.phn_id);
+		}
+		else {
+			return (state < p.state);
 		}
 	}
 };
@@ -82,7 +114,16 @@ protected:
 	vector<uint> tmpViterbiWrdIds;
 	vector<uint> prevViterbiWrdIds;
 
-	map<uint,uint> tmpViterbiStateIdMap_new;
+	// Added by Ryan
+	// if the first state of the current hypothesized phone
+	// is a starting boundary of this phone
+	vector<bool> tmpIsPhoneStartBoundary;
+
+	// Changed by Ryan
+//	map<uint,uint> tmpViterbiStateIdMap_new;
+	map<CRF_ComposedLatState,uint> tmpViterbiStateIdMap_new;
+
+
 	vector<float> tmpViterbiWts;
 	vector<int> tmpViterbiPtrs;
 
@@ -97,6 +138,14 @@ protected:
 	uint checkedCounter;
 	uint updateCheckCounter;
 	uint dupCounter;
+
+	// Added by Ryan
+	uint crossUpdateSamePhoneCounter;
+	uint crossUpdateDiffPhoneCounter;
+	uint crossUpdateSameWordCounter;
+	uint crossUpdateDiffWordCounter;
+	uint crossUpdateSameStateCounter;
+	uint crossUpdateDiffStateCounter;
 
 public:
 	CRF_ViterbiDecoder(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);

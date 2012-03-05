@@ -584,7 +584,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::computeBeta(double sca
 		logAddAccSize = this->labMaxDur;
 	double* tmpLogAddAcc = new double[logAddAccSize];
 
-	// add state value to the log-betas of next nodes,
+	// add state value of next nodes to the log-betas of next nodes,
 	// (log-)summing the state-value-added log-betas for the same next label over different next nodes
 
 	// just for debugging

@@ -147,6 +147,8 @@ src/Main.d src/Main.o: ../src/Main.cpp \
  /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder.h \
  /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h \
  /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg.h \
+ /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr.h \
+ /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h \
  /home3/hey/segmental-branch/CRF/src/io/CRF_MLFManager.h
 
 /u/drspeech/src/quicknet-v3_20/H-x86_64/QN_config.h:
@@ -444,5 +446,9 @@ src/Main.d src/Main.o: ../src/Main.cpp \
 /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h:
 
 /home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg.h:
+
+/home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr.h:
+
+/home3/hey/segmental-branch/CRF/src/decoders/CRF_LatticeBuilder_StdSeg_WithoutDurLab.h:
 
 /home3/hey/segmental-branch/CRF/src/io/CRF_MLFManager.h:

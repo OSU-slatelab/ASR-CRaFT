@@ -44,7 +44,7 @@ all: CRFDecode
 CRFDecode: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -L"/home3/hey/segmental-branch/CRF/Debug" -L/home0/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L/home0/drspeech/src/quicknet-v3_20/H-x86_64 -L/home0/drspeech/opt/OpenFst-1.1/x86_64/lib -o "CRFDecode" $(OBJS) $(USER_OBJS) $(LIBS)
+	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -L"/home3/hey/segmental-branch/CRF/Debug" -L/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L/u/drspeech/src/quicknet-v3_20/H-x86_64 -L/u/drspeech/opt/OpenFst-1.1/x86_64/lib -Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/ -o "CRFDecode" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

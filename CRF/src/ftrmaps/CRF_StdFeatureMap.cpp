@@ -72,7 +72,7 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 			stateValue+=ftr_buf[fidx]*lambda[lc];
 
 			// just for debugging
-			//cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
 
 			lc++;
 		}
@@ -81,7 +81,7 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 		stateValue+=lambda[lc]*config->stateBiasVal;
 
 		// just for debugging
-		//cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
+//		cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
 
 		lc++;
 	}
@@ -107,11 +107,19 @@ double CRF_StdFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda
 		for (QNUInt32 fidx=config->transFidxStart; fidx<=config->transFidxEnd; fidx++)
 		{
 			transMatrixValue+=ftr_buf[fidx]*lambda[lc];
+
+			//just for debugging
+//			cout << "transMatrixValue for (plab=" << plab << ",clab=" << clab << ") += ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ") * lambda[" << lc << "](" << lambda[lc] << ") = " << transMatrixValue << endl;
+
 			lc++;
 		}
 	}
 	if (config->useTransBias) {
 		transMatrixValue+=lambda[lc]*config->transBiasVal;
+
+		//just for debugging
+//		cout << "transMatrixValue for (plab=" << plab << ",clab=" << clab << ") += config->transBiasVal(" << config->transBiasVal << ") * lambda[" << lc << "](" << lambda[lc] << ") = " << transMatrixValue << endl;
+
 		lc++;
 	}
 	return transMatrixValue;
@@ -175,7 +183,7 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 				//just for debugging
 //				if (lc == 0)
 //				{
-//					cout << "StateFeature for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
+//					cout << "StateFeature for lab=" << clab << ": grad[" << lc << "]+=" << ftr_buf[fidx] << "=" << grad[lc] << endl;
 //				}
 
 				logLi += lambda[lc]*ftr_buf[fidx];
@@ -233,8 +241,16 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 		for (QNUInt32 fidx=config->transFidxStart; fidx<=config->transFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
+
+			//just for debugging
+//			cout << "TransFeature for (plab=" << plab << ",clab=" << clab << "): ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
+
 			if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
 				grad[lc]+=ftr_buf[fidx];
+
+				//just for debugging
+//				cout << "TransFeature for (plab=" << plab << ",clab=" << clab << "): grad[" << lc << "]+=" << ftr_buf[fidx] << "=" << grad[lc] << endl;
+
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
 			lc++;

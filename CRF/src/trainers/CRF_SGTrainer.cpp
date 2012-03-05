@@ -29,7 +29,11 @@ void CRF_SGTrainer::train()
 	double tmpLogLi;
 	double tmp_Zx;
 	double totLogLi = 0.0;
-	int iCounter=0;
+
+	// changed by Ryan
+	//int iCounter=0;
+	int iCounter=this->crf_ptr->getInitIter();
+
 	int uCounter=0;
 	CRF_FeatureStream *ftr_str=this->ftr_strm_mgr->trn_stream;
 	ofstream ofile;
@@ -53,6 +57,13 @@ void CRF_SGTrainer::train()
 		lambdaSqrAcc[i]=0.0;
 		//lambdaAcc[i]=0.0;
 	}
+
+	// Added by Ryan
+	for (QNUInt32 i=0; i<lambdaLen; i++) {
+		lambdaAvg[i]=(lambdaAcc[i]/(float)accCnt);
+		lambdaVar[i]=(lambdaSqrAcc[i]/(float)accCnt)-(lambdaAvg[i]*lambdaAvg[i]);
+	}
+
 	bool start=true;
 	float invSquareVar=0.0;
 	if (this->useGvar) {
@@ -107,10 +118,17 @@ void CRF_SGTrainer::train()
 				//grad[i]-=lambda[i]*invSquareVar;
 				grad[i]-=grad[i]*invSquareVar;
 			}
+
+			// just for debugging
+//			cout << "before update, lambda[" << i << "]=" << lambda[i] << endl;
+
 			lambda[i]+=this->lr*grad[i];
 			lambdaAcc[i]+=lambda[i];
 			lambdaSqrAcc[i]+=lambda[i]*lambda[i];
 			grad[i]=0.0;
+
+			// just for debugging
+//			cout << "after update, lambda[" << i << "]=" << lambda[i] << endl;
 		}
 		accCnt++;
 
@@ -181,10 +199,14 @@ void CRF_SGTrainer::train()
 	savg >> fname;
 	cout << "Writing Final Iteration average weights to file " << fname << endl;
 	this->crf_ptr->writeToFile(fname.c_str(),lambdaAvg,lambdaLen);
-	stringstream svar;
-	svar << this->weight_fname << ".var.out";
-	svar >> fname;
-	cout << "Writing Final Iteration weight variance to file " << fname << endl;
+
+	// Commented out by Ryan: not outputting the variance to file for saving space
+//	stringstream svar;
+//	svar << this->weight_fname << ".var.out";
+//	svar >> fname;
+//	cout << "Writing Final Iteration weight variance to file " << fname << endl;
+//	this->crf_ptr->writeToFile(fname.c_str(),lambdaVar,lambdaLen);
+
 	delete[] lambdaAvg;
 	delete[] lambdaVar;
 	delete[] lambdaSqrAcc;

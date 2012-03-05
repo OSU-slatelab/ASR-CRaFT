@@ -197,8 +197,79 @@ QN_SegID CRF_InLabStream_SeqMultiWindow::nextseg()
 
 size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs)
 {
-	if (cnt != 1)
-		log.error("Batch size has to be 1: every time read_labs() can just move forward by 1 frame.");
+	return read_labs(cnt, labs, QN_ALL);
+
+//	if (cnt != 1)
+//		log.error("Batch size has to be 1: every time read_labs() can just move forward by 1 frame.");
+//
+//	if (segno==-1)
+//		log.error("Trying to read before start of first sentence.");
+//
+//	size_t ret_num_lab = 0;
+//
+//	if (cur_out_win < num_out_wins && cur_in_frame < end_in_frame)
+//	{
+//		//just for debugging
+////		cout << cur_in_frame << "\t"
+////				<< out_lab_buf[cur_out_win] << "\t"
+////				<< out_t_start_buf[cur_out_win] << "\t"
+////				<< out_t_end_buf[cur_out_win] << "\t"
+////				<< out_broken_flag_buf[cur_out_win] << endl;
+//
+//		size_t ret_lab_idx = 0;
+//		//for (size_t frameMove = 0; frameMove < cnt; frameMove++)
+//		//{
+//			QNUInt32 win_t_end = out_t_end_buf[cur_out_win];
+//			if (cur_in_frame == win_t_end)
+//			{
+//				labs[ret_lab_idx++] = out_lab_buf[cur_out_win];
+//				labs[ret_lab_idx++] = out_t_start_buf[cur_out_win];
+//				labs[ret_lab_idx++] = out_t_end_buf[cur_out_win];
+//				labs[ret_lab_idx++] = out_broken_flag_buf[cur_out_win];
+//				cur_out_win++;
+//			}
+//			else
+//			{
+//				labs[ret_lab_idx++] = CRF_LAB_BAD;
+//				labs[ret_lab_idx++] = CRF_LAB_BAD;
+//				labs[ret_lab_idx++] = CRF_LAB_BAD;
+//				labs[ret_lab_idx++] = CRF_LAB_BAD;
+//			}
+//			ret_num_lab++;
+//			cur_in_frame++;
+//		//}
+//	}
+//
+//	return ret_num_lab;
+}
+
+size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs, size_t stride)
+{
+//	size_t ret = QN_SIZET_BAD;
+//	if (stride==num_labs() || stride==QN_ALL)
+//	{
+//		ret = read_labs(cnt, labs);
+//	}
+//	else
+//	{
+//		log.error("The strided version of the read_labs function currently does not work for CRF_InLabStream_SeqMultiWindow.");
+//	}
+//	return QN_SIZET_BAD;
+
+	const size_t l_out_width = this->num_labs(); // Local copy of variable.
+	size_t real_stride;         // Stride we use for output.
+
+	if (stride==QN_ALL)
+		real_stride = l_out_width;
+	else
+		real_stride = stride;
+
+	// TODO: cnt can be more than 1, and the output of labels should be an array of size being cnt,
+	// instead of a single label, so that the multiple label streams can be joined together.
+	// in this case, stride has to be used.
+
+//	if (cnt != 1)
+//		log.error("Batch size has to be 1: every time read_labs() can just move forward by 1 frame.");
 
 	if (segno==-1)
 		log.error("Trying to read before start of first sentence.");
@@ -239,20 +310,6 @@ size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs)
 	}
 
 	return ret_num_lab;
-}
-
-size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs, size_t stride)
-{
-	size_t ret = QN_SIZET_BAD;
-	if (stride==num_labs() || stride==QN_ALL)
-	{
-		ret = read_labs(cnt, labs);
-	}
-	else
-	{
-		log.error("The strided version of the read_labs function currently does not work for CRF_InLabStream_SeqMultiWindow.");
-	}
-	return QN_SIZET_BAD;
 }
 
 int CRF_InLabStream_SeqMultiWindow::rewind()

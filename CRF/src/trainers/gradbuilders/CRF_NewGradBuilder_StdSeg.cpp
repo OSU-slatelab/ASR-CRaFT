@@ -37,8 +37,10 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 
 	double logLi = 0.0;
 
-	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size.
-	//size_t bunch_size = 3;
+	// Changed by Ryan,
+	// bunch_size (number of windows ending at next frame) for CRF_InFtrStream_SeqMultiWindow,
+	// starts from 1, and is added by 1 in each iteration, until being equal to lab_max_dur.
+//	size_t bunch_size = 3;
 	size_t bunch_size = 1;
 
 	size_t num_ftrs=ftr_strm->num_ftrs();
@@ -304,6 +306,11 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 			// End of Loop:
 			//	alpha[i] = alpha[i-1]*M[i]
 		}
+
+		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		if (bunch_size < lab_max_dur)
+			bunch_size++;
+
 	} while (ftr_count > 0);
 
 	// added by Ryan
@@ -472,6 +479,9 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 
 	for (QNUInt32 i=0; i<lambda_len; i++) {
 		grad[i]-=this->ExpF[i];
+
+		// just for debugging
+//		cout << "total grad[" << i << "]=" << grad[i] << endl;
 	}
 	*Zx_out=Zx;
 	//logLi-=Zx;

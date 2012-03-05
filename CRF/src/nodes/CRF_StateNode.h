@@ -54,6 +54,11 @@ protected:
 public:
 	vector<uint> viterbiPhnIds;
 	vector<int> viterbiPointers;
+
+	// Added by Ryan
+	vector<bool> isPhoneStartBoundary;
+	vector<uint> viterbiDurs;
+
 	CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual ~CRF_StateNode();
 	virtual double computeTransMatrix();

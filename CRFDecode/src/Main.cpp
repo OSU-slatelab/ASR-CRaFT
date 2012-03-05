@@ -22,6 +22,7 @@
 #include "ftrmaps/CRF_StdSparseFeatureMap.h"
 #include "io/CRF_MLFManager.h"
 #include "decoders/CRF_ViterbiDecoder.h"
+#include "decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h"
 
 using namespace std;
 typedef StdArc::StateId StateId;
@@ -42,6 +43,13 @@ static struct {
 	int ftr1_window_len;
 	int ftr1_delta_order;
 	int ftr1_delta_win;
+
+	// Added by Ryan, for context features and segmental models
+	int ftr1_left_context_len;
+	int ftr1_right_context_len;
+	bool ftr1_extract_seg_ftr;
+	bool ftr1_use_boundary_delta_ftr;
+
 	char* ftr2_file;
 	char* ftr2_format;
 	int ftr2_width;
@@ -51,6 +59,13 @@ static struct {
 	int ftr2_window_len;
 	int ftr2_delta_order;
 	int ftr2_delta_win;
+
+	// Added by Ryan, for context features and segmental models
+	int ftr2_left_context_len;
+	int ftr2_right_context_len;
+	bool ftr2_extract_seg_ftr;
+	bool ftr2_use_boundary_delta_ftr;
+
 	char* ftr3_file;
 	char* ftr3_format;
 	int ftr3_width;
@@ -60,6 +75,13 @@ static struct {
 	int ftr3_window_len;
 	int ftr3_delta_order;
 	int ftr3_delta_win;
+
+	// Added by Ryan, for context features and segmental models
+	int ftr3_left_context_len;
+	int ftr3_right_context_len;
+	bool ftr3_extract_seg_ftr;
+	bool ftr3_use_boundary_delta_ftr;
+
 	int train_sent_start;
 	int train_sent_count;
 	int window_extent;
@@ -100,6 +122,12 @@ static struct {
 	float crf_decode_hyp_inc;
 	int verbose;
 	int dummy;
+
+	//Added by Ryan, for segmental CRFs
+	int label_maximum_duration;
+	int num_actual_labs;
+	char* crf_model_type;
+
 } config;
 
 /*
@@ -117,6 +145,13 @@ QN_ArgEntry argtab[] =
 	{ "ftr1_window_len", "Length of window on ftr1_file (frames)", QN_ARG_INT, &(config.ftr1_window_len) },
 	{ "ftr1_delta_order", "Delta order", QN_ARG_INT, &(config.ftr1_delta_order) },
 	{ "ftr1_delta_win", "Delta window", QN_ARG_INT, &(config.ftr1_delta_win) },
+
+	// Added by Ryan, for context features and segmental models
+	{ "ftr1_left_context_len", "Length of context features to the left of the window on ftr1_file (frames)", QN_ARG_INT, &(config.ftr1_left_context_len) },
+	{ "ftr1_right_context_len", "Length of context features to the right of the window on ftr1_file (frames)", QN_ARG_INT, &(config.ftr1_right_context_len) },
+	{ "ftr1_extract_seg_ftr", "Extract segment-level features (as opposed to frame-level features)", QN_ARG_BOOL, &(config.ftr1_extract_seg_ftr) },
+	{ "ftr1_use_boundary_delta_ftr", "Use boundary delta features", QN_ARG_BOOL, &(config.ftr1_use_boundary_delta_ftr) },
+
 	{ "ftr2_file", "Input feature file", QN_ARG_STR, &(config.ftr2_file) },
 	{ "ftr2_format", "Input feature file format [pfile]", QN_ARG_STR, &(config.ftr2_format) },
 	{ "ftr2_width", "Input feature file columns", QN_ARG_INT, &(config.ftr2_width) },
@@ -126,6 +161,13 @@ QN_ArgEntry argtab[] =
 	{ "ftr2_window_len", "Length of window on ftr1_file (frames)", QN_ARG_INT, &(config.ftr2_window_len) },
 	{ "ftr2_delta_order", "Delta order", QN_ARG_INT, &(config.ftr2_delta_order) },
 	{ "ftr2_delta_win", "Delta window", QN_ARG_INT, &(config.ftr2_delta_win) },
+
+	// Added by Ryan, for context features and segmental models
+	{ "ftr2_left_context_len", "Length of context features to the left of the window on ftr2_file (frames)", QN_ARG_INT, &(config.ftr2_left_context_len) },
+	{ "ftr2_right_context_len", "Length of context features to the right of the window on ftr2_file (frames)", QN_ARG_INT, &(config.ftr2_right_context_len) },
+	{ "ftr2_extract_seg_ftr", "Extract segment-level features (as opposed to frame-level features)", QN_ARG_BOOL, &(config.ftr2_extract_seg_ftr) },
+	{ "ftr2_use_boundary_delta_ftr", "Use boundary delta features", QN_ARG_BOOL, &(config.ftr2_use_boundary_delta_ftr) },
+
 	{ "ftr3_file", "Input feature file", QN_ARG_STR, &(config.ftr3_file) },
 	{ "ftr3_format", "Input feature file format [pfile]", QN_ARG_STR, &(config.ftr3_format) },
 	{ "ftr3_width", "Input feature file columns", QN_ARG_INT, &(config.ftr3_width) },
@@ -135,6 +177,13 @@ QN_ArgEntry argtab[] =
 	{ "ftr3_window_len", "Length of window on ftr1_file (frames)", QN_ARG_INT, &(config.ftr3_window_len) },
 	{ "ftr3_delta_order", "Delta order", QN_ARG_INT, &(config.ftr3_delta_order) },
 	{ "ftr3_delta_win", "Delta window", QN_ARG_INT, &(config.ftr3_delta_win) },
+
+	// Added by Ryan, for context features and segmental models
+	{ "ftr3_left_context_len", "Length of context features to the left of the window on ftr3_file (frames)", QN_ARG_INT, &(config.ftr3_left_context_len) },
+	{ "ftr3_right_context_len", "Length of context features to the right of the window on ftr3_file (frames)", QN_ARG_INT, &(config.ftr3_right_context_len) },
+	{ "ftr3_extract_seg_ftr", "Extract segment-level features (as opposed to frame-level features)", QN_ARG_BOOL, &(config.ftr3_extract_seg_ftr) },
+	{ "ftr3_use_boundary_delta_ftr", "Use boundary delta features", QN_ARG_BOOL, &(config.ftr3_use_boundary_delta_ftr) },
+
 	{ "window_extent", "Extent of all windows (frames)", QN_ARG_INT, &(config.window_extent) },
 	{ "hardtarget_file", "Target Label File", QN_ARG_STR, &(config.hardtarget_file) },
 	{ "hardtarget_window_offset", "Offset of hardtarget file (frames)", QN_ARG_INT, &(config.hardtarget_window_offset) },
@@ -172,6 +221,12 @@ QN_ArgEntry argtab[] =
 	{ "crf_decode_min_hyp", "Minimum hypotheses to keep in beam", QN_ARG_INT, &(config.crf_decode_min_hyp) },
 	{ "crf_decode_hyp_inc", "Increment for hypothesis beam pruning", QN_ARG_FLOAT, &(config.crf_decode_hyp_inc) },
 	{ "verbose", "Output status messages", QN_ARG_INT, &(config.verbose) },
+
+	//Added by Ryan, for segmental CRFs
+	{ "label_maximum_duration", "The maximum duration if labels are phone-duration combination", QN_ARG_INT, &(config.label_maximum_duration) },
+	{ "num_actual_labs", "The number of actual labels (without duration)", QN_ARG_INT, &(config.num_actual_labs) },
+	{ "crf_model_type", "CRF model structure (stdframe|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr|stdseg_no_dur_no_segtransftr)", QN_ARG_STR, &(config.crf_model_type) },
+
 	{ NULL, NULL, QN_ARG_NOMOREARGS }
 };
 
@@ -188,6 +243,13 @@ static void set_defaults(void) {
 	config.ftr1_window_len=1;
 	config.ftr1_delta_order=0;
 	config.ftr1_delta_win=0;
+
+	// Added by Ryan, for context features and segmental models
+	config.ftr1_left_context_len=0;
+	config.ftr1_right_context_len=0;
+	config.ftr1_extract_seg_ftr=false;
+	config.ftr1_use_boundary_delta_ftr=false;
+
 	config.ftr2_file="";
 	config.ftr2_format="pfile";
 	config.ftr2_width=0;
@@ -197,6 +259,13 @@ static void set_defaults(void) {
 	config.ftr2_window_len=1;
 	config.ftr2_delta_order=0;
 	config.ftr2_delta_win=0;
+
+	// Added by Ryan, for context features and segmental models
+	config.ftr2_left_context_len=0;
+	config.ftr2_right_context_len=0;
+	config.ftr2_extract_seg_ftr=false;
+	config.ftr2_use_boundary_delta_ftr=false;
+
 	config.ftr3_file="";
 	config.ftr3_format="pfile";
 	config.ftr3_width=0;
@@ -206,6 +275,13 @@ static void set_defaults(void) {
 	config.ftr3_window_len=1;
 	config.ftr3_delta_order=0;
 	config.ftr3_delta_win=0;
+
+	// Added by Ryan, for context features and segmental models
+	config.ftr3_left_context_len=0;
+	config.ftr3_right_context_len=0;
+	config.ftr3_extract_seg_ftr=false;
+	config.ftr3_use_boundary_delta_ftr=false;
+
 	config.window_extent=1;
 	config.hardtarget_file="";
 	config.hardtarget_window_offset=0;
@@ -241,6 +317,11 @@ static void set_defaults(void) {
 	config.crf_decode_min_hyp=0;
 	config.crf_decode_hyp_inc=0.05;
 	config.verbose=0;
+
+	//Added by Ryan, for segmental CRFs
+	config.label_maximum_duration=1;
+	config.num_actual_labs=0;
+	config.crf_model_type="stdframe";
 };
 
 /*
@@ -290,6 +371,10 @@ static void set_fmap_config(QNUInt32 nfeas) {
 	}
 	fmap_config.stateBiasVal=config.crf_state_bias_value;
 	fmap_config.transBiasVal=config.crf_trans_bias_value;
+
+	//Added by Ryan, for segmental CRFs
+	fmap_config.maxDur=config.label_maximum_duration;
+	fmap_config.nActualLabs=config.num_actual_labs;
 };
 
 /*
@@ -330,6 +415,31 @@ int main(int argc, const char* argv[]) {
 
 	cout << "IN LABELS: " << config.crf_label_size << endl;
 
+	// Added by Ryan, for segmental CRFs
+	if (config.label_maximum_duration <= 0)
+	{
+		string errstr="main() in CRFFstDecode caught exception: the maximum duration of labels must be larger than 0.";
+		throw runtime_error(errstr);
+	}
+	if (config.num_actual_labs == 0)
+	{
+		config.num_actual_labs = config.crf_label_size;
+	}
+	if (strcmp(config.crf_model_type,"stdseg_no_dur_no_transftr")==0 &&
+				strcmp(config.crf_featuremap, "stdstate") != 0)
+	{
+		string errstr="main() in CRFFstDecode caught exception: crf_featuremap must be \"stdstate\" for \"stdseg_no_dur_no_transftr\" CRF model.";
+		throw runtime_error(errstr);
+	}
+
+	// commented out by Ryan for the class CRF_StdSegNode_WithoutDurLab
+//	if (config.crf_label_size != config.label_maximum_duration * config.num_actual_labs)
+//	{
+//		string errstr="main() in CRFFstDecode caught exception: It should be crf_label_size == label_maximum_duration * num_actual_labs.";
+//		throw runtime_error(errstr);
+//	}
+
+
 	if (strcmp(config.crf_decode_mode,"align")==0) { alignMode=true; }
 
     if (strcmp(config.hardtarget_file,"")==0) { config.hardtarget_file=NULL; }
@@ -349,7 +459,10 @@ int main(int argc, const char* argv[]) {
 	QN_OutLabStream* labout=NULL;
 	if (config.crf_output_labelfile != NULL ) {
 		outl=fopen(config.crf_output_labelfile,"w+");
-		labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 255, 1);
+
+		// Changed by Ryan
+		//labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 255, 1);
+		labout = new QN_OutLabStream_ILab(1, "out_labfile", outl, 8192, 1);
 	}
 
 	CRF_MLFManager* mlfManager = NULL;
@@ -408,7 +521,8 @@ int main(int argc, const char* argv[]) {
 		log_msg("Mapping LM to Tropical Ring...");
 		Map(*log_fst,lm_fst,LogToStdMapper());
 		delete log_fst;
-		/*
+
+		// changed by Ryan, originally commented out
 		log_msg("Removing EOW tokens from final PhoneMap/LM/Dict lattice");
 		vector<pair<StdArc::Label, StdArc::Label> >* ipairs;
 		vector<pair<StdArc::Label, StdArc::Label> >* opairs;
@@ -423,7 +537,7 @@ int main(int argc, const char* argv[]) {
 		(*ipairs).push_back(mypair3);
 		(*ipairs).push_back(mypair4);
 		Relabel(lm_fst,*ipairs,*opairs);
-		*/
+
 	}
 
     ftrmaptype trn_ftrmap = STDSTATE;
@@ -441,28 +555,59 @@ int main(int argc, const char* argv[]) {
 	CRF_FeatureStreamManager* str2=NULL;
 	CRF_FeatureStreamManager* str3=NULL;
 
-
-    CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
+	// modified by Ryan, for context features
+//    CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
+//							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
+//							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
+//							config.ftr1_delta_order, config.ftr1_delta_win,
+//							config.crf_eval_range, 0,
+//							NULL,0,0,0,SEQUENTIAL);
+//	if (strcmp(config.ftr2_file,"") != 0) {
+//
+//		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
+//							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
+//							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
+//							config.ftr2_delta_order, config.ftr2_delta_win,
+//							config.crf_eval_range, 0,
+//							NULL,0,0,0,SEQUENTIAL);
+//		str1.join(str2);
+//	}
+//	if (strcmp(config.ftr3_file,"") != 0) {
+//
+//		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
+//							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
+//							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
+//							config.ftr3_delta_order, config.ftr3_delta_win,
+//							config.crf_eval_range, 0,
+//							NULL,0,0,0,SEQUENTIAL);
+//		str1.join(str3);
+//
+//	}
+	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
 							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
+							config.ftr1_left_context_len, config.ftr1_right_context_len, config.ftr1_extract_seg_ftr,
+							config.ftr1_use_boundary_delta_ftr,
 							config.ftr1_delta_order, config.ftr1_delta_win,
 							config.crf_eval_range, 0,
 							NULL,0,0,0,SEQUENTIAL);
 	if (strcmp(config.ftr2_file,"") != 0) {
-
 		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
 							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
+							config.ftr2_left_context_len, config.ftr2_right_context_len, config.ftr2_extract_seg_ftr,
+							config.ftr2_use_boundary_delta_ftr,
 							config.ftr2_delta_order, config.ftr2_delta_win,
 							config.crf_eval_range, 0,
 							NULL,0,0,0,SEQUENTIAL);
 		str1.join(str2);
 	}
 	if (strcmp(config.ftr3_file,"") != 0) {
-
 		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
 							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
+							config.ftr3_left_context_len, config.ftr3_right_context_len, config.ftr3_extract_seg_ftr,
+							config.ftr3_use_boundary_delta_ftr,
 							config.ftr3_delta_order, config.ftr3_delta_win,
 							config.crf_eval_range, 0,
 							NULL,0,0,0,SEQUENTIAL);
@@ -476,6 +621,47 @@ int main(int argc, const char* argv[]) {
 	CRF_Model my_crf(config.crf_label_size);
 	cout << "LABELS: " << my_crf.getNLabs() << endl;
 
+	// Added by Ryan, for segmental CRFs
+	my_crf.setLabMaxDur(config.label_maximum_duration);
+	my_crf.setNActualLabs(config.num_actual_labs);
+	cout << "LABEL_MAXIMUM_DURATION: " << my_crf.getLabMaxDur() << endl;
+	cout << "ACTUAL_LABELS: " << my_crf.getNActualLabs() << endl;
+
+	// Added by Ryan, for segmental CRFs
+	modeltype mtype;
+	if (strcmp(config.crf_model_type,"stdframe")==0)
+	{
+			mtype = STDFRAME;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg")==0)
+	{
+			mtype = STDSEG;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur")==0)
+	{
+			mtype = STDSEG_NO_DUR;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur_no_transftr")==0)
+	{
+			mtype = STDSEG_NO_DUR_NO_TRANSFTR;
+	}
+	else if (strcmp(config.crf_model_type,"stdseg_no_dur_no_segtransftr")==0)
+	{
+			mtype = STDSEG_NO_DUR_NO_SEGTRANSFTR;
+	}
+	else
+	{
+			mtype = STDFRAME;
+	}
+	my_crf.setModelType(mtype);
+	cout << "MODEL_TYPE: " << config.crf_model_type << endl;
+
+	// Added by Ryan, for segmental CRFs
+	if (my_crf.getModelType() == STDFRAME && my_crf.getLabMaxDur() != 1)
+	{
+		string errstr="main() in CRFFstDecode caught exception: the maximum duration of labels must be 1 for \"stdframe\" CRF model.";
+		throw runtime_error(errstr);
+	}
 
 	set_fmap_config(str1.getNumFtrs());
 	my_crf.setFeatureMap(CRF_FeatureMap::createFeatureMap(&fmap_config));
@@ -504,9 +690,25 @@ int main(int argc, const char* argv[]) {
 			char* time1 = ctime(&rawtime);
 			time1[strlen(time1)-1]='\0';
 			log_msg(time1);
-			CRF_ViterbiDecoder vd(crf_ftr_str,&my_crf);
+
+			// Changed by Ryan, for segmental CRFs
+//			CRF_ViterbiDecoder* vd = new CRF_ViterbiDecoder(crf_ftr_str,&my_crf);
+			CRF_ViterbiDecoder_StdSeg_NoSegTransFtr* vd;
+			if (my_crf.getModelType() == STDFRAME ||
+					my_crf.getModelType() == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+			{
+				vd = new CRF_ViterbiDecoder_StdSeg_NoSegTransFtr(crf_ftr_str,&my_crf);
+			}
+			else
+			{
+				string errstr="main() in CRFFstDecode caught exception: "
+						"CRF_ViterbiDecoder for CRF models other than \"stdframe\" "
+						"and \"stdseg_no_dur_no_segtransftr\" have not been implmented.";
+				throw runtime_error(errstr);
+			}
+
 			VectorFst<StdArc>* best_lat=new VectorFst<StdArc>();
-			int nodeCnt=vd.nStateDecode(best_lat,lm_fst,config.crf_decode_beam,config.crf_decode_min_hyp,
+			int nodeCnt=vd->nStateDecode(best_lat,lm_fst,config.crf_decode_beam,config.crf_decode_min_hyp,
 					config.crf_decode_max_hyp,config.crf_decode_hyp_inc);
 			if (config.crf_lat_outdir != NULL) {
 				// Put code here to dump the lattice file out to the latdir in
@@ -662,6 +864,7 @@ int main(int argc, const char* argv[]) {
 			log_msg(time2);
 
 			delete best_lat;
+			delete vd;
 		}
 		catch (exception &e) {
 			cerr << "Exception: " << e.what() << endl;

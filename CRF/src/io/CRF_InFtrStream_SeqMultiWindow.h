@@ -13,6 +13,18 @@
 class CRF_InFtrStream_SeqMultiWindow : public QN_InFtrStream {
 
 protected:
+
+    // newly added, for context features
+    // The number of frames to the left of the segment window as context features.
+	const size_t left_context_len;
+	// The number of frames to the right of the segment window as context features.
+	const size_t right_context_len;
+	// true: output segment-level features; false: output frame-level features
+	const bool extract_segment_features;
+	// true: use boundary-delta-ftr; false: use segment-level features or frame-level context features
+	// if this is true, extract_segment_features must be false.
+	const bool use_boundary_delta_ftrs;
+
 	// Logging object.
     QN_ClassLogger log;
     // The input feature stream we are windowing.
@@ -55,18 +67,34 @@ protected:
     // The number of the current segment (for debugging).
     long segno;
 
-    size_t sample_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
-    size_t avg_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
-    size_t max_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
-    size_t min_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
-    size_t dur_ftrs(float* out_ftr_buf, size_t avail_max_win_len);
+    size_t sample_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t avg_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t max_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t min_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t dur_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+
+    // added for context features
+    size_t first_frame_left_ctx_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t first_frame_right_ctx_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t last_frame_right_ctx_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t first_frame_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t boundary_delta_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
 
 public:
+    // modified for context features
+//	CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
+//            QN_InFtrStream& a_str,
+//            size_t a_max_win_len, size_t a_top_margin,
+//            size_t a_bot_margin,
+//            size_t a_bunch_frames = QN_SIZET_BAD);
 	CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
-            QN_InFtrStream& a_str,
-            size_t a_max_win_len, size_t a_top_margin,
-            size_t a_bot_margin,
-            size_t a_bunch_frames = QN_SIZET_BAD);
+	            QN_InFtrStream& a_str,
+	            size_t a_max_win_len, size_t a_top_margin,
+	            size_t a_bot_margin, size_t a_left_ctx_len,
+	            size_t a_right_ctx_len, bool a_seg_ftr,
+	            bool a_use_boundary_delta_ftr,
+	            size_t a_bunch_frames = QN_SIZET_BAD);
+
 	virtual ~CRF_InFtrStream_SeqMultiWindow();
     size_t num_ftrs();
     QN_SegID nextseg();

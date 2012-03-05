@@ -51,15 +51,15 @@ double CRF_NewGradBuilder::buildGradient(CRF_FeatureStream* ftr_strm, double* gr
 
 	double logLi = 0.0;
 
-	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size.
+	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size for frame model.
 //	size_t bunch_size = 3;
 	size_t bunch_size = 1;
 
 	size_t num_ftrs=ftr_strm->num_ftrs();
 
 	// Added by Ryan
-	QNUInt32 lab_max_dur = this->crf->getLabMaxDur();
-	QNUInt32 nActualLabs = this->crf->getNActualLabs();
+//	QNUInt32 lab_max_dur = this->crf->getLabMaxDur();
+//	QNUInt32 nActualLabs = this->crf->getNActualLabs();
 
 	if (this->ftr_buf==NULL) {  // First pass through initialize the buffers
 		// Changed by Ryan

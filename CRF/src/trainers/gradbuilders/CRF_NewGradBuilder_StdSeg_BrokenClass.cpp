@@ -34,8 +34,10 @@ double CRF_NewGradBuilder_StdSeg_BrokenClass::buildGradient(CRF_FeatureStream* f
 
 	double logLi = 0.0;
 
-	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size.
-	//size_t bunch_size = 3;
+	// Changed by Ryan,
+	// bunch_size (number of windows ending at next frame) for CRF_InFtrStream_SeqMultiWindow,
+	// starts from 1, and is added by 1 in each iteration, until being equal to lab_max_dur.
+//	size_t bunch_size = 3;
 	size_t bunch_size = 1;
 
 	size_t num_ftrs=ftr_strm->num_ftrs();
@@ -301,6 +303,11 @@ double CRF_NewGradBuilder_StdSeg_BrokenClass::buildGradient(CRF_FeatureStream* f
 			// End of Loop:
 			//	alpha[i] = alpha[i-1]*M[i]
 		}
+
+		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		if (bunch_size < lab_max_dur)
+			bunch_size++;
+
 	} while (ftr_count > 0);
 
 	// added by Ryan

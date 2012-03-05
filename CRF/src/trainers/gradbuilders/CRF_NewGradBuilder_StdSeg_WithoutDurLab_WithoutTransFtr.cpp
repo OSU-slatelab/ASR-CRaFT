@@ -37,8 +37,10 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 
 	double logLi = 0.0;
 
-	// Changed by Ryan, CRF_InFtrStream_SeqMultiWindow can just accept 1 as bunch_size.
-	//size_t bunch_size = 3;
+	// Changed by Ryan,
+	// bunch_size (number of windows ending at next frame) for CRF_InFtrStream_SeqMultiWindow,
+	// starts from 1, and is added by 1 in each iteration, until being equal to lab_max_dur.
+//	size_t bunch_size = 3;
 	size_t bunch_size = 1;
 
 	size_t num_ftrs=ftr_strm->num_ftrs();
@@ -304,6 +306,11 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 			// End of Loop:
 			//	alpha[i] = alpha[i-1]*M[i]
 		}
+
+		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		if (bunch_size < lab_max_dur)
+			bunch_size++;
+
 	} while (ftr_count > 0);
 
 	// added by Ryan
@@ -414,6 +421,8 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 		// just debugging
 //		cout << "Computed beta for node[" << nodeCnt << "]." << endl;
 
+		// Obtaining the label of the next node.
+		// Important note: This is different from the regular gradbuilder which obtains the label of the previous node.
 		QNUInt32 next_lab = CRF_LAB_BAD;
 		QNUInt32 next_adj_seg_nodeCnt = nodeCnt + 1;
 		while (next_adj_seg_nodeCnt <= lastNode) {
@@ -447,6 +456,8 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 		// just for debugging
 //		cout << "nodeList access 13(at): " << nodeCnt << endl;
 
+		// Passing the label of the next node to the current node for computing the ExpF for current node..
+		// Important note: This is different from the regular gradbuilder which passes the label of the previous node.
 		logLi += this->nodeList->at(nodeCnt)->computeExpF(this->ExpF, grad, Zx, next_lab);
 
 		// just debugging
@@ -472,6 +483,9 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 
 	for (QNUInt32 i=0; i<lambda_len; i++) {
 		grad[i]-=this->ExpF[i];
+
+		// just for debugging
+//		cout << "total grad[" << i << "]=" << grad[i] << endl;
 	}
 	*Zx_out=Zx;
 	//logLi-=Zx;

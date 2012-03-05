@@ -31,7 +31,12 @@ protected:
 	int logspaceTrain;
 	bool start;
 	double invSquareVar;
+
+	// commented by Ryan. TODO: When is iCounter initialized?
+	// How can we set the initial starting training iteration?
+	// In other trainers, they are set by this->iCounter=this->crf_ptr->getInitIter();
 	int iCounter;
+
 	double *grad;
 	float l1alpha;
 

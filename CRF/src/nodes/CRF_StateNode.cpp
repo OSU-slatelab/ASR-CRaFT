@@ -13,6 +13,7 @@
 #include "CRF_StdSegStateNode.h"
 #include "CRF_StdSegStateNode_WithoutDurLab.h"
 #include "CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.h"
 
 /*
  * CRF_StateNode constructor
@@ -497,16 +498,23 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 		else if (mtype == STDSEG_NO_DUR)
 		{
 			// just for debugging
-			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
+			//cout << "STDSEG_NO_DUR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
 
 			return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
 		{
 			// just for debugging
-			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
+			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr" << endl;
 
 			return new CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+		{
+			// just for debugging
+			//cout << "STDSEG_NO_DUR_NO_SEGTRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
+
+			return new CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else
 		{

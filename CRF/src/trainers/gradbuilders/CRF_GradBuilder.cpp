@@ -115,7 +115,7 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 			} else {
 				gbuild = new CRF_NewGradBuilder_StdSeg(crf_ptr);
 			}
-		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR) {
+		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR || mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR) {
 			if (useBrokenClassLabel) {
 				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
 				throw runtime_error(errstr);
@@ -145,7 +145,7 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 			} else {
 				gbuild = new CRF_NewGradBuilder_StdSeg(crf_ptr);
 			}
-		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR) {
+		} else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR || mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR) {
 			if (useBrokenClassLabel) {
 				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
 				throw runtime_error(errstr);

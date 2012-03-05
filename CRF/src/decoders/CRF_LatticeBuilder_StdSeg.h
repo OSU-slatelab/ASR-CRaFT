@@ -160,6 +160,9 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //		labFst->SetFinal(curLabState,0);
 //	}
 //#else
+	// this is important! Every time bunch_size has to be reset to 1.
+	// since it must start from 1 and be added by 1 every iteration up to lab_max_dur.
+	this->bunch_size = 1;
 	do {
 		ftr_count=this->ftr_strm->read(this->bunch_size,this->ftr_buf,this->lab_buf);
 
@@ -642,6 +645,11 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				delete [] prevNodes;
 			nodeCnt++;
 		}
+
+		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		if (this->bunch_size < this->lab_max_dur)
+			this->bunch_size++;
+
 	} while (ftr_count > 0);
 
 	this->nodeList->setNodeCount(nodeCnt);

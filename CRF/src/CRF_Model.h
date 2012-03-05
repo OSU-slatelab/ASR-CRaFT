@@ -38,6 +38,7 @@ protected:
 	QNUInt32 nActualLabs;
 	modeltype model_type;
 	bool use_broken_class_label;
+	QNUInt32 init_iter;
 
 public:
 	CRF_Model(QNUInt32 num_labs);
@@ -74,6 +75,8 @@ public:
 	virtual modeltype getModelType();
 	virtual void setBrokenClassLabel(bool useBrokenClass);
 	virtual bool ifUseBrokenClassLabel();
+	virtual void setInitIter(QNUInt32 start_iter);
+	virtual QNUInt32 getInitIter();
 };
 
 #endif /*CRF_H_*/

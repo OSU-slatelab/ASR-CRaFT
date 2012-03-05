@@ -64,12 +64,19 @@
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.shared.1625546756" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.link.option.flags.1183641507" superClass="gnu.cpp.link.option.flags" value="-Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1054141200" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1575475524" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
+								<option id="gnu.both.asm.option.include.paths.1352511083" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib"/>
+									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1218774264" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1790439204" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>

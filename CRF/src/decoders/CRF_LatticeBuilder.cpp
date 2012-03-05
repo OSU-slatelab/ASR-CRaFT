@@ -26,7 +26,8 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	this->nodeList= new CRF_StateVector();
 
 	// Commented by Ryan, bunch_size can be only equal to 1 for
-	// CRF_InFtrStream_SeqMultiWindow and CRF_InLabStream_SeqMultiWindow.
+	// CRF_InFtrStream_SeqMultiWindow and CRF_InLabStream_SeqMultiWindow
+	// for frame model.
 	this->bunch_size=1;
 
 	this->num_ftrs=this->ftr_strm->num_ftrs();

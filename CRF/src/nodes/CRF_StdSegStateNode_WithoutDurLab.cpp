@@ -425,7 +425,7 @@ double CRF_StdSegStateNode_WithoutDurLab::computeBeta(double scale)
 //				this->logAddAcc[logAddID] = nextAdjacentSeg->getTransValue(clab, lab, dur) + this->tempBeta[this->nActualLabs * (dur - 1) + lab];
 
 				// just for debugging
-//				cout << " next lab[" << lab << "]_dur[" << dur << "]=" << "trans(" << nextAdjacentSeg->getTransValue(clab, lab, dur) << ") + tempBeta(" << nextAdjacentSeg->getTempBeta(lab, dur) << ")="<< this->logAddAcc[logAddID] << endl;
+				// cout << " next lab[" << lab << "]_dur[" << dur << "]=" << "trans(" << nextAdjacentSeg->getTransValue(clab, lab, dur) << ") + tempBeta(" << nextAdjacentSeg->getTempBeta(lab, dur) << ")="<< this->logAddAcc[logAddID] << endl;
 //				cout << " next lab[" << lab << "]_dur[" << dur << "]=" << "trans(" << nextAdjacentSeg->getTransValue(clab, lab, dur) << ") + tempBeta(" << tempBetaForCurDur[lab] << ")="<< this->logAddAcc[logAddID] << endl;
 
 //				if (this->logAddAcc[nextlab]>maxv) {

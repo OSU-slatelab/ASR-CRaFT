@@ -26,6 +26,7 @@ CRF_Model::CRF_Model(QNUInt32 num_labs)
 	this->nActualLabs = num_labs;
 	this->model_type = STDFRAME;
 	this->use_broken_class_label = false;
+	this->init_iter = 0;
 }
 
 /*
@@ -265,6 +266,9 @@ bool CRF_Model::readAverageFromFile(const char* fname, int present)
 			iss >> std::dec >> lambdaAcc[i];
 			if (present>0) {
 				lambdaAcc[i]=lambdaAcc[i]*present;
+
+				// added by Ryan, just for debugging
+				std::cout << lambdaAcc[i] << std::endl;
 			}
 		}
 		ifile.close();
@@ -378,6 +382,32 @@ void CRF_Model::setBrokenClassLabel(bool useBrokenClass) {
  */
 bool CRF_Model::ifUseBrokenClassLabel() {
 	return this->use_broken_class_label;
+}
+
+
+// Added by Ryan
+/*
+ * CRF_Model::setInitIter
+ *
+ * Mutator function to set the starting training iteration.
+ * It is non-zero only when the initial weight file is set.
+ *
+ */
+void CRF_Model::setInitIter(QNUInt32 start_iter)
+{
+	this->init_iter = start_iter;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::getInitIter
+ *
+ * Returns: the starting training iteration.
+ * It is non-zero only when the initial weight file is set.
+ */
+QNUInt32 CRF_Model::getInitIter()
+{
+	return this->init_iter;
 }
 
 /*
