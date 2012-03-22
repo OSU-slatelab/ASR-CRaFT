@@ -22,6 +22,7 @@
 #include "ftrmaps/CRF_StdSparseFeatureMap.h"
 #include "io/CRF_MLFManager.h"
 #include "decoders/CRF_ViterbiDecoder.h"
+#include "decoders/CRF_ViterbiNode_PruneTrans.h"
 #include "decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h"
 
 using namespace std;
@@ -116,6 +117,10 @@ static struct {
 	char* crf_osymbols;
 	char* crf_olist;
 	char* crf_lat_outdir;
+
+	// Added by Ryan
+	bool crf_if_output_full_lat;
+
 	float crf_decode_beam;
 	int crf_decode_max_hyp;
 	int crf_decode_min_hyp;
@@ -216,6 +221,10 @@ QN_ArgEntry argtab[] =
 	{ "crf_osymbols", "Output symbols file name (in OpenFST format)", QN_ARG_STR, &(config.crf_osymbols) },
     { "crf_olist", "Ordered list of output labels (for MLF)", QN_ARG_STR, &(config.crf_olist) },
 	{ "crf_lat_outdir", "Output directory for lattice files (in OpenFST binary format)", QN_ARG_STR, &(config.crf_lat_outdir) },
+
+	// Added by Ryan
+	{ "crf_if_output_full_lat", "If output the full lattice (comparing to only a few best paths)", QN_ARG_BOOL, &(config.crf_if_output_full_lat) },
+
 	{ "crf_decode_beam", "Beam width for pruning", QN_ARG_FLOAT, &(config.crf_decode_beam) },
 	{ "crf_decode_max_hyp", "Maximum hypotheses to keep in beam", QN_ARG_INT, &(config.crf_decode_max_hyp) },
 	{ "crf_decode_min_hyp", "Minimum hypotheses to keep in beam", QN_ARG_INT, &(config.crf_decode_min_hyp) },
@@ -312,6 +321,10 @@ static void set_defaults(void) {
 	config.crf_osymbols=NULL;
 	config.crf_olist=NULL;
 	config.crf_lat_outdir=NULL;
+
+	// Added by Ryan
+	config.crf_if_output_full_lat=false;
+
 	config.crf_decode_beam=0.0;
 	config.crf_decode_max_hyp=0;
 	config.crf_decode_min_hyp=0;
@@ -414,6 +427,10 @@ int main(int argc, const char* argv[]) {
 	//QN_logger = new QN_Logger_Simple(stdout,stderr,progname);
 
 	cout << "IN LABELS: " << config.crf_label_size << endl;
+
+	// Added by Ryan
+	if (config.crf_lm_bin != NULL && strcmp(config.crf_lm_bin, "") == 0)
+		config.crf_lm_bin = NULL;
 
 	// Added by Ryan, for segmental CRFs
 	if (config.label_maximum_duration <= 0)
@@ -692,12 +709,18 @@ int main(int argc, const char* argv[]) {
 			log_msg(time1);
 
 			// Changed by Ryan, for segmental CRFs
-//			CRF_ViterbiDecoder* vd = new CRF_ViterbiDecoder(crf_ftr_str,&my_crf);
-			CRF_ViterbiDecoder_StdSeg_NoSegTransFtr* vd;
+			////////////////////////////////////
+			// the frame-level viterbi decoder
+			////////////////////////////////////
+////			CRF_ViterbiDecoder* vd = new CRF_ViterbiDecoder(crf_ftr_str,&my_crf);
+			////////////////////////////////////
+			// the segmental viterbi decoder
+			////////////////////////////////////
+			CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode>* vd;
 			if (my_crf.getModelType() == STDFRAME ||
 					my_crf.getModelType() == STDSEG_NO_DUR_NO_SEGTRANSFTR)
 			{
-				vd = new CRF_ViterbiDecoder_StdSeg_NoSegTransFtr(crf_ftr_str,&my_crf);
+				vd = new CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode>(crf_ftr_str,&my_crf);
 			}
 			else
 			{
@@ -706,22 +729,68 @@ int main(int argc, const char* argv[]) {
 						"and \"stdseg_no_dur_no_segtransftr\" have not been implmented.";
 				throw runtime_error(errstr);
 			}
+			/////////////////////////////////////////////////////////////
+			// the segmental viterbi decoder with transition arc pruned
+			/////////////////////////////////////////////////////////////
+//			CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode_PruneTrans>* vd;
+//			if (my_crf.getModelType() == STDFRAME ||
+//					my_crf.getModelType() == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+//			{
+//				vd = new CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode_PruneTrans>(crf_ftr_str,&my_crf);
+//			}
+//			else
+//			{
+//				string errstr="main() in CRFFstDecode caught exception: "
+//						"CRF_ViterbiDecoder for CRF models other than \"stdframe\" "
+//						"and \"stdseg_no_dur_no_segtransftr\" have not been implmented.";
+//				throw runtime_error(errstr);
+//			}
+			vd->setIfOutputFullFst(config.crf_if_output_full_lat);
 
 			VectorFst<StdArc>* best_lat=new VectorFst<StdArc>();
-			int nodeCnt=vd->nStateDecode(best_lat,lm_fst,config.crf_decode_beam,config.crf_decode_min_hyp,
+
+			// Added by Ryan
+			// the fully composed lattice, including acoustic model, dictionary, and language model.
+			VectorFst<StdArc>* out_full_lat = new VectorFst<StdArc>();
+
+			// Changed by Ryan:
+			// for CRF_ViterbiDecoder
+//			int nodeCnt=vd->nStateDecode(best_lat,lm_fst,config.crf_decode_beam,config.crf_decode_min_hyp,
+//					config.crf_decode_max_hyp,config.crf_decode_hyp_inc);
+			// for CRF_ViterbiDecoder_StdSeg_NoSegTransFtr
+			int nodeCnt=vd->nStateDecode(best_lat,lm_fst,out_full_lat,
+					config.crf_decode_beam,config.crf_decode_min_hyp,
 					config.crf_decode_max_hyp,config.crf_decode_hyp_inc);
+
 			if (config.crf_lat_outdir != NULL) {
 				// Put code here to dump the lattice file out to the latdir in
 				// OpenFst format
 				string fst_fname=string(config.crf_lat_outdir)+"/fst."+stringify(count)+".final.fst";
 				log_msg("*	*Writing lattice to "+fst_fname);
-				best_lat->Write(fst_fname);
+
+				// Changed by Ryan
+				// output the fully-composed lattice
+				if (config.crf_if_output_full_lat)
+				{
+					out_full_lat->Write(fst_fname);
+				}
+				// only output the best lattice
+				else
+				{
+					best_lat->Write(fst_fname);
+				}
 			}
 
 			if (config.crf_output_mlffile != NULL) {
 				VectorFst<StdArc>* shortest_fst = new VectorFst<StdArc>();
 				log_msg("Finding Shortest Path");
+
+				// Changed by Ryan
+				// decode on the best lattice
 				ShortestPath(*best_lat,shortest_fst,1);
+				// decode on the fully-composed lattice
+//				ShortestPath(*out_full_lat,shortest_fst,1);
+
 				//log_msg("Projecting to Output Symbols");
 				//Project(shortest_fst,PROJECT_OUTPUT);
 				log_msg("Removing epsilons");
@@ -865,6 +934,9 @@ int main(int argc, const char* argv[]) {
 
 			delete best_lat;
 			delete vd;
+
+			// Added by Ryan
+			delete out_full_lat;
 		}
 		catch (exception &e) {
 			cerr << "Exception: " << e.what() << endl;

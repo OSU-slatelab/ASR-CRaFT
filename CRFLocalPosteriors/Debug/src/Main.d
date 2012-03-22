@@ -56,6 +56,8 @@ src/Main.d src/Main.o: ../src/Main.cpp \
  /home3/hey/segmental-branch/CRF/src/io/CRF_InFtrStream_RandPresent.h \
  /home3/hey/segmental-branch/CRF/src/io/CRF_FeatureStream.h \
  /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_RandPresent.h \
+ /home3/hey/segmental-branch/CRF/src/io/CRF_InFtrStream_SeqMultiWindow.h \
+ /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_SeqMultiWindow.h \
  /home3/hey/segmental-branch/CRF/src/decoders/CRF_NewLocalPosteriorBuilder.h \
  /home3/hey/segmental-branch/CRF/src/decoders/../CRF_Model.h \
  /home3/hey/segmental-branch/CRF/src/decoders/../nodes/CRF_StateVector.h \
@@ -253,6 +255,10 @@ src/Main.d src/Main.o: ../src/Main.cpp \
 /home3/hey/segmental-branch/CRF/src/io/CRF_FeatureStream.h:
 
 /home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_RandPresent.h:
+
+/home3/hey/segmental-branch/CRF/src/io/CRF_InFtrStream_SeqMultiWindow.h:
+
+/home3/hey/segmental-branch/CRF/src/io/CRF_InLabStream_SeqMultiWindow.h:
 
 /home3/hey/segmental-branch/CRF/src/decoders/CRF_NewLocalPosteriorBuilder.h:
 

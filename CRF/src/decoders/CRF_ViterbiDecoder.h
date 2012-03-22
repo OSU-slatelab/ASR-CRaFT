@@ -67,8 +67,8 @@ public:
 // Added by Ryan
 class CRF_ComposedLatState {
 public:
-	uint state; // This is the state_id number from the lm/dict fst
-	uint phn_id; // This is the phone id used in phone fst
+	uint state; // the state id used in the lm/dict fst
+	uint phn_id; // the phone id used in phone fst
 
 	CRF_ComposedLatState(uint st, uint phn) : state(st), phn_id(phn) {}
 	bool operator == (const CRF_ComposedLatState p) const {
@@ -77,8 +77,6 @@ public:
 
 	bool operator < (const CRF_ComposedLatState p) const {
 		// definite order - order by state, then by label
-		// order is independent of weight and two ViterbiStates with different weights
-		// can be considered the same state
 		if (state == p.state) {
 			return (phn_id < p.phn_id);
 		}
@@ -155,6 +153,9 @@ public:
 
 	virtual int nStateDecode(VectorFst<StdArc>* fst, VectorFst<StdArc>* lm_fst, double beam=0.0, uint min_hyps=0, uint max_hyps=0, float beam_inc=0.05);
 	virtual CRF_StateVector* getNodeList();
+
+	// added by Ryan
+	virtual void createFreePhoneLmFst(VectorFst<StdArc>* new_lm_fst);
 };
 
 #endif /*CRF_VITERBIDECODER_H_*/

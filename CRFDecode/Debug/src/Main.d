@@ -144,8 +144,10 @@ src/Main.d src/Main.o: ../src/Main.cpp \
  /home3/hey/segmental-branch/CRF/src/decoders/../nodes/../CRF.h \
  /home3/hey/segmental-branch/CRF/src/decoders/../nodes/../CRF_Model.h \
  /home3/hey/segmental-branch/CRF/src/decoders/../nodes/CRF_StateNode.h \
+ /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiNode_PruneTrans.h \
+ /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder.h \
  /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h \
- /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder.h
+ /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h
 
 /u/drspeech/src/quicknet-v3_20/H-x86_64/QN_config.h:
 
@@ -437,6 +439,10 @@ src/Main.d src/Main.o: ../src/Main.cpp \
 
 /home3/hey/segmental-branch/CRF/src/decoders/../nodes/CRF_StateNode.h:
 
-/home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h:
+/home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiNode_PruneTrans.h:
 
 /home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder.h:
+
+/home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h:
+
+/home3/hey/segmental-branch/CRF/src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h:

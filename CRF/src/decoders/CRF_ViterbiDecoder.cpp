@@ -334,6 +334,88 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 
 }
 
+// added by Ryan
+void CRF_ViterbiDecoder::createFreePhoneLmFst(VectorFst<StdArc>* new_lm_fst)
+{
+	if (new_lm_fst == NULL)
+	{
+		string errstr="CRF_ViterbiDecoder::createFreePhoneLmFst() caught exception: The lm fst passed in is null. It needs to be initialized first.";
+		throw runtime_error(errstr);
+	}
+	StateId start_state = new_lm_fst->AddState();   // 1st state will be state 0 (returned by AddState)
+	new_lm_fst->SetStart(start_state);  // arg is state ID
+//	StateId final_state = new_lm_fst->AddState();
+//	new_lm_fst->SetFinal(final_state, 0);
+
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+	int nPhoneClasses = this->num_labs / nStates;
+	if (this->num_labs % nStates != 0)
+	{
+		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::createFreePhoneLmFst() caught exception: nActualLabs % nStates != 0.";
+		throw runtime_error(errstr);
+	}
+//	for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+//	{
+//		StateId prev_state = start_state;
+//		for (uint st = 0; st < nStates; st++)
+//		{
+//			uint cur_lab_nState = cur_lab * nStates + st;
+//			StateId cur_state = new_lm_fst->AddState();
+//
+//			//transition from previous phone internal state to current phone internal state
+//			new_lm_fst->AddArc(prev_state, StdArc(cur_lab_nState+1,0,0,cur_state));
+//
+//			//self transition for current phone internal state
+//			new_lm_fst->AddArc(cur_state, StdArc(cur_lab_nState+1,0,0,cur_state));
+//
+//			prev_state = cur_state;
+//		}
+//
+//		// transition from the final phone internal state to the lm fst start state
+//		new_lm_fst->AddArc(prev_state, StdArc(0,0,0,start_state));
+//
+//		// transition from the final phone internal state to the lm fst final state,
+//		// transducing the word level symbol "!SENT_END" (corresponding the state index "1"),
+//		// indicating the end of the sentence
+//		new_lm_fst->AddArc(prev_state, StdArc(0,1,0,final_state));
+//	}
+	for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+	{
+		StateId cur_state = new_lm_fst->AddState();
+
+		// transition from start state to current phone state
+		new_lm_fst->AddArc(start_state, StdArc(cur_lab+1,cur_lab+1,0,cur_state));
+
+		// if nStates == 1, not allowed to have no two same phones in a row, so each phone state does not have self transition
+		// for nStates > 1, each phone state can transit to any phone state, so just add an arc to start state.
+		if (nStates > 1)
+		{
+			// transition from current phone state to start state
+			new_lm_fst->AddArc(cur_state, StdArc(0,0,0,start_state));
+		}
+
+		// every single phone could be a final state
+		new_lm_fst->SetFinal(cur_state, 0);
+	}
+	// if nStates == 1, not allowed to have no two same phones in a row, so each phone state does not have self transition
+	if (nStates == 1)
+	{
+		for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+		{
+			StateId cur_state = start_state + cur_lab + 1;
+			for (uint next_lab = 0; next_lab < nPhoneClasses; next_lab++)
+			{
+				if (cur_lab != next_lab)
+				{
+					StateId next_state = start_state + next_lab + 1;
+					// transition from current phone state to next phone state
+					new_lm_fst->AddArc(cur_state, StdArc(next_lab+1,next_lab+1,0,next_state));
+				}
+			}
+		}
+	}
+}
+
 /*
  * CRF_ViterbiDecoder::nStateDecode
  *
@@ -366,6 +448,16 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	fst->SetStart(startState);  // arg is state ID
 	bool prune=true;
 	if (input_beam<=0.0) { prune=false;}
+
+	// added by Ryan
+	// if input lm fst is null, we need to build a free phone lm fst
+	bool input_lm_fst_is_null = false;
+	if (lm_fst == NULL)
+	{
+		input_lm_fst_is_null = true;
+		lm_fst = new VectorFst<StdArc>();
+		createFreePhoneLmFst(lm_fst);
+	}
 
 	// first we need to set up our hypothesis list and backtracking pointer
 	// The "word" id deque gives us the list of states that we are considering at this
@@ -855,13 +947,35 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	cout << "checking through " << prevViterbiStateIds_new->size() << " states for final state " << endl;
 	//cout << "checking through " << prevViterbiStateIds->size() << " states for final state " << endl;
 	int fstate_cnt=0;
-	for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
-	//for (uint idx=0; idx<prevViterbiStateIds->size(); idx++) {
-		uint tmp_state=prevViterbiStateIds_new->at(idx);
-		//CRF_ViterbiState tmp_state=prevViterbiStateIds->at(idx);
-		uint tmp_wrd=prevViterbiWrdIds[idx];
-		//uint tmp_wrd=tmp_state.wrd_label;
-			if (tmp_wrd==1) {
+	// the if condition is added by Ryan, originally unconditional.
+	if (!input_lm_fst_is_null)
+	{
+
+		for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
+		//for (uint idx=0; idx<prevViterbiStateIds->size(); idx++) {
+			uint tmp_state=prevViterbiStateIds_new->at(idx);
+			//CRF_ViterbiState tmp_state=prevViterbiStateIds->at(idx);
+			uint tmp_wrd=prevViterbiWrdIds[idx];
+			//uint tmp_wrd=tmp_state.wrd_label;
+				if (tmp_wrd==1) {
+					fstate_cnt++;
+					int state_idx = idx*nStates+nStates-1;
+					float weight=prevViterbiWts->at(state_idx);
+					if (weight<min_weight) {
+						min_weight=weight;
+						min_idx=state_idx;
+					}
+				}
+		}
+
+	}
+	// the whole else part is added by Ryan
+	else
+	{
+		for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
+			uint tmp_state=prevViterbiStateIds_new->at(idx);
+//			if (lm_fst->isFinalState(tmp_state)) // TODO: if tmp_state_id is a final state
+//			{
 				fstate_cnt++;
 				int state_idx = idx*nStates+nStates-1;
 				float weight=prevViterbiWts->at(state_idx);
@@ -869,7 +983,8 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 					min_weight=weight;
 					min_idx=state_idx;
 				}
-			}
+//			}
+		}
 	}
 
 	// changed by Ryan
@@ -967,6 +1082,10 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	cout << "result_fst has " << result_fst->NumStates() << " states." << endl;
 
 	delete fst;
+
+	// added by Ryan, delete the free phone lm fst if created
+	if (input_lm_fst_is_null)
+		delete lm_fst;
 
 	return nodeCnt;
 }

@@ -71,10 +71,29 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 			////out_width = 488 + max_win_len;
 			out_width = 8 * in_width + max_win_len +
 					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 8 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 7 * in_width + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 7 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 6 * in_width + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 6 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 5 * in_width + max_win_len +
-//								(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 5 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 2 * in_width + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 2 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = in_width + max_win_len +
-//								(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = in_width +
+//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+
 		} else {
 			if (use_boundary_delta_ftrs)
 			{

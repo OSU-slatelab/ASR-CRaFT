@@ -10,8 +10,9 @@
 #include <vector>
 #include <deque>
 #include <map>
+#include "CRF_ViterbiNode_PruneTrans.h"
 
-CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::CRF_ViterbiDecoder_StdSeg_NoSegTransFtr(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in)
+template <class CRF_VtbNode> CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::CRF_ViterbiDecoder_StdSeg_NoSegTransFtr(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in)
 	: crf(crf_in),
 	  ftr_strm(ftr_strm_in)
 {
@@ -45,10 +46,13 @@ CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::CRF_ViterbiDecoder_StdSeg_NoSegTransFtr
 
 	this->nStates = this->crf->getFeatureMap()->getNumStates();
 
-	for (QNUInt32 i = 0; i < this->lab_max_dur; i++) {
-		this->nextViterbiNodes_unPruned.push_back(new CRF_ViterbiNode(this->nStates));
+	// the size of nextViterbiNodes_unPruned should be lab_max_dur-1 instead of lab_max_dur.
+	for (QNUInt32 i = 0; i < this->lab_max_dur - 1; i++) {
+//		this->nextViterbiNodes_unPruned.push_back(new CRF_ViterbiNode(this->nStates));
+		this->nextViterbiNodes_unPruned.push_back(new CRF_VtbNode(this->nStates));
 	}
-	this->curViterbiNode_unPruned = new CRF_ViterbiNode(this->nStates);
+//	this->curViterbiNode_unPruned = new CRF_ViterbiNode(this->nStates);
+	this->curViterbiNode_unPruned = new CRF_VtbNode(this->nStates);
 
 	this->curViterbiStateIds = new vector<uint>();
 	this->curViterbiWrdIds = new vector<uint>();
@@ -62,15 +66,18 @@ CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::CRF_ViterbiDecoder_StdSeg_NoSegTransFtr
 	this->prevViterbiAcouWts_nStates = new vector<float>();
 	this->prevViterbiLmWts_nStates = new vector<float>();
 
+	this->if_output_full_fst = false;
 }
 
-CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::~CRF_ViterbiDecoder_StdSeg_NoSegTransFtr()
+template <class CRF_VtbNode> CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::~CRF_ViterbiDecoder_StdSeg_NoSegTransFtr()
 {
 	delete [] this->ftr_buf;
 	delete [] this->lab_buf;
 	delete [] this->alpha_base;
 	delete this->nodeList;
-	for (QNUInt32 i = 0; i < this->lab_max_dur; i++) {
+
+	// the size of nextViterbiNodes_unPruned should be lab_max_dur-1 instead of lab_max_dur.
+	for (QNUInt32 i = 0; i < this->lab_max_dur - 1; i++) {
 		delete this->nextViterbiNodes_unPruned[i];
 	}
 	delete this->curViterbiNode_unPruned;
@@ -88,6 +95,11 @@ CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::~CRF_ViterbiDecoder_StdSeg_NoSegTransFt
 	delete this->prevViterbiLmWts_nStates;
 }
 
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::setIfOutputFullFst(bool ifFull)
+{
+	this->if_output_full_fst = ifFull;
+}
+
 /*
  * CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::getNodeList
  *
@@ -95,15 +107,16 @@ CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::~CRF_ViterbiDecoder_StdSeg_NoSegTransFt
  * is desired.
  *
  */
-CRF_StateVector * CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::getNodeList() {
+template <class CRF_VtbNode> CRF_StateVector * CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::getNodeList() {
 	return this->nodeList;
 }
 
-void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::stateFeatureUpdate(uint nodeCnt)
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::stateValueUpdate(uint nodeCnt)
 {
 	// just for debugging
 //	cout << "State feature update" << endl;
 
+	// update the state value for each arc in curViterbiNode_unPruned
 	for (uint lat_state_vtb_idx = 0;
 			lat_state_vtb_idx < this->curViterbiNode_unPruned->viterbiStateIds.size();
 			lat_state_vtb_idx++)
@@ -160,8 +173,107 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::stateFeatureUpdate(uint nodeCnt)
 //		cout << " isStartBound=" << this->curViterbiNode_unPruned->isPhoneStartBoundary[lat_state_vtb_idx] << endl;
 	}
 
+	// choose the best segment for each nState of each phone state in curViterbiNode_unPruned, very important.
+	this->curViterbiNode_unPruned->choose_nState_Best_Seg();
+
+	// Added by Ryan, for outputting the full fst
+	if (this->if_output_full_fst)
+	{
+		stateValueUpdate_onOutputFullFst(nodeCnt);
+	}
+
 	// just for debugging
 //	cout << "State feature update ended." << endl;
+}
+
+// Added by Ryan, for outputting the full fst
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::stateValueUpdate_onOutputFullFst(uint nodeCnt)
+{
+	map<CRF_TimedState,int>::iterator prev_state_it,prev_state_itlow,prev_state_itup,cur_state_itlow,cur_state_itup;
+//		cur_state_itlow = this->timedLmState_to_fullFstStateId_map.lower_bound(CRF_TimedState(nodeCnt, NOT_VALID_FST_STATE_ID));
+//		cur_state_itup = this->timedLmState_to_fullFstStateId_map.upper_bound(CRF_TimedState(nodeCnt + 1, NOT_VALID_FST_STATE_ID));
+	uint avail_max_dur = min(this->lab_max_dur, nodeCnt + 1);
+
+	// just for debugging
+//		cout << "stateFeatureUpdate(): nodeCnt = " << nodeCnt << ", avail_max_dur = " << avail_max_dur << endl;
+
+	for (uint dur = 1; dur <= avail_max_dur; dur++)
+	{
+		// just for debugging
+//			cout << "dur = " << dur << endl;
+
+		prev_state_itlow = this->timedLmState_to_fullFstStateId_map.lower_bound(CRF_TimedState(nodeCnt - dur, NOT_VALID_FST_STATE_ID));
+		prev_state_itup = this->timedLmState_to_fullFstStateId_map.upper_bound(CRF_TimedState(nodeCnt - dur + 1, NOT_VALID_FST_STATE_ID));
+
+		int prev_state_cnt = 0;
+
+		for (prev_state_it = prev_state_itlow ; prev_state_it != prev_state_itup; prev_state_it++)
+		{
+			CRF_TimedState ts = (*prev_state_it).first;
+			int prev_state = (*prev_state_it).second;
+
+			// just for debugging
+//				cout << "prev_time = " << ts.time_stamp << ", prev_lm_state = " << ts.state_id
+//						<< ", prev_fst_state = " << prev_state << endl;
+
+			prev_state_cnt++;
+
+			for (MutableArcIterator< VectorFst<StdArc> > aiter(this->output_full_fst,prev_state);
+							!aiter.Done();
+							aiter.Next()) {
+				int to_state = aiter.Value().nextstate;
+
+				// just for debugging
+//					cout << "to_state = " << to_state << endl;
+
+				int to_node_cnt, to_lm_state, to_phn_nState;
+				if (getTimedPhnNStateIdByOutputFullFstStateId(to_state, to_node_cnt, to_lm_state, to_phn_nState))
+				{
+					// just for debugging
+//						cout << "to_state = " << to_state << ", to_node_cnt = " << to_node_cnt
+//								<< ", to_lm_state = " << to_lm_state << ", to_phn_nState = " << to_phn_nState << endl;
+
+					if (to_node_cnt == nodeCnt)
+					{
+						// just for debugging
+//							cout << "to_node_cnt == nodeCnt." << endl;
+
+						// for phn_lab
+						int cur_phn_nState_lab = aiter.Value().ilabel - 1;
+						// for phn_dur_lab, TODO: comment out this, use above instead
+//							int cur_phn_nState_lab = (aiter.Value().ilabel - 1) % this->nActualLabs;
+
+						// just for debugging
+//							cout << "cur_phn_nState_lab = " << cur_phn_nState_lab << endl;
+
+						// TODO: By Ryan, this is tricky now. Since the multi-state segmental node class has not been
+						// implemented yet, getStateValue() function in the multi-state frame node class should be
+						// called instead until the multi-state segmental node class is implemented.
+						float phnStateVal;
+						if (this->crf->getModelType() == STDFRAME)
+						{
+							phnStateVal = -1 * this->nodeList->at(nodeCnt)->getStateValue(cur_phn_nState_lab);
+						}
+						else
+						{
+							phnStateVal = -1 * this->nodeList->at(nodeCnt)->getStateValue(cur_phn_nState_lab, dur);
+						}
+
+						// just for debugging
+//							cout << "phnStateVal = " << phnStateVal << endl;
+
+						aiter.SetValue( StdArc(aiter.Value().ilabel,
+												aiter.Value().olabel,
+												aiter.Value().weight.Value() + phnStateVal,
+												aiter.Value().nextstate) );
+					}
+				}
+			}
+		}
+
+		// just for debugging
+//			cout << "For dur = " << dur << ", prev_state_cnt = " << prev_state_cnt << endl;
+	}
 }
 
 /*
@@ -183,8 +295,9 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::stateFeatureUpdate(uint nodeCnt)
  * multi-state model in the underlying phone structure.
  *
  */
-float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nodeCnt,
-		uint state_id, uint phn_id, uint wrd_id, uint prevStateIdxInPrunedVtbList, double beam)
+template <class CRF_VtbNode> float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::internalStateTransUpdate(
+		uint nodeCnt, uint state_id, uint phn_id, uint wrd_id,
+		uint prevStateIdxInPrunedVtbList, double beam)
 {
 	time_t time1 = time(NULL);
 
@@ -211,7 +324,7 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 	// 2. transitions to the next adjacent state (i-th -> (i+1)-th states).
 	for (uint st = 0; st < this->nStates; st++)
 	{
-		int state_idx = prevStateIdxInPrunedVtbList * this->nStates + st;
+		int prevState_nStatePtr_InPrunedVtbList = prevStateIdxInPrunedVtbList * this->nStates + st;
 		int cur_phn_nState_lab = phn_lab * this->nStates + st;
 
 		// just for debugging
@@ -220,9 +333,9 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 		if (st == 0)
 		{
 			// if we are in a start state, we could get here only by self-transition.
-			float old_wt = this->prevViterbiWts_nStates->at(state_idx);
-			float old_acou_wt = this->prevViterbiAcouWts_nStates->at(state_idx);
-			float old_lm_wt = this->prevViterbiLmWts_nStates->at(state_idx);
+			float old_wt = this->prevViterbiWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
+			float old_acou_wt = this->prevViterbiAcouWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
+			float old_lm_wt = this->prevViterbiLmWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
 
 
 			// TODO: By Ryan, this is tricky now. Since the multi-state segmental node class has not been
@@ -232,21 +345,33 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 
 
 			wts_nStates[st] = old_wt + trans_wt;
-			ptrs_nStates[st] = state_idx;
+			ptrs_nStates[st] = prevState_nStatePtr_InPrunedVtbList;
 			acou_wts_nStates[st] = old_acou_wt + trans_wt;
 			lm_wts_nStates[st] = old_lm_wt;
 
 			// just for debugging
 //			cout << "State " << st << " -> state " << st
 //					<< ", old weight = " << old_wt << ", trans weight = " << trans_wt << endl;
+
+
+			// Added by Ryan, for outputting the full fst
+			if (this->if_output_full_fst)
+			{
+				for (int dur = 1; dur <= this->lab_max_dur; dur++)
+				{
+					insertArcToOutputFullFst(nodeCnt + dur - 1, state_id, phn_id, wrd_id, st, dur,
+							state_id, st, trans_wt, false);
+				}
+			}
 		}
 		else
 		{
 			// if we are not in a start state, we could get here by either way.
 
-			float old_wt1 = this->prevViterbiWts_nStates->at(state_idx);
-			float old_acou_wt1 = this->prevViterbiAcouWts_nStates->at(state_idx);
-			float old_lm_wt1 = this->prevViterbiLmWts_nStates->at(state_idx);
+			// 1. self-transition (i-th -> i-th states)
+			float old_wt1 = this->prevViterbiWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
+			float old_acou_wt1 = this->prevViterbiAcouWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
+			float old_lm_wt1 = this->prevViterbiLmWts_nStates->at(prevState_nStatePtr_InPrunedVtbList);
 
 			// TODO: By Ryan, this is tricky now. Since the multi-state segmental node class has not been
 			// implemented yet, getTransValue() function in the multi-state frame node class should be
@@ -259,9 +384,10 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 			float new_lm_wt1 = old_lm_wt1;
 
 
-			float old_wt2 = this->prevViterbiWts_nStates->at(state_idx - 1);
-			float old_acou_wt2 = this->prevViterbiAcouWts_nStates->at(state_idx - 1);
-			float old_lm_wt2 = this->prevViterbiLmWts_nStates->at(state_idx - 1);
+			// 2. transitions to the next adjacent state (i-th -> (i+1)-th states).
+			float old_wt2 = this->prevViterbiWts_nStates->at(prevState_nStatePtr_InPrunedVtbList - 1);
+			float old_acou_wt2 = this->prevViterbiAcouWts_nStates->at(prevState_nStatePtr_InPrunedVtbList - 1);
+			float old_lm_wt2 = this->prevViterbiLmWts_nStates->at(prevState_nStatePtr_InPrunedVtbList - 1);
 
 			// TODO: By Ryan, this is tricky now. Since the multi-state segmental node class has not been
 			// implemented yet, getTransValue() function in the multi-state frame node class should be
@@ -282,16 +408,29 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 			if (new_wt1 < new_wt2)
 			{
 				wts_nStates[st] = new_wt1;
-				ptrs_nStates[st] = state_idx;
+				ptrs_nStates[st] = prevState_nStatePtr_InPrunedVtbList;
 				acou_wts_nStates[st] = new_acou_wt1;
 				lm_wts_nStates[st] = new_lm_wt1;
 			}
 			else
 			{
 				wts_nStates[st] = new_wt2;
-				ptrs_nStates[st] = state_idx - 1;
+				ptrs_nStates[st] = prevState_nStatePtr_InPrunedVtbList - 1;
 				acou_wts_nStates[st] = new_acou_wt2;
 				lm_wts_nStates[st] = new_lm_wt2;
+			}
+
+
+			// Added by Ryan, for outputting the full fst
+			if (this->if_output_full_fst)
+			{
+				for (int dur = 1; dur <= this->lab_max_dur; dur++)
+				{
+					insertArcToOutputFullFst(nodeCnt + dur - 1, state_id, phn_id, wrd_id, st, dur,
+							state_id, st, trans_wt1, false);
+					insertArcToOutputFullFst(nodeCnt + dur - 1, state_id, phn_id, wrd_id, st, dur,
+							state_id, st - 1, trans_wt2, false);
+				}
 			}
 		}
 
@@ -305,6 +444,14 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 	}
 
 	int dur = 1;
+
+	// just for debugging
+//	if (state_id == 2 || phn_id == 2)
+//	{
+//		cout << "internalStateTransUpdate(): Current nodeCnt=" << nodeCnt << ", Updating nodeCnt=" << nodeCnt <<
+//				", prev_phn_id=" << phn_id << ", dur=" << dur << endl;
+//	}
+
 	this->curViterbiNode_unPruned->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt, wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
 	// for a segmental model that does not use segmental transition features, transition value
 	// would be the same for the segment states in succeeding nodes if those segments share the
@@ -313,6 +460,14 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
 	for (int i = 0; i < this->lab_max_dur - 1; i++)
 	{
 		dur++; // this guarantees all the states being added share the same start frame
+
+		// just for debugging
+//		if (state_id == 2 || phn_id == 2)
+//		{
+//			cout << "internalStateTransUpdate(): Current nodeCnt=" << nodeCnt << ", Updating nodeCnt=" << nodeCnt <<
+//					", prev_phn_id=" << phn_id << ", dur=" << dur << endl;
+//		}
+
 		this->nextViterbiNodes_unPruned[i]->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt, wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
 	}
 
@@ -348,8 +503,9 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::internalStateTransUpdate(uint nod
  * state.
  *
  */
-float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCnt,
-		uint state_id, uint phn_id, uint wrd_id, uint prevPhn_EndStateIdx_InPrunedVtbList,
+template <class CRF_VtbNode> float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::crossStateTransUpdate(
+		uint nodeCnt, uint state_id, uint phn_id, uint wrd_id,
+		uint prevPhn_EndStateIdx_InPrunedVtbList,
 		uint prev_phn_id, float expand_wt, double beam)
 {
 	// just for debugging
@@ -385,14 +541,17 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCn
 //		cout << " trans weight (prev_lab=" << prev_lab << ",cur_lab=" << cur_lab << ") = " << trans_wt;
 	}
 
-	float prev_acou_wt = this->prevViterbiAcouWts_nStates->at(prevPhn_EndStateIdx_InPrunedVtbList);
-	float new_lm_wt = expand_wt - prev_acou_wt;
+	float prev_path_acou_wt = this->prevViterbiAcouWts_nStates->at(prevPhn_EndStateIdx_InPrunedVtbList);
+	float cur_path_lm_wt = expand_wt - prev_path_acou_wt;
+
+	float prev_path_total_wt = this->prevViterbiWts_nStates->at(prevPhn_EndStateIdx_InPrunedVtbList);
+	float node_lm_wt = expand_wt - prev_path_total_wt;
 
 	// add in the value on this arc
 	// and all arcs travelled to get to this point
 	expand_wt += trans_wt;
 
-	float new_acou_wt = prev_acou_wt + trans_wt;
+	float cur_path_acou_wt = prev_path_acou_wt + trans_wt;
 
 	// just for debugging
 //	cout << " new expansion weight = " << expand_wt << endl;
@@ -407,8 +566,8 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCn
 
 	wts_nStates[0] = expand_wt;
 	ptrs_nStates[0] = prevPhn_EndStateIdx_InPrunedVtbList;
-	acou_wts_nStates[0] = new_acou_wt;
-	lm_wts_nStates[0] = new_lm_wt;
+	acou_wts_nStates[0] = cur_path_acou_wt;
+	lm_wts_nStates[0] = cur_path_lm_wt;
 	for (int i = 1; i < this->nStates; i++)
 	{
 		wts_nStates[i] = 99999.0;
@@ -417,8 +576,18 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCn
 		lm_wts_nStates[i] = 99999.0;
 	}
 
+
 	int dur = 1;
-	this->curViterbiNode_unPruned->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt, wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
+
+	// just for debugging
+//	if (state_id == 2 || phn_id == 2)
+//	{
+//		cout << "crossStateTransUpdate(): Current nodeCnt=" << nodeCnt << ", Updating nodeCnt=" << nodeCnt <<
+//				", prev_phn_id=" << prev_phn_id << ", dur=" << dur << endl;
+//	}
+
+	this->curViterbiNode_unPruned->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt,
+			wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
 	// for a segmental model that does not use segmental transition features, transition value
 	// would be the same for the segment states in succeeding nodes if those segments share the
 	// same start frame and share the same phone/word the transition is coming from and share
@@ -426,8 +595,32 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCn
 	for (int i = 0; i < this->lab_max_dur - 1; i++)
 	{
 		dur++; // this guarantees all the states being added share the same start frame
-		this->nextViterbiNodes_unPruned[i]->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt, wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
+
+		// just for debugging
+//		if (state_id == 2 || phn_id == 2)
+//		{
+//			cout << "crossStateTransUpdate(): Current nodeCnt=" << nodeCnt << ", Updating nodeCnt=" << (nodeCnt + dur - 1) <<
+//					", prev_phn_id=" << prev_phn_id << ", dur=" << dur << endl;
+//		}
+
+		this->nextViterbiNodes_unPruned[i]->addNonEpsVtbState(state_id, phn_id, wrd_id, dur, min_wt,
+				wts_nStates, ptrs_nStates, isPhoneStartBoundary, acou_wts_nStates, lm_wts_nStates, beam);
 	}
+
+
+	// Added by Ryan, for outputting the full fst
+	// Cross word arcs are only from previous phone ending state to current phone beginning state.
+	if (this->if_output_full_fst)
+	{
+		uint prev_stateId_InPrunedVtbList = prevPhn_EndStateIdx_InPrunedVtbList / this->nStates;
+		uint prev_stateId = prevViterbiStateIds->at(prev_stateId_InPrunedVtbList);
+		for (int dur = 1; dur <= this->lab_max_dur; dur++)
+		{
+			insertArcToOutputFullFst(nodeCnt + dur - 1, state_id, phn_id, wrd_id, 0, dur,
+					prev_stateId, this->nStates - 1, node_lm_wt + trans_wt, true);
+		}
+	}
+
 
 	delete [] wts_nStates;
 	delete [] ptrs_nStates;
@@ -444,7 +637,7 @@ float CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::crossStateTransUpdate(uint nodeCn
 	return min_wt;
 }
 
-void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::expandCrossStateFromPrevNode(uint nodeCnt, VectorFst<StdArc>* lm_fst, double beam)
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::expandCrossStateFromPrevNode(uint nodeCnt, VectorFst<StdArc>* lm_fst, double beam)
 {
 	bool prune = true;
 	if (beam <= 0.0) { prune = false; }
@@ -554,6 +747,7 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::expandCrossStateFromPrevNode(uint 
 					uint phn_id = aiter.Value().ilabel;
 					uint wrd_id = aiter.Value().olabel;
 					float exp_wt = prev_state_exp_wt + aiter.Value().weight.Value();
+
 					crossStateTransUpdate(nodeCnt, check_state, phn_id,
 							wrd_id, end_idx, prev_phn_id, exp_wt, beam);
 
@@ -658,6 +852,7 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::expandCrossStateFromPrevNode(uint 
 ////				uint prev_lab = (prev_phn_id - 1) * nStates + nStates - 1;
 //				uint prev_phn_id = (prev_lab - nStates + 1) / nStates + 1;
 				float exp_wt = prev_state_exp_wt + aiter.Value().weight.Value();
+
 				crossStateTransUpdate(nodeCnt, check_state, phn_id,
 						wrd_id, end_idx, prev_phn_id, exp_wt, beam);
 
@@ -678,7 +873,7 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::expandCrossStateFromPrevNode(uint 
 }
 
 
-void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::pruning(uint nodeCnt, double beam)
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::pruning(uint nodeCnt, double beam)
 {
 	bool prune = true;
 	if (beam <= 0.0) { prune = false; }
@@ -699,34 +894,82 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::pruning(uint nodeCnt, double beam)
 	this->curViterbiWts_nStates->clear();
 	this->curViterbiAcouWts_nStates->clear();
 	this->curViterbiLmWts_nStates->clear();
-	this->curViterbiStateIds->reserve(this->curViterbiNode_unPruned->viterbiStateIds.size());
-	this->curViterbiWrdIds->reserve(this->curViterbiNode_unPruned->viterbiWrdIds.size());
-	this->curViterbiWts_nStates->reserve(this->curViterbiNode_unPruned->viterbiWts_nStates.size());
-	this->curViterbiAcouWts_nStates->reserve(this->curViterbiNode_unPruned->viterbiAcouWts_nStates.size());
-	this->curViterbiLmWts_nStates->reserve(this->curViterbiNode_unPruned->viterbiLmWts_nStates.size());
+
+	uint bestSeg_state_Count = this->curViterbiNode_unPruned->bestSegWts.size();
+	uint bestSeg_nState_Count = this->curViterbiNode_unPruned->bestSegPointers_nStates.size();
+
+	this->curViterbiStateIds->reserve(bestSeg_state_Count);
+	this->curViterbiWrdIds->reserve(bestSeg_state_Count);
+	this->curViterbiWts_nStates->reserve(bestSeg_nState_Count);
+	this->curViterbiAcouWts_nStates->reserve(bestSeg_nState_Count);
+	this->curViterbiLmWts_nStates->reserve(bestSeg_nState_Count);
 
 	//cout << "final move" << endl;
 	time_t time1 = time(NULL);
+
 	// find the minimum weight for the current node.
-	for (uint idx = 0; idx < this->curViterbiNode_unPruned->viterbiStateIds.size(); idx++)
-	{
-		if (this->curViterbiNode_unPruned->viterbiWts[idx] < this->curViterbiNode_unPruned->min_weight)
-		{
-			this->curViterbiNode_unPruned->min_weight = this->curViterbiNode_unPruned->viterbiWts[idx];
-		}
-	}
+	this->curViterbiNode_unPruned->findMinWeight();
 	float min_weight = this->curViterbiNode_unPruned->min_weight;
-	for (uint idx = 0; idx < this->curViterbiNode_unPruned->viterbiStateIds.size(); idx++)
+
+//	for (uint idx = 0; idx < this->curViterbiNode_unPruned->viterbiStateIds.size(); idx++)
+//	{
+//		// First, check to see if we want to keep this state at all
+//		if (this->curViterbiNode_unPruned->viterbiWts[idx] < min_weight + beam || !prune)
+//		{
+//			// We'll keep this for the next iteration
+//
+//			uint state = this->curViterbiNode_unPruned->viterbiStateIds[idx];
+//			uint phn = this->curViterbiNode_unPruned->viterbiPhnIds[idx];
+//			uint wrd = this->curViterbiNode_unPruned->viterbiWrdIds[idx];
+//			bool isStartBound = this->curViterbiNode_unPruned->isPhoneStartBoundary[idx];
+//
+//			this->curViterbiStateIds->push_back(state);
+//			this->curViterbiWrdIds->push_back(wrd);
+//			this->nodeList->at(nodeCnt)->viterbiPhnIds.push_back(phn);
+//			this->nodeList->at(nodeCnt)->isPhoneStartBoundary.push_back(isStartBound);
+//
+//			for (uint st = 0; st < this->nStates; st++)
+//			{
+//				int nState_idx = idx * this->nStates + st;
+//				float nState_wt = this->curViterbiNode_unPruned->viterbiWts_nStates[nState_idx];
+//				int nState_ptr = this->curViterbiNode_unPruned->viterbiPtrs_nStates[nState_idx];
+//				uint nState_dur = this->curViterbiNode_unPruned->viterbiDurs_nStates[nState_idx];
+//				float nState_acou_wt = this->curViterbiNode_unPruned->viterbiAcouWts_nStates[nState_idx];
+//				float nState_lm_wt = this->curViterbiNode_unPruned->viterbiLmWts_nStates[nState_idx];
+//
+//				// TODO: change the name of viterbiPointers to viterbiPointers_nStates and change
+//				// 		 the name of viterbiDurs to viterbiDurs_nStates
+//				this->curViterbiWts_nStates->push_back(nState_wt);
+//				this->nodeList->at(nodeCnt)->viterbiPointers.push_back(nState_ptr);
+//				this->nodeList->at(nodeCnt)->viterbiDurs.push_back(nState_dur);
+//				this->curViterbiAcouWts_nStates->push_back(nState_acou_wt);
+//				this->curViterbiLmWts_nStates->push_back(nState_lm_wt);
+//			}
+//		}
+//		else {
+//			num_pruned++;
+//		}
+//	}
+
+	for (uint idx = 0; idx < this->curViterbiNode_unPruned->bestSegWts.size(); idx++)
 	{
 		// First, check to see if we want to keep this state at all
-		if (this->curViterbiNode_unPruned->viterbiWts[idx] < min_weight + beam || !prune)
+		if (this->curViterbiNode_unPruned->bestSegWts[idx] < min_weight + beam || !prune)
 		{
 			// We'll keep this for the next iteration
 
-			uint state = this->curViterbiNode_unPruned->viterbiStateIds[idx];
-			uint phn = this->curViterbiNode_unPruned->viterbiPhnIds[idx];
-			uint wrd = this->curViterbiNode_unPruned->viterbiWrdIds[idx];
-			bool isStartBound = this->curViterbiNode_unPruned->isPhoneStartBoundary[idx];
+			uint startState_bestSegPointer = this->curViterbiNode_unPruned->bestSegPointers_nStates[idx * this->nStates];
+
+			// lm/dict state and phone state are not changed for different nState.
+			uint state = this->curViterbiNode_unPruned->viterbiStateIds[startState_bestSegPointer];
+			uint phn = this->curViterbiNode_unPruned->viterbiPhnIds[startState_bestSegPointer];
+
+			// TODO: here we just read the word for the best start state,
+			// but the word could be different for the best of other states
+			uint wrd = this->curViterbiNode_unPruned->viterbiWrdIds[startState_bestSegPointer];
+
+			// isPhoneStartBoundary is only for the start state, so we are OK.
+			bool isStartBound = this->curViterbiNode_unPruned->isPhoneStartBoundary[startState_bestSegPointer];
 
 			this->curViterbiStateIds->push_back(state);
 			this->curViterbiWrdIds->push_back(wrd);
@@ -735,12 +978,13 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::pruning(uint nodeCnt, double beam)
 
 			for (uint st = 0; st < this->nStates; st++)
 			{
-				int nState_idx = idx * this->nStates + st;
-				float nState_wt = this->curViterbiNode_unPruned->viterbiWts_nStates[nState_idx];
-				int nState_ptr = this->curViterbiNode_unPruned->viterbiPtrs_nStates[nState_idx];
-				uint nState_dur = this->curViterbiNode_unPruned->viterbiDurs_nStates[nState_idx];
-				float nState_acou_wt = this->curViterbiNode_unPruned->viterbiAcouWts_nStates[nState_idx];
-				float nState_lm_wt = this->curViterbiNode_unPruned->viterbiLmWts_nStates[nState_idx];
+				uint nState_bestSegPointer = this->curViterbiNode_unPruned->bestSegPointers_nStates[idx * this->nStates + st];
+
+				float nState_wt = this->curViterbiNode_unPruned->viterbiWts_nStates[nState_bestSegPointer];
+				int nState_ptr = this->curViterbiNode_unPruned->viterbiPtrs_nStates[nState_bestSegPointer];
+				uint nState_dur = this->curViterbiNode_unPruned->viterbiDurs_nStates[nState_bestSegPointer];
+				float nState_acou_wt = this->curViterbiNode_unPruned->viterbiAcouWts_nStates[nState_bestSegPointer];
+				float nState_lm_wt = this->curViterbiNode_unPruned->viterbiLmWts_nStates[nState_bestSegPointer];
 
 				// TODO: change the name of viterbiPointers to viterbiPointers_nStates and change
 				// 		 the name of viterbiDurs to viterbiDurs_nStates
@@ -755,11 +999,255 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::pruning(uint nodeCnt, double beam)
 			num_pruned++;
 		}
 	}
+
+	// just for debugging
+//	cout << "this->curViterbiStateIds->size()=" << this->curViterbiStateIds->size() << endl;
+
 	time_t time2 = time(NULL);
 	merge_time += time2 - time1;
 	//cout << "Final move ends" << endl;
 }
 
+template <class CRF_VtbNode> StateId CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::getOutputFullFstStateIdByTimedLmStateId(int nodeCnt, int lm_stateId)
+{
+	CRF_TimedState timedState(nodeCnt, lm_stateId);
+//	__gnu_cxx::hash_map<TimedState,int>::iterator timedState_id_iter =
+//			this->fullfst_timedState_id_map->find(timedState);
+//	unordered_map<TimedState,int>::iterator timedState_id_iter =
+//			this->fullfst_timedState_id_map.find(timedState);
+	map<CRF_TimedState,int>::iterator timedState_id_iter =
+			this->timedLmState_to_fullFstStateId_map.find(timedState);
+	StateId timedState_id;
+	if (timedState_id_iter == this->timedLmState_to_fullFstStateId_map.end())
+	{
+		timedState_id = NOT_VALID_FST_STATE_ID;
+	}
+	else
+	{
+		timedState_id = timedState_id_iter->second;
+	}
+	return timedState_id;
+}
+
+template <class CRF_VtbNode> StateId CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::findOrInsertLmStateToOutputFullFst(int nodeCnt, int lm_stateId)
+{
+	StateId timedState_id = getOutputFullFstStateIdByTimedLmStateId(nodeCnt, lm_stateId);
+	if (timedState_id == NOT_VALID_FST_STATE_ID)
+	{
+		timedState_id = this->output_full_fst->AddState();
+		CRF_TimedState timedState(nodeCnt, lm_stateId);
+//		this->fullfst_timedState_id_map->operator [](timedState) = timedState_id;
+		this->timedLmState_to_fullFstStateId_map[timedState] = timedState_id;
+		this->fullFstStateId_to_timedLmState_vector.push_back(timedState);
+
+		// insert all other phone internal nStates to the output full fst as well
+		for (uint st = 1; st < this->nStates; st++) {
+			this->output_full_fst->AddState();
+		}
+	}
+	return timedState_id;
+}
+
+template <class CRF_VtbNode> bool CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::getTimedPhnNStateIdByOutputFullFstStateId(
+		int fst_state_id, int& ret_nodeCnt, int& ret_lm_stateId, int& ret_phn_nState)
+{
+	if (fst_state_id < 0)
+		return false;
+	int fst_state_id_inMappingVector = fst_state_id / this->nStates;
+	if (fst_state_id_inMappingVector >= this->fullFstStateId_to_timedLmState_vector.size())
+		return false;
+	CRF_TimedState ts = this->fullFstStateId_to_timedLmState_vector[fst_state_id_inMappingVector];
+	ret_nodeCnt = ts.time_stamp;
+	ret_lm_stateId = ts.state_id;
+	ret_phn_nState = fst_state_id % this->nStates;
+	return true;
+}
+
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::insertArcToOutputFullFst(
+		uint nodeCnt, uint stateId, uint phnId, uint wrdId, uint phn_nState, uint dur,
+		uint prev_stateId, uint prev_phn_nState, float node_trans_wt, bool isCrossWordBoundary)
+{
+	StateId cur_timedState_id = findOrInsertLmStateToOutputFullFst(nodeCnt, stateId);
+	StateId cur_timedState_nState_id = cur_timedState_id + phn_nState;
+
+	if (nodeCnt + 1 < dur)
+	{
+		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::insertArcToFullFst() caught exception: dur must be <= nodeCnt + 1.";
+		throw runtime_error(errstr);
+	}
+	int pre_nodeCnt = (int)nodeCnt - dur;  // pre_nodeCnt=-1 means previous node is the starting point before the first frame.
+	StateId prev_timedState_id = getOutputFullFstStateIdByTimedLmStateId(pre_nodeCnt, prev_stateId);
+
+	if (prev_timedState_id == NOT_VALID_FST_STATE_ID)
+	{
+		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::insertArcToFullFst() caught exception: "
+				"No previous state in the full fst for which time=" + stringify(pre_nodeCnt)
+				+ " and state=" + stringify(prev_stateId);
+		throw runtime_error(errstr);
+	}
+	else
+	{
+		StateId prev_timedState_nState_id = prev_timedState_id + prev_phn_nState;
+
+		uint phn_lab = phnId - 1;
+		uint phn_lab_nState = phn_lab * this->nStates + phn_nState;
+
+		uint phn_dur_lab_nState = this->nActualLabs * (dur - 1) + phn_lab_nState;
+
+		// TODO: big problem here: According to Jeremy's way to expanding lm states, the arc here
+		// is possible to span more than one word although not very frequently. But wrdId can only
+		// represent one word!! This means the output lattice would actually miss some hypothesized
+		// words.
+		if (isCrossWordBoundary)
+		{
+			// for phn_lab
+			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_lab_nState + 1, wrdId, node_trans_wt, cur_timedState_nState_id));
+			// for phn_dur_lab, TODO: comment out this, use above instead
+//			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_dur_lab_nState + 1, phn_dur_lab_nState + 1, node_trans_wt, cur_timedState_nState_id));
+		}
+		else
+		{
+			// for phn_lab
+			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_lab_nState + 1, 0, node_trans_wt, cur_timedState_nState_id));
+			// for phn_dur_lab, TODO: comment out this, use above instead
+//			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_dur_lab_nState + 1, phn_dur_lab_nState + 1, node_trans_wt, cur_timedState_nState_id));
+		}
+	}
+
+
+//	TimedState cur_timedState = TimedState(nodeCnt, stateId);
+//	__gnu_cxx::hash_map<TimedState,int>::iterator timedState_id_iter =
+//			this->fullfst_timedState_id_map->find(cur_timedState);
+//	StateId cur_timedState_id;
+//	if (timedState_id_iter == this->fullfst_timedState_id_map->end())
+//	{
+//		cur_timedState_id = this->output_full_fst->AddState();
+//		this->fullfst_timedState_id_map[cur_timedState] = cur_timedState_id;
+//		for (uint st = 1; st < nStates; st++) {
+//			this->output_full_fst->AddState();
+//		}
+//	}
+//	else
+//	{
+//		cur_timedState_id = timedState_id_iter->second;
+//	}
+//	StateId cur_timedState_nState_id = cur_timedState_id + phn_nState;
+//	if (nodeCnt + 1 < dur)
+//	{
+//		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::insertArcToFullFst() caught exception: dur must be <= nodeCnt + 1.";
+//		throw runtime_error(errstr);
+//	}
+//	int pre_nodeCnt = (int)nodeCnt - dur;  // pre_nodeCnt=-1 means previous node is the starting point before the first frame.
+//	TimedState prev_timedState = TimedState(pre_nodeCnt, prev_stateId);
+//	timedState_id_iter = this->fullfst_timedState_id_map->find(prev_timedState);
+//	if (timedState_id_iter == this->fullfst_timedState_id_map->end())
+//	{
+//		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::insertArcToFullFst() caught exception: "
+//				"No previous state in the full fst for which time=" + stringify(pre_nodeCnt)
+//				+ " and state=" + stringify(prev_stateId);
+//		throw runtime_error(errstr);
+//	}
+//	else
+//	{
+//		StateId prev_timedState_nState_id = timedState_id_iter->second + prev_phn_nState;
+//
+//		uint phn_lab = phnId - 1;
+//		uint phn_lab_nState = phn_lab * this->nStates + phn_nState;
+//
+//		// TODO: big problem here: According to Jeremy's way to expanding lm states, the arc here
+//		// is possible to span more than one word although not very frequently. But wrdId can only
+//		// represent one word!! This means the output lattice would actually miss some hypothesized
+//		// words.
+//		if (isCrossWordBoundary)
+//		{
+//			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_lab_nState, wrdId, node_trans_wt, cur_timedState_nState_id));
+//		}
+//		else
+//		{
+//			this->output_full_fst->AddArc(prev_timedState_nState_id, StdArc(phn_lab_nState, 0, node_trans_wt, cur_timedState_nState_id));
+//		}
+//	}
+}
+
+template <class CRF_VtbNode> void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::createFreePhoneLmFst(VectorFst<StdArc>* new_lm_fst)
+{
+	if (new_lm_fst == NULL)
+	{
+		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::createFreePhoneLmFst() caught exception: The lm fst passed in is null. It needs to be initialized first.";
+		throw runtime_error(errstr);
+	}
+	StateId start_state = new_lm_fst->AddState();   // 1st state will be state 0 (returned by AddState)
+	new_lm_fst->SetStart(start_state);  // arg is state ID
+//	StateId final_state = new_lm_fst->AddState();
+//	new_lm_fst->SetFinal(final_state, 0);
+
+	int nPhoneClasses = this->nActualLabs / this->nStates;
+	if (this->nActualLabs % this->nStates != 0)
+	{
+		string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::createFreePhoneLmFst() caught exception: nActualLabs % nStates != 0.";
+		throw runtime_error(errstr);
+	}
+//	for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+//	{
+//		StateId prev_state = start_state;
+//		for (uint st = 0; st < this->nStates; st++)
+//		{
+//			uint cur_lab_nState = cur_lab * this->nStates + st;
+//			StateId cur_state = new_lm_fst->AddState();
+//
+//			//transition from previous phone internal state to current phone internal state
+//			new_lm_fst->AddArc(prev_state, StdArc(cur_lab_nState+1,0,0,cur_state));
+//
+//			//self transition for current phone internal state
+//			new_lm_fst->AddArc(cur_state, StdArc(cur_lab_nState+1,0,0,cur_state));
+//
+//			prev_state = cur_state;
+//		}
+//
+//		// transition from the final phone internal state to the lm fst start state
+//		new_lm_fst->AddArc(prev_state, StdArc(0,0,0,start_state));
+//
+//		// transition from the final phone internal state to the lm fst final state,
+//		// transducing the word level symbol "!SENT_END" (corresponding the state index "1"),
+//		// indicating the end of the sentence
+//		new_lm_fst->AddArc(prev_state, StdArc(0,1,0,final_state));
+//	}
+	for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+	{
+		StateId cur_state = new_lm_fst->AddState();
+
+		// transition from start state to current phone state
+		new_lm_fst->AddArc(start_state, StdArc(cur_lab+1,cur_lab+1,0,cur_state));
+
+		// if nStates == 1, not allowed to have no two same phones in a row, so each phone state does not have self transition
+		// for nStates > 1, each phone state can transit to any phone state, so just add an arc to start state.
+		if (this->nStates > 1)
+		{
+			// transition from current phone state to start state
+			new_lm_fst->AddArc(cur_state, StdArc(0,0,0,start_state));
+		}
+
+		// every single phone could be a final state
+		new_lm_fst->SetFinal(cur_state, 0);
+	}
+	// if nStates == 1, not allowed to have no two same phones in a row, so each phone state does not have self transition
+	if (this->nStates == 1)
+	{
+		for (uint cur_lab = 0; cur_lab < nPhoneClasses; cur_lab++)
+		{
+			StateId cur_state = start_state + cur_lab + 1;
+			for (uint next_lab = 0; next_lab < nPhoneClasses; next_lab++)
+			{
+				if (cur_lab != next_lab)
+				{
+					StateId next_state = start_state + next_lab + 1;
+					// transition from current phone state to next phone state
+					new_lm_fst->AddArc(cur_state, StdArc(next_lab+1,next_lab+1,0,next_state));
+				}
+			}
+		}
+	}
+}
 
 /*
  * CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode
@@ -780,11 +1268,21 @@ void CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::pruning(uint nodeCnt, double beam)
  *
  *
  */
-int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<StdArc>* lm_fst, double input_beam, uint min_hyps, uint max_hyps, float beam_inc)
+template <class CRF_VtbNode> int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_VtbNode>::nStateDecode(
+		VectorFst<StdArc>* result_fst, VectorFst<StdArc>* lm_fst,
+		VectorFst<StdArc>* out_full_fst, double input_beam,
+		uint min_hyps, uint max_hyps, float beam_inc)
 {
 	// Takes in an empty fst and an fst containing a dictionary/language model network
 	// both of these should be on the tropical semiring
 	// Returns a weighted fst containing the best path through the current utterance
+
+	// added by Ryan
+	this->output_full_fst = out_full_fst;
+//	this->fullfst_timedState_id_map = new __gnu_cxx::hash_map<TimedState,int>();
+//	this->fullfst_timedState_id_map = new unordered_map<TimedState,int>();
+	this->timedLmState_to_fullFstStateId_map.clear();
+	this->fullFstStateId_to_timedLmState_vector.clear();
 
 	QNUInt32 ftr_count;
 	VectorFst<StdArc>* fst = new VectorFst<StdArc>();
@@ -793,12 +1291,23 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	bool prune = true;
 	if (input_beam<=0.0) { prune=false;}
 
+	// added by Ryan
+	// if input lm fst is null, we need to build a free phone lm fst
+	bool input_lm_fst_is_null = false;
+	if (lm_fst == NULL)
+	{
+		input_lm_fst_is_null = true;
+		lm_fst = new VectorFst<StdArc>();
+		createFreePhoneLmFst(lm_fst);
+	}
+
 	// first we need to set up our hypothesis list
 	// The "word" id vector curViterbiWrdIds gives us the list of states that we are
 	// considering at this time step and is used to index the curViterbiWts and
 	// curViterbiStateIds vectors.
 
-	for (QNUInt32 i = 0; i < this->lab_max_dur; i++) {
+	// the size of nextViterbiNodes_unPruned should be lab_max_dur-1 instead of lab_max_dur.
+	for (QNUInt32 i = 0; i < this->lab_max_dur - 1; i++) {
 		this->nextViterbiNodes_unPruned[i]->clear();
 	}
 	this->curViterbiNode_unPruned->clear();
@@ -827,11 +1336,13 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 		this->prevViterbiWts_nStates->push_back(99999.0);
 	}
 	this->prevViterbiWts_nStates->push_back(0.0);
+
 	for (uint st = 0; st < this->nStates - 1; st++)
 	{
 		this->prevViterbiAcouWts_nStates->push_back(99999.0);
 	}
 	this->prevViterbiAcouWts_nStates->push_back(0.0);
+
 	for (uint st = 0; st < this->nStates - 1; st++)
 	{
 		this->prevViterbiLmWts_nStates->push_back(99999.0);
@@ -839,6 +1350,7 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	this->prevViterbiLmWts_nStates->push_back(0.0);
 
 	this->prev_min_weight = 0.0;
+
 
 //	// The candidate phones, words, states and corresponding weights for the initial node.
 //	// (only the first lab_max_dur nodes of the utterance could be an initial node)
@@ -896,6 +1408,36 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	cross_time = 0;
 	merge_time = 0;
 	time_t loopstart = time(NULL);
+
+
+	// Added by Ryan, for outputting the full fst
+	if (this->if_output_full_fst)
+	{
+		// add the starting state to the full fst
+
+		StateId fullfst_start = findOrInsertLmStateToOutputFullFst(BEFORE_START_TIME_STAMP, lm_start);
+		this->output_full_fst->SetStart(fullfst_start);
+
+		// Insert the states into the full fst first in order to reverse the order as phone class states
+
+		if (input_lm_fst_is_null)
+		{
+			int nPhoneClasses = this->nActualLabs / this->nStates;
+			if (this->nActualLabs % this->nStates != 0)
+			{
+				string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode() caught exception: nActualLabs % nStates != 0.";
+				throw runtime_error(errstr);
+			}
+			for (uint dur = 1; dur <= this->lab_max_dur - 1; dur++)
+			{
+				for (uint phn_lab = 0; phn_lab < nPhoneClasses; phn_lab++)
+				{
+					findOrInsertLmStateToOutputFullFst(nodeCnt + dur - 1, phn_lab + 1);
+				}
+			}
+		}
+	}
+
 
 	// this is important! Every time bunch_size has to be reset to 1.
 	// since it must start from 1 and be added by 1 every iteration up to lab_max_dur.
@@ -1083,6 +1625,27 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 //			updateCounter=0;
 //			dupCounter=0;
 
+
+			// Added by Ryan, for outputting the full fst.
+			// Insert the states into the full fst first in order to reverse the order as phone class states
+			if (this->if_output_full_fst)
+			{
+				if (input_lm_fst_is_null)
+				{
+					int nPhoneClasses = this->nActualLabs / this->nStates;
+					if (this->nActualLabs % this->nStates != 0)
+					{
+						string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode() caught exception: nActualLabs % nStates != 0.";
+						throw runtime_error(errstr);
+					}
+					for (uint phn_lab = 0; phn_lab < nPhoneClasses; phn_lab++)
+					{
+						findOrInsertLmStateToOutputFullFst(nodeCnt + this->lab_max_dur - 1, phn_lab + 1);
+					}
+				}
+			}
+
+
 			// Cross State Transition Weight Update
 			expandCrossStateFromPrevNode(nodeCnt, lm_fst, beam);
 
@@ -1100,8 +1663,8 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 				}
 			}
 
-			// State Feature Update
-			stateFeatureUpdate(nodeCnt);
+			// State Value Update
+			stateValueUpdate(nodeCnt);
 
 			// Pruning
 			pruning(nodeCnt, beam);
@@ -1120,6 +1683,7 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 			//if (nodeCnt%50 == 0) {
 			if (nodeCnt%100 == 0) {
 //			if (nodeCnt%1 == 0) {
+
 				cout << "time: " << nodeCnt << " " << this->curViterbiStateIds->size() << " hyps ";
 				//cout << "time: " << nodeCnt << " " << curViterbiStateIds->size() << " hyps ";
 				cout << this->curViterbiWts_nStates->size() << " nStates ";
@@ -1149,6 +1713,58 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 //						<< crossUpdateSameStateCounter << " same states, "
 //						<< crossUpdateDiffStateCounter << " different states."
 //						<< endl;
+
+				// Added by Ryan
+				// output weights associated with N-best paths
+				int topN = 100;
+				list<uint> topNWtsIdx;
+				list<uint>::iterator it;
+				if (this->curViterbiWts_nStates->size() > 0)
+				{
+					topNWtsIdx.push_back(0);
+					for (uint idx = 1; idx < this->curViterbiWts_nStates->size(); idx++) {
+						float weight = this->curViterbiWts_nStates->at(idx);
+						uint state_id = this->curViterbiStateIds->at(idx);
+
+						// just for debugging
+//						cout << "idx=" << idx << ", state_id=" << state_id << endl;
+
+						bool inserted = false;
+						for (it=topNWtsIdx.begin(); it!=topNWtsIdx.end(); it++)
+						{
+							if (weight < this->curViterbiWts_nStates->at(*it)) { // Ordered by weight
+//							if (state_id < this->curViterbiStateIds->at(*it)) { // Ordered by State_ID
+								topNWtsIdx.insert(it, idx);
+								inserted = true;
+								if (topNWtsIdx.size() > topN)
+									topNWtsIdx.pop_back();
+								break;
+							}
+						}
+						if (!inserted)
+						{
+							// if not inserted, it means the weight associated with idx is larger
+							// than all weights associated with indice in topNWtsIdx.
+							// so push idx to the back of topNWtsIdx if it is not full
+
+							if (topNWtsIdx.size() < topN)
+							{
+								topNWtsIdx.push_back(idx);
+								inserted = true;
+							}
+						}
+					}
+				}
+				cout << topN << "-best paths:" << endl;
+				uint k = 0;
+				for (it=topNWtsIdx.begin(); it!=topNWtsIdx.end(); it++)
+				{
+					cout << k++ << ": state_id=" << this->curViterbiStateIds->at(*it)
+							<< ", weight=" << this->curViterbiWts_nStates->at(*it)
+							<< ", acoustic weight=" << this->curViterbiAcouWts_nStates->at(*it)
+							<< ", lm weight=" << this->curViterbiLmWts_nStates->at(*it)
+							<< endl;
+				}
 			}
 
 
@@ -1185,7 +1801,8 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 
 			// pop the first node of next unpruned nodes deque as the current unpruned node
 			// push a new unpruned node to the back of the deque
-			CRF_ViterbiNode* holdNode = this->curViterbiNode_unPruned;
+//			CRF_ViterbiNode* holdNode = this->curViterbiNode_unPruned;
+			CRF_VtbNode* holdNode = this->curViterbiNode_unPruned;
 			this->curViterbiNode_unPruned = this->nextViterbiNodes_unPruned.front();
 			this->nextViterbiNodes_unPruned.pop_front();
 			holdNode->clear();
@@ -1214,6 +1831,61 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	this->nodeList->setNodeCount(nodeCnt);
 
 
+
+	// Added by Ryan
+	// output weights associated with N-best paths
+	int topN = 100;
+	list<uint> topNWtsIdx;
+	list<uint>::iterator it;
+	if (this->prevViterbiWts_nStates->size() > 0)
+	{
+		topNWtsIdx.push_back(0);
+		for (uint idx = 1; idx < this->prevViterbiWts_nStates->size(); idx++) {
+			float weight = this->prevViterbiWts_nStates->at(idx);
+			uint state_id = this->prevViterbiStateIds->at(idx);
+
+			// just for debugging
+//			cout << "idx=" << idx << ", state_id=" << state_id << endl;
+
+			bool inserted = false;
+			for (it=topNWtsIdx.begin(); it!=topNWtsIdx.end(); it++)
+			{
+				if (weight < this->prevViterbiWts_nStates->at(*it)) {  // Ordered by weight
+//				if (state_id < this->prevViterbiStateIds->at(*it)) {  // Ordered by State_ID
+					topNWtsIdx.insert(it, idx);
+					inserted = true;
+					if (topNWtsIdx.size() > topN)
+						topNWtsIdx.pop_back();
+					break;
+				}
+			}
+			if (!inserted)
+			{
+				// if not inserted, it means the weight associated with idx is larger
+				// than all weights associated with indice in topNWtsIdx.
+				// so push idx to the back of topNWtsIdx if it is not full
+
+				if (topNWtsIdx.size() < topN)
+				{
+					topNWtsIdx.push_back(idx);
+					inserted = true;
+				}
+			}
+		}
+	}
+	cout << topN << "-best paths (not necessarily containing the one ending with final state):" << endl;
+	uint k = 0;
+	for (it=topNWtsIdx.begin(); it!=topNWtsIdx.end(); it++)
+	{
+		cout << k++ << ": state_id=" << this->prevViterbiStateIds->at(*it)
+				<< ", weight=" << this->prevViterbiWts_nStates->at(*it)
+				<< ", acoustic weight=" << this->prevViterbiAcouWts_nStates->at(*it)
+				<< ", lm weight=" << this->prevViterbiLmWts_nStates->at(*it)
+				<< endl;
+	}
+
+
+
 	// TODO: By Ryan, this is tricky now. Since the multi-state segmental node class has not been
 	// implemented yet, computeAlphaSum() function in the multi-state frame node class should be
 	// called instead until the multi-state segmental node class is implemented.
@@ -1223,22 +1895,125 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	int final_state = fst->AddState();
 	fst->SetFinal(final_state, Zx);
 
+
+
+	// Added by Ryan, for outputting the full fst
+	// must add the final state and its associated arcs first before deleting any states,
+	// because deleting states would cause state id change.
+	if (this->if_output_full_fst)
+	{
+		StateId output_full_fst_final_state = this->output_full_fst->AddState();
+		for (uint idx = 0; idx < this->prevViterbiStateIds->size(); idx++)
+		{
+			uint prev_lm_state = this->prevViterbiStateIds->at(idx);
+			StateId output_full_fst_prev_state = getOutputFullFstStateIdByTimedLmStateId(nodeCnt - 1, prev_lm_state);
+			this->output_full_fst->AddArc(output_full_fst_prev_state,StdArc(0,0,Zx,output_full_fst_final_state));
+		}
+		this->output_full_fst->SetFinal(output_full_fst_final_state, 0);
+
+		// there are lab_max_dur-1 extra nodes whose states have already been inserted into the full fst
+		// below is to delete all of those states.
+		vector<StateId> deleteFullFstStates;
+		if (input_lm_fst_is_null)
+		{
+			// if input lm fst is null, all the states for each extra node include all of the phone states.
+			// so just simply delete all of the phone states for all the lab_max_dur-1 extra nodes
+			//
+			uint delNodeTimeStamp = nodeCnt;
+			int nPhoneClasses = this->nActualLabs / this->nStates;
+			if (this->nActualLabs % this->nStates != 0)
+			{
+				string errstr="CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode() caught exception: nActualLabs % nStates != 0.";
+				throw runtime_error(errstr);
+			}
+			for (int i = 0; i < this->lab_max_dur - 1; i++)
+			{
+				for (uint phn_lab = 0; phn_lab < nPhoneClasses; phn_lab++)
+				{
+					StateId delFullFstState = getOutputFullFstStateIdByTimedLmStateId(delNodeTimeStamp, phn_lab + 1);
+					if (delFullFstState != NOT_VALID_FST_STATE_ID)
+					{
+						deleteFullFstStates.push_back(delFullFstState);
+					}
+				}
+				delNodeTimeStamp++;
+			}
+		}
+		else
+		{
+			// if input lm fst is not null, note that the first extra node is curViterbiNode_unPruned,
+			// the remaining lab_max_dur-2 extra nodes are the first lab_max_dur-2 nodes of
+			// nextViterbiNodes_unPruned, while the last node of nextViterbiNodes_unPruned must be empty.
+			//
+			uint delNodeTimeStamp = nodeCnt;
+			for (uint idx = 0; idx < this->curViterbiNode_unPruned->viterbiStateIds.size(); idx++)
+			{
+				uint delLmState = this->curViterbiNode_unPruned->viterbiStateIds[idx];
+				StateId delFullFstState = getOutputFullFstStateIdByTimedLmStateId(delNodeTimeStamp, delLmState);
+				if (delFullFstState != NOT_VALID_FST_STATE_ID)
+				{
+					deleteFullFstStates.push_back(delFullFstState);
+				}
+			}
+			delNodeTimeStamp++;
+			for (int i = 0; i < this->lab_max_dur - 2; i++)
+			{
+				for (uint idx = 0; idx < this->nextViterbiNodes_unPruned[i]->viterbiStateIds.size(); idx++)
+				{
+					uint delLmState = this->nextViterbiNodes_unPruned[i]->viterbiStateIds[idx];
+					StateId delFullFstState = getOutputFullFstStateIdByTimedLmStateId(delNodeTimeStamp, delLmState);
+					if (delFullFstState != NOT_VALID_FST_STATE_ID)
+					{
+						deleteFullFstStates.push_back(delFullFstState);
+					}
+				}
+				delNodeTimeStamp++;
+			}
+		}
+		this->output_full_fst->DeleteStates(deleteFullFstStates);
+	}
+
+
+
 	// Backtrack through the decoder to build the output lattice
 	// First search through the final timestep and find the best result that ends in a final state
 	float min_weight = 99999.0;
 	int min_idx = -1;
 	cout << "checking through " << this->prevViterbiStateIds->size() << " states for final state " << endl;
 	int fstate_cnt = 0;
-	for (uint idx = 0; idx < this->prevViterbiStateIds->size(); idx++) {
-		uint tmp_wrd = this->prevViterbiWrdIds->at(idx);
-		if (tmp_wrd == 1) {
-			fstate_cnt++;
-			int end_nState_idx = idx * this->nStates + this->nStates - 1;
-			float weight = this->prevViterbiWts_nStates->at(end_nState_idx);
-			if (weight < min_weight) {
-				min_weight = weight;
-				min_idx = end_nState_idx;
+	// the if condition is added by Ryan, originally unconditional.
+	if (!input_lm_fst_is_null)
+	{
+
+		for (uint idx = 0; idx < this->prevViterbiStateIds->size(); idx++) {
+			uint tmp_wrd = this->prevViterbiWrdIds->at(idx);
+			if (tmp_wrd == 1) {
+				fstate_cnt++;
+				int end_nState_idx = idx * this->nStates + this->nStates - 1;
+				float weight = this->prevViterbiWts_nStates->at(end_nState_idx);
+				if (weight < min_weight) {
+					min_weight = weight;
+					min_idx = end_nState_idx;
+				}
 			}
+		}
+
+	}
+	// the whole else part is added by Ryan
+	else
+	{
+		for (uint idx = 0; idx < this->prevViterbiStateIds->size(); idx++) {
+			uint tmp_state_id = this->prevViterbiStateIds->at(idx);
+			//if (lm_fst->isFinalState(tmp_state_id)) // TODO: if tmp_state_id is a final state
+		    //{
+				fstate_cnt++;
+				int end_nState_idx = idx * this->nStates + this->nStates - 1;
+				float weight = this->prevViterbiWts_nStates->at(end_nState_idx);
+				if (weight < min_weight) {
+					min_weight = weight;
+					min_idx = end_nState_idx;
+				}
+			//}
 		}
 	}
 
@@ -1258,7 +2033,6 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 		cout << "Acoustic model weight (negative log potential) = " << 0
 				<< ", -Z(X) = " << 0
 				<< ", language model weight (negative log probability) = " << 0 << endl;
-
 	}
 	else {
 
@@ -1403,7 +2177,8 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 	cout << "result_fst has " << result_fst->NumStates() << " states." << endl;
 
 
-	for (QNUInt32 i = 0; i < this->lab_max_dur; i++) {
+	// the size of nextViterbiNodes_unPruned should be lab_max_dur-1 instead of lab_max_dur.
+	for (QNUInt32 i = 0; i < this->lab_max_dur - 1; i++) {
 		this->nextViterbiNodes_unPruned[i]->clear();
 	}
 	this->curViterbiNode_unPruned->clear();
@@ -1424,6 +2199,20 @@ int CRF_ViterbiDecoder_StdSeg_NoSegTransFtr::nStateDecode(VectorFst<StdArc>* res
 
 	delete fst;
 
+	// added by Ryan, delete the free phone lm fst if created
+	if (input_lm_fst_is_null)
+		delete lm_fst;
+
+	// added by Ryan
+//	delete this->fullfst_timedState_id_map;
+	this->timedLmState_to_fullFstStateId_map.clear();
+	this->fullFstStateId_to_timedLmState_vector.clear();
+
 	return nodeCnt;
 
 }
+
+// These statements are very important. They explicitly instantiate all the relevant templates.
+// Without these lines, all the template functions have to be moved to the header file.
+template class CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode>;
+//template class CRF_ViterbiDecoder_StdSeg_NoSegTransFtr<CRF_ViterbiNode_PruneTrans>;

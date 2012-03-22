@@ -2,6 +2,7 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
+USER_OBJS :=
+
 LIBS := -lCRF -lquicknet3 -lcblas -latlas
 
-USER_OBJS :=
