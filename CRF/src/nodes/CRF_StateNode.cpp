@@ -10,10 +10,16 @@
 
 #include "CRF_StdStateNode.h"
 #include "CRF_StdNStateNode.h"
+
+// Added by Ryan
 #include "CRF_StdSegStateNode.h"
 #include "CRF_StdSegStateNode_WithoutDurLab.h"
 #include "CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.h"
 #include "CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.h"
+#include "CRF_StdSegNStateNode.h"
+#include "CRF_StdSegNStateNode_WithoutDurLab.h"
+//#include "CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr.h"
 
 /*
  * CRF_StateNode constructor
@@ -475,14 +481,67 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 			QNUInt32 nextNode_nActualLabs)
 {
 	if (crf->getFeatureMap()->getNumStates()>1) {
-		if (crf->getLabMaxDur() != 1)
+
+		// multi-state model
+
+//		if (crf->getLabMaxDur() != 1)
+//		{
+//			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdNStateNode only works when maximum label duration is 1.";
+//			throw runtime_error(errstr);
+//		}
+//		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
+
+		modeltype mtype = crf->getModelType();
+
+		// just for debugging
+		//cout << "Inside segmental CRF_StateNode::createStateNode()" << endl;
+
+		if (mtype == STDSEG)
 		{
-			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdNStateNode only works when maximum label duration is 1.";
+			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
+			throw runtime_error(errstr);
+
+			// just for debugging
+			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode" << endl;
+
+			return new CRF_StdSegNStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR)
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode_WithoutDurLab has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
+			throw runtime_error(errstr);
+
+			// just for debugging
+			//cout << "STDSEG_NO_DUR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab" << endl;
+
+			return new CRF_StdSegNStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
+		{
+			// just for debugging
+//			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr" << endl;
+			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
+
+//			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+		{
+			// just for debugging
+			//cout << "STDSEG_NO_DUR_NO_SEGTRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
+
+			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for frame-level model.";
 			throw runtime_error(errstr);
 		}
-		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
 	}
 	else {
+
+		// single-state model
+
 		modeltype mtype = crf->getModelType();
 
 		// just for debugging

@@ -20,7 +20,7 @@
 						<toolChain errorParsers="" id="cdt.managedbuild.toolchain.gnu.exe.debug.1724182633" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.exe.debug.2112843468" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
 							<builder buildPath="${workspace_loc:/CRFFstDecode/Debug}" errorParsers="org.eclipse.cdt.core.MakeErrorParser" id="cdt.managedbuild.target.gnu.builder.exe.debug.1083608876" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
-							<tool command="/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.281341295" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+							<tool command="/usr/bin/g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.281341295" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 								<option id="gnu.cpp.compiler.option.include.paths.28283917" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/include"/>
@@ -33,7 +33,7 @@
 								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.2081202916" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.224295251" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool command="/u/drspeech/opt/gcc-4.4.0/x86_64/bin/gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.305836624" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+							<tool command="/usr/bin/gcc" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GCCErrorParser" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.305836624" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
 								<option id="gnu.c.compiler.option.include.paths.1657622137" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/CRF/src}&quot;"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/include"/>
@@ -47,7 +47,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.268233062" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1970324445" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
-							<tool command="/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1326811730" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+							<tool command="/usr/bin/g++" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG}${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" errorParsers="org.eclipse.cdt.core.GLDErrorParser" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1326811730" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 								<option id="gnu.cpp.link.option.paths.1649227757" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="stringList">
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
@@ -62,7 +62,7 @@
 									<listOptionValue builtIn="false" value="pthread"/>
 									<listOptionValue builtIn="false" value="atlas"/>
 								</option>
-								<option id="gnu.cpp.link.option.flags.160027931" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.160027931" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/usr/lib/gcc/x86_64-redhat-linux/4.4.6/" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1316253930" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

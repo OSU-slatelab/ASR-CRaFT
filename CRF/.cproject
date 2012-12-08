@@ -28,7 +28,7 @@
 						<toolChain id="cdt.managedbuild.toolchain.gnu.lib.debug.177396159" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.lib.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.lib.debug.21989320" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.lib.debug"/>
 							<builder buildPath="${workspace_loc:/CRF/Debug}" id="cdt.managedbuild.target.gnu.builder.lib.debug.2067715283" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.lib.debug"/>
-							<tool command="/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++" id="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug">
+							<tool command="/usr/bin/g++" id="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug.49336841" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.lib.debug">
 								<option id="gnu.cpp.compiler.option.include.paths.1225916736" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/include"/>
@@ -38,11 +38,11 @@
 								</option>
 								<option id="gnu.cpp.compiler.lib.debug.option.optimization.level.1105136463" name="Optimization Level" superClass="gnu.cpp.compiler.lib.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.lib.debug.option.debugging.level.2080259314" name="Debug Level" superClass="gnu.cpp.compiler.lib.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.other.other.1200456102" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1200456102" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.other.pic.1699983789" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" value="false" valueType="boolean"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2075709787" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
-							<tool command="/u/drspeech/opt/gcc-4.4.0/x86_64/bin/gcc" id="cdt.managedbuild.tool.gnu.c.compiler.lib.debug.118966243" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.lib.debug">
+							<tool command="/usr/bin/gcc" id="cdt.managedbuild.tool.gnu.c.compiler.lib.debug.118966243" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.lib.debug">
 								<option id="gnu.c.compiler.option.include.paths.1381896173" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/include"/>
 									<listOptionValue builtIn="false" value="/u/drspeech/src/quicknet-v3_20/H-x86_64"/>
@@ -53,10 +53,12 @@
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.lib.debug.option.optimization.level.2090255480" name="Optimization Level" superClass="gnu.c.compiler.lib.debug.option.optimization.level" value="gnu.c.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.c.compiler.lib.debug.option.debugging.level.962392681" name="Debug Level" superClass="gnu.c.compiler.lib.debug.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.misc.pic.1778595033" name="Position Independent Code (-fPIC)" superClass="gnu.c.compiler.option.misc.pic" value="false" valueType="boolean"/>
+								<option id="gnu.c.compiler.option.misc.other.2133874875" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.400535911" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.lib.debug.2080034038" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.lib.debug"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.lib.debug.122945592" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.lib.debug">
+								<option id="gnu.both.asm.option.include.paths.1055716937" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1843883022" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.1345890073" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base">

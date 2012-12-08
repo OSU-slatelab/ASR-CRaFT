@@ -334,7 +334,16 @@ QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 {
 	QNUInt32 retVal=0;
-	if (clab == 0) { retVal = fno; }
+	if (clab == 0) {
+
+		// TODO: Commented by Ryan, I think this has problems when fno > 0 since it adds fno twice (here and the end of the function).
+		//          Although fno for the current only usage of this function is set to 0, we need to correct this code in case future
+		//          use of the function might set fno to non-zero value.
+		// changed by Ryan
+		//retVal = fno;
+		retVal = 0;
+
+	}
 	else {
 		if (config->numStates==1) {
 			retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs);
@@ -346,7 +355,12 @@ QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 				// Next, if this is a start state, add in trans features from all previous end
 				// states AND A SELF TRANSITION
 				if (i % config->numStates == 0) {
-					retVal+=this->numActualLabels*this->numTransFuncs + 1;
+
+					// TODO: Commented by Ryan, why not retVal+=(this->numActualLabels+1)*this->numTransFuncs?
+					// changed by Ryan
+					//retVal+=this->numActualLabels*this->numTransFuncs + 1;
+					retVal += (this->numActualLabels + 1) * this->numTransFuncs;  // since the self transition also has numTransFuncs features instead of 1 feature.
+
 				}
 				else {
 					// Otherwise, add in a self transition and a transition from the previous label
@@ -355,7 +369,7 @@ QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 			}
 		}
 	}
-	retVal+=fno;  //Ryan, I think this has problems when fno > 0 since it adds fno twice.
+	retVal+=fno;
 	return retVal;
 }
 #else
@@ -396,22 +410,56 @@ QNUInt32 CRF_StdFeatureMap::computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab,
 {
 	QNUInt32 retVal=0;
 	if (config->numStates == 1) {
-		retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs + fno;
+
+		// TODO: Commented by Ryan, I think this has problems when fno > 0 since it adds fno twice (here and the end of the function).
+		//          Although fno for the current only usage of this function is set to 0, we need to correct this code in case future
+		//          use of the function might set fno to non-zero value.
+		// changed by Ryan
+		//retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs + fno;
+		retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs;
+
 	}
 	else {
 		retVal=this->getStateFeatureIdx(clab);
 		retVal+=this->numStateFuncs;
 		// We're now in the right spot if plab == clab.  Otherwise we have to increment
 		if (plab != clab) {
-			retVal+=1; // Increment to the next one
+
+			// TODO: Commented by Ryan, why not retVal+=this->numTransFuncs??
+			// changed by Ryan
+			//retVal+=1; // Increment to the next one
+			retVal += this->numTransFuncs; // Skip the self-transition, since the self transition also has numTransFuncs features instead of 1 feature.
+
 			//We're now in the right spot if we have a non-start state clab
 			if (clab % config->numStates == 0) {
-				QNUInt32 real_plab = (plab+1)/config->numStates-1;
+
+				// TODO: Commented by Ryan, would real_plab = plab/config->numStates look better? And what if plab is not the final state label?
+				// changed by Ryan
+				//QNUInt32 real_plab = (plab+1)/config->numStates-1;
+				if ((plab + 1) % config->numStates != 0)
+				{
+//					string errstr="CRF_StdFeatureMap::computeTransFeatureIdx() caught exception: clab is the initial state of a phone, but plab(!=clab) is not the final state of a phone.";
+//					throw runtime_error(errstr);
+					retVal = -1;
+					return retVal;
+				}
+				QNUInt32 real_plab = plab / config->numStates; // the original one is also correct, but this one is cleaner.
+
 				retVal+=real_plab*this->numTransFuncs;
 			}
+
+			// Added by Ryan
+			// for non-start state clab, if plab!=clab and plab!=clab-1, return -1
+			else {
+				if (plab != clab - 1) {
+					retVal = -1;
+					return retVal;
+				}
+			}
+
 		}
 	}
-	retVal+=fno;   //Ryan, I think this has problems when fno > 0 since it adds fno twice.
+	retVal+=fno;
 	return retVal;
 }
 

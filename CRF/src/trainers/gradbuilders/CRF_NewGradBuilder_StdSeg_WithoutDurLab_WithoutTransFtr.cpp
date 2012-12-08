@@ -7,6 +7,40 @@
 
 #include "CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h"
 
+#include <sys/time.h>
+#include <ctime>
+
+int64 GetTimeMilliSec64()
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	uint64 ret = tv.tv_usec;
+	/* Convert from micro seconds (10^-6) to milliseconds (10^-3) */
+	ret /= 1000;
+
+	/* Adds the seconds (10^0) after converting them to milliseconds (10^-3) */
+	ret += (tv.tv_sec * 1000);
+
+	return ret;
+}
+
+int64 GetTimeMicroSec64()
+{
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+
+	/* micro seconds (10^-6) */
+	uint64 ret = tv.tv_usec;
+
+	/* Adds the seconds (10^0) after converting them to microseconds (10^-6) */
+	ret += (tv.tv_sec * 1000000);
+
+	return ret;
+}
+
 CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(CRF_Model* crf_in)
 	: CRF_NewGradBuilder_StdSeg(crf_in)
 {
@@ -119,11 +153,27 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 //			//	alpha[i] = alpha[i-1]*M[i]
 //		}
 //	} while (ftr_count >= bunch_size);
+
+	// Added by Ryan, just for debugging
+	int64 featLoadTime = 0, transMatTime = 0, alphaTime = 0, betaTime = 0, expFTime = 0;
+	int64 starttime = 0, endtime = 0, totStartTime = 0, totEndTime = 0;
+	totStartTime = GetTimeMicroSec64();
+
 	QNUInt32 nodeCnt=0;
 	do {
+		// Added by Ryan, just for debugging
+		//cout << "nodeCnt: " << nodeCnt << endl;
+
+		// Added by Ryan, just for debugging
+		starttime = GetTimeMicroSec64();
+
 		// First, read in the next training value from the file
 		//	We can read in a "bunch" at a time, then separate them into individual frames
 		ftr_count=ftr_strm->read(bunch_size,this->ftr_buf,this->lab_buf);
+
+		// Added by Ryan, just for debugging
+		endtime = GetTimeMicroSec64();
+		featLoadTime += (endtime - starttime);
 
 		if (ftr_count > 0)
 		{
@@ -277,21 +327,43 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 			// just for debugging
 //			cout << "nodeList access 4(at): " << nodeCnt << endl;
 
+			// Added by Ryan, just for debugging
+			starttime = GetTimeMicroSec64();
+
 			this->nodeList->at(nodeCnt)->computeTransMatrix();
+
+			// Added by Ryan, just for debugging
+			endtime = GetTimeMicroSec64();
+			transMatTime += (endtime - starttime);
+
 			double scale;
 			if (nodeCnt == 0) {
 
 				// just for debugging
 //				cout << "nodeList access 5(at): " << nodeCnt << endl;
 
+				// Added by Ryan, just for debugging
+				starttime = GetTimeMicroSec64();
+
 				scale=this->nodeList->at(nodeCnt)->computeFirstAlpha();
+
+				// Added by Ryan, just for debugging
+				endtime = GetTimeMicroSec64();
+				alphaTime += (endtime - starttime);
 			}
 			else {
 
 				// just for debugging
 //				cout << "nodeList access 6(at): " << nodeCnt << endl;
 
+				// Added by Ryan, just for debugging
+				starttime = GetTimeMicroSec64();
+
 				scale=this->nodeList->at(nodeCnt)->computeAlpha();
+
+				// Added by Ryan, just for debugging
+				endtime = GetTimeMicroSec64();
+				alphaTime += (endtime - starttime);
 			}
 			//scale=this->nodeList->at(nodeCnt)->computeAlpha(prev_alpha);
 
@@ -327,7 +399,14 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 //	cout << "Last node count: " << lastNode << endl << endl;
 //	cout << "nodeList access 7(at): " << lastNode << endl;
 
+	// Added by Ryan, just for debugging
+	starttime = GetTimeMicroSec64();
+
 	double Zx=this->nodeList->at(lastNode)->computeAlphaSum();
+
+	// Added by Ryan, just for debugging
+	endtime = GetTimeMicroSec64();
+	alphaTime += (endtime - starttime);
 
 	//double* tmpAlpha=this->nodeList->at(lastNode)->getAlpha();
 	//int alpha_size=this->crf->getNLabs();
@@ -408,14 +487,28 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 			// just for debugging
 //			cout << "nodeList access 10(at): " << nodeCnt << endl;
 
+			// Added by Ryan, just for debugging
+			starttime = GetTimeMicroSec64();
+
 			this->nodeList->at(nodeCnt)->setTailBeta();
+
+			// Added by Ryan, just for debugging
+			endtime = GetTimeMicroSec64();
+			betaTime += (endtime - starttime);
 		}
 		else {
 
 			// just for debugging
 //			cout << "nodeList access 11(at): " << nodeCnt << endl;
 
+			// Added by Ryan, just for debugging
+			starttime = GetTimeMicroSec64();
+
 			this->nodeList->at(nodeCnt)->computeBeta(this->nodeList->at(nodeCnt)->getAlphaScale());
+
+			// Added by Ryan, just for debugging
+			endtime = GetTimeMicroSec64();
+			betaTime += (endtime - starttime);
 		}
 
 		// just debugging
@@ -456,9 +549,16 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 		// just for debugging
 //		cout << "nodeList access 13(at): " << nodeCnt << endl;
 
+		// Added by Ryan, just for debugging
+		starttime = GetTimeMicroSec64();
+
 		// Passing the label of the next node to the current node for computing the ExpF for current node..
 		// Important note: This is different from the regular gradbuilder which passes the label of the previous node.
 		logLi += this->nodeList->at(nodeCnt)->computeExpF(this->ExpF, grad, Zx, next_lab);
+
+		// Added by Ryan, just for debugging
+		endtime = GetTimeMicroSec64();
+		expFTime += (endtime - starttime);
 
 		// just debugging
 		//cout << "After computing ExpF." << endl;
@@ -490,6 +590,18 @@ double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CR
 	*Zx_out=Zx;
 	//logLi-=Zx;
 
+	// Added by Ryan, just for debugging
+	totEndTime = GetTimeMicroSec64();
+	int64 totTime = totEndTime - totStartTime;
+	int32 numFrames = lastNode + 1;
+//	cout << "numFrames=" << numFrames << ", "
+//			<< "featLoadTime=" << featLoadTime / 1000 << "ms(" << (double)featLoadTime * 100 / totTime << "%), "
+//			<< "transMatTime=" << transMatTime / 1000 << "ms(" << (double)transMatTime * 100 / totTime << "%), "
+//			<< "alphaTime=" << alphaTime / 1000 << "ms(" << (double)alphaTime * 100 / totTime << "%), "
+//			<< "betaTime=" << betaTime / 1000 << "ms(" << (double)betaTime * 100 / totTime << "%), "
+//			<< "expFTime=" << expFTime / 1000 << "ms(" << (double)expFTime * 100 / totTime << "%), "
+//			<< "totTime=" << totTime / 1000 << "ms, "
+//			<< "timePerFrame=" << (double)totTime / numFrames / 1000 << "ms.\n";
 
 	// just for debugging
 //	cout << endl;

@@ -170,8 +170,7 @@ double CRF_StdSegStateNode::computeTransMatrix()
  *
  * Read alpha vectors of previous nodes directly from prevNode and store the result of the alpha vector in alphaArray.
  *
- * Stub function.
- * Should compute the alpha vector for the forward backward computation for this node.
+ * Compute the alpha vector for the forward backward computation for this node.
  */
 double CRF_StdSegStateNode::computeAlpha()
 {
@@ -248,10 +247,9 @@ double CRF_StdSegStateNode::computeAlpha()
 }
 
 /*
- * CRF_StateNode::computeFirstAlpha
+ * CRF_StdSegStateNode::computeFirstAlpha
  *
- * Stub function.
- * Should compute the alpha vector for this node for the special case where the node is the first
+ * Compute the alpha vector for this node for the special case where the node is the first
  * node in the sequence.
  */
 double CRF_StdSegStateNode::computeFirstAlpha()
@@ -260,15 +258,15 @@ double CRF_StdSegStateNode::computeFirstAlpha()
 //	cout << "CRF_StdSegStateNode::computeFirstAlpha()" << endl;
 
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
-	this->alphaScale=0.0;
+	this->alphaScale = 0.0;
 
-	//nodeMaxLab for the first node of the sequence is usually equal to nActualLabs (since nodeLabMaxDur==1).
+	//numAvailLabs for the first node of the sequence is usually equal to nActualLabs (since nodeLabMaxDur==1).
 	for (QNUInt32 clab = 0; clab < this->numAvailLabs; clab++)
 	{
 		// just for debugging
 //		cout << "alphaArray[" << clab << "]=stateArray[" << clab << "]=" << this->stateArray[clab] << " ";
 
-		this->alphaArray[clab]=this->stateArray[clab];
+		this->alphaArray[clab] = this->stateArray[clab];
 	}
 
 	// just for debugging
@@ -279,7 +277,7 @@ double CRF_StdSegStateNode::computeFirstAlpha()
 }
 
 /*
- * CRF_StateNode::computeBeta
+ * CRF_StdSegStateNode::computeBeta
  *
  * Inputs: scale - scaling constant for result_beta array
  *
@@ -287,8 +285,7 @@ double CRF_StdSegStateNode::computeFirstAlpha()
  *
  * Read the beta vectors of next nodes directly from nextNode and store the result of the beta vector in betaArray.
  *
- * Stub function.
- * Should compute the beta vector for the node before this one and store it in result_beta
+ * Compute the beta vector for the node before this one and store it in result_beta
  */
 double CRF_StdSegStateNode::computeBeta(double scale)
 {
@@ -416,7 +413,7 @@ double* CRF_StdSegStateNode::computeAlphaBeta(double Zx)
 }
 
 /*
- * CRF_StateNode::computeExpF
+ * CRF_StdSegStateNode::computeExpF
  *
  * Inputs: *ExpF - vector to store expected values of feature functions
  *         *grad - vector to store computed gradient values
@@ -427,8 +424,7 @@ double* CRF_StdSegStateNode::computeAlphaBeta(double Zx)
  *
  * Read alpha vectors of previous nodes directly from prevNode for use in transition feature ExpF computation.
  *
- * Stub function.
- * Should compute gradient and expected values for features in this node and store them in *grad and
+ * Compute gradient and expected values for features in this node and store them in *grad and
  *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
  */
 double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab)
@@ -669,7 +665,7 @@ bool CRF_StdSegStateNode::checkNumNextNodes()
 	return true;
 }
 
-// These functions do not work for CRF_StdSegStateNode
+// Override these functions which do not work for CRF_StdSegStateNode
 
 /*
  * CRF_StdSegStateNode::computeAlpha

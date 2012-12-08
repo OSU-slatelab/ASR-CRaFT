@@ -268,7 +268,7 @@ bool CRF_Model::readAverageFromFile(const char* fname, int present)
 				lambdaAcc[i]=lambdaAcc[i]*present;
 
 				// added by Ryan, just for debugging
-				std::cout << lambdaAcc[i] << std::endl;
+				//std::cout << lambdaAcc[i] << std::endl;
 			}
 		}
 		ifile.close();

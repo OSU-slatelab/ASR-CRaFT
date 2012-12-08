@@ -24,6 +24,7 @@ public:
 
 	// Ryan: can these template functions be virtual?
 	template <class Arc> int buildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL,bool norm=true);
+	template <class Arc> int nStateBuildLattice(VectorFst<Arc>*fst, bool align=false, VectorFst<Arc>*alignFst=NULL,bool norm=true);
 };
 
 template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr::buildLattice(VectorFst<Arc>* fst,
@@ -145,8 +146,9 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTrans
 //		labFst->SetFinal(curLabState,0);
 //	}
 //#else
-	// this is important! Every time bunch_size has to be reset to 1.
-	// since it must start from 1 and be added by 1 every iteration up to lab_max_dur.
+	// this is important! For each utterance, bunch_size has to be reset to 1.
+	// since within an utterance, bunch_size must start from 1 and be added by 1 at every node,
+	// until it is equal to lab_max_dur.
 	this->bunch_size = 1;
 	do {
 		// just for debugging
@@ -734,7 +736,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTrans
 
 			//***********************************//
 
-
+			// TODO: need to change the following block to implement the segmental level forced alignment.
 			if (align) {
 				if (this->labs_width == 0)
 				{
@@ -760,7 +762,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTrans
 			nodeCnt++;
 		}
 
-		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		// bunch_size (number of windows ending at next frame) is added by 1 at each node, until being equal to lab_max_dur.
 		if (this->bunch_size < this->lab_max_dur)
 			this->bunch_size++;
 
@@ -800,7 +802,428 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTrans
 			//int prev_state = this->nodeStartStates->at(nodeCnt-1) + prev_lab;
 
 			//fst->AddArc(prev_state,Arc(0,0,0,final_state));
-			fst->AddArc(prev_state,Arc(0,0,Zx,final_state));
+			fst->AddArc(prev_state,Arc(0,0,-Zx,final_state));
+
+			// just for debugging
+//			cout << "Zx=" << Zx << ", final_state=" << final_state << ";\t";
+//			cout << "AddArc(" << prev_state << ",Arc(" << 0 << "," << 0 << "," << Zx << "," << final_state << "));" << endl;
+
+		}
+		fst->SetFinal(final_state,0);
+		if (align) {
+			labFst->SetFinal(curLabState,0);
+		}
+
+	}
+//#endif
+
+	return seq_len;
+
+}
+
+template <class Arc> int CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr::nStateBuildLattice(VectorFst<Arc>* fst,
+									  bool align,
+									  VectorFst<Arc>*labFst,
+									  bool norm) {
+
+
+	// just for debugging
+//	cout << "Beginning of CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr::nStateBuildLattice" << endl;
+
+	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
+
+	// Returns the best path through the current segment
+	QNUInt32 ftr_count;
+
+	int startState=0;
+	int labStartState=0;
+	QNUInt32 curLab=0;
+	int curLabState=labStartState;
+	bool firstLab=true;
+	fst->AddState();   // 1st state will be state 0 (returned by AddState)
+	fst->SetStart(startState);  // arg is state ID
+	if (align) {
+		labFst->AddState(); // 1st state will be state 0 (returned by AddState);
+		labFst->SetStart(labStartState); // arg is stateID
+	}
+
+	int seq_len=0;
+	QNUInt32 nodeCnt=0;
+
+	// this is important! For each utterance, bunch_size has to be reset to 1.
+	// since within an utterance, bunch_size must start from 1 and be added by 1 at every node,
+	// until it is equal to lab_max_dur.
+	this->bunch_size = 1;
+	do {
+		// just for debugging
+//		cout << "this->bunch_size=" << this->bunch_size << ". ftr_strm->read(this->bunch_size,this->ftr_buf,this->lab_buf)" << endl;
+
+		ftr_count=this->ftr_strm->read(this->bunch_size,this->ftr_buf,this->lab_buf);
+
+		if (ftr_count > 0) {
+
+			// just for debugging
+//			cout << "before creating new_buf." << endl;
+
+			QNUInt32 cur_ftr_buf_size = this->num_ftrs * ftr_count;
+
+			// Just for debugging
+//			cout << "QNUInt32 cur_ftr_buf_size = num_ftrs * ftr_count = " << num_ftrs << " * " << ftr_count << " = " << cur_ftr_buf_size << endl;
+
+			float* new_buf = new float[cur_ftr_buf_size];
+			for (QNUInt32 j=0; j<cur_ftr_buf_size; j++) {
+				new_buf[j]=this->ftr_buf[j];
+				//cout << " " << new_buf[j];
+			}
+
+			QNUInt32 label = CRF_LAB_BAD;
+			//TODO: use this->labs_width>0 or this->lab_buf != NULL ?
+			if (this->labs_width > 0)
+			{
+				//TODO: design a labmap class to do the label mapping.
+				QNUInt32 actualLab = CRF_LAB_BAD;
+				QNUInt32 ifBrokenLab = CRF_LAB_BAD;
+
+				actualLab = this->lab_buf[0];
+
+				// just for debugging
+//					cout << "actualLab=" << actualLab << endl;
+
+				if (actualLab != CRF_LAB_BAD)
+				{
+					QNUInt32 begin = this->lab_buf[1];
+					QNUInt32 end = this->lab_buf[2];
+
+					QNUInt32 dur = end - begin + 1;
+
+					// just for debugging
+//						cout << "begin=" << begin << " end=" << end;
+
+					// for phn_dur label
+					label = this->nActualLabs * (dur - 1) + actualLab;
+
+					// for phn_dur_brokenClasses2 label
+//						ifBrokenLab = this->lab_buf[3];
+//						label = nActualLabs * (dur - 1) + actualLab * 2 + ifBrokenLab;
+				}
+
+				// just for debugging
+//					cout << " label=" << label << endl;
+			}
+
+			QNUInt32 nodeMaxDur;
+			if (nodeCnt + 1 <= this->lab_max_dur)
+			{
+				nodeMaxDur = nodeCnt + 1;
+			}
+			else
+			{
+				nodeMaxDur = this->lab_max_dur;
+			}
+			// TODO: For segmental CRFs which have the different structures for different nodes, these parameters need to be changed.
+			QNUInt32 prevNode_nLabs = this->crf->getNLabs();
+			QNUInt32 nextNode_nActualLabs = this->nActualLabs;
+			this->nodeList->set(nodeCnt,new_buf,cur_ftr_buf_size,label,this->crf,nodeMaxDur,prevNode_nLabs,nextNode_nActualLabs);
+
+			// just for debugging
+//			cout << "Label: " << label << endl;
+
+			QNUInt32 numPrevNodes;
+			if (nodeCnt + 1 <= this->lab_max_dur)
+			{
+				numPrevNodes = nodeCnt;
+			}
+			else
+			{
+				numPrevNodes = this->lab_max_dur;
+			}
+			assert(numPrevNodes + 1 == nodeMaxDur || numPrevNodes == nodeMaxDur);
+			CRF_StateNode** prevNodes = NULL;
+			if (numPrevNodes > 0)
+			{
+
+				// just for debugging
+//				cout << "before creating prevNodes." << endl;
+
+				prevNodes = new CRF_StateNode*[numPrevNodes];
+				for (QNUInt32 i = 0; i < numPrevNodes; i++)
+				{
+					QNUInt32 ni = nodeCnt - numPrevNodes + i;
+					prevNodes[i] = this->nodeList->at(ni);
+				}
+			}
+			this->nodeList->at(nodeCnt)->setPrevNodes(prevNodes, numPrevNodes);
+
+			// just for debugging
+//			cout << "Before computing state and transition matrix for node " << nodeCnt << ": ";
+//			int pauseTemp;
+//			cin >> pauseTemp;
+
+			float value = this->nodeList->at(nodeCnt)->computeTransMatrix();
+			double scale;
+			if (nodeCnt == 0) {
+			// just for debugging
+			//	scale = this->nodeList->at(nodeCnt)->computeFirstAlpha();
+			}
+			else {
+			// just for debugging
+			//	scale = this->nodeList->at(nodeCnt)->computeAlpha();
+			}
+			seq_len++;
+
+			// just for debugging
+//			cout << "Begin to build fst for nodeCnt=" << nodeCnt << " ..." << endl;
+
+			if (nodeCnt == 0) {
+				this->setNodeStartState(nodeCnt, startState + 1);
+			}
+
+			int cur_time = nodeCnt + 1;
+			QNUInt32 num_new_states = 0;
+			int cur_state;
+
+			//***** CRF_StdSeg_WithoutDurLab_WithoutSegTransFtr *****//
+
+			// to add the boundary node.
+
+			// just for debugging
+//			cout << "Adding states for the boundary node..." << endl;
+
+			// the starting segment does not have a boundary node
+			if (numPrevNodes > 0)
+			{
+				for (int lab = 0; lab < this->nActualLabs; lab++)
+				{
+					cur_state = fst->AddState();
+					num_new_states++;
+
+					int prev_numAvailLabs = this->nodeList->at(nodeCnt-1)->getNumAvailLabs();
+					assert(prev_numAvailLabs == this->nActualLabs);
+
+					// obtain the start state id of the previous segment node.
+					// this->nodeStartStates->at(nodeCnt-1) only records the start state of the boundary
+					// node, so it has to add prev_numAvailLabs to skip all states of the boundary node
+					// to get to the real start state of the segment node.
+					// But the second node (nodeCnt == 1, i.e. the first boundary node) is an exception.
+					// Since its previous segment node (nodeCnt == 0) does not have boundary node,
+					// it should not add prev_numAvailLabs.
+					int prev_seg_node_start_state;
+					if (nodeCnt == 1)
+					{
+						prev_seg_node_start_state = this->nodeStartStates->at(nodeCnt-1);
+					}
+					else
+					{
+						prev_seg_node_start_state = this->nodeStartStates->at(nodeCnt-1) + prev_numAvailLabs;
+					}
+
+					if (lab % nStates ==0) {
+
+						// We're in a start state - add arcs from all possible previous end states
+						for (int prev_lab = nStates - 1; prev_lab < prev_numAvailLabs; prev_lab += nStates) {
+
+							float value = -1 * this->nodeList->at(nodeCnt)->getTransValue(prev_lab,lab);
+
+							// just for debugging
+	//						cout << "nodeCnt=" << nodeCnt << ", lab=" << lab << ", prev_lab=" << prev_lab << endl;
+	//						cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getTransValue(prev_lab=" << prev_lab << ", lab=" << lab << ")=" << value << ";\t";
+
+							int prev_state = prev_seg_node_start_state + prev_lab;
+
+							// the label of the boundary node is only the phone class without duration,
+							// so we put an epsilon label 0 here as the boundary label to avoid double outputting,
+							// the real phone and duration label is in the segment node that follows.
+							fst->AddArc(prev_state,Arc(0,0,value,cur_state));
+
+							// just for debugging
+//							cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//									<< ", prev_lab=" << prev_lab
+//									<< ", AddArc(" << prev_state << ",Arc("
+//									<< 0 << "," << 0 << ","
+//									<< value << "," << cur_state << "));" << endl;
+						}
+
+						// Special case handling - if we have more than one state we have to explicitly
+						// put a self loop in
+						if (nStates > 1) {
+							float value = -1 * this->nodeList->at(nodeCnt)->getTransValue(lab,lab);
+							int prev_state = prev_seg_node_start_state + lab;
+							fst->AddArc(prev_state,Arc(0,0,value,cur_state));
+
+							// just for debugging
+//							cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//									<< ", prev_lab=" << lab
+//									<< ", AddArc(" << prev_state << ",Arc("
+//									<< 0 << "," << 0 << ","
+//									<< value << "," << cur_state << "));" << endl;
+						}
+					}
+					else {
+
+						// We're not in a start state - all we need are arcs from the previous label
+						// and arcs from the previous self label
+						int prev_lab = lab - 1;
+						float value = -1 * this->nodeList->at(nodeCnt)->getTransValue(prev_lab,lab);
+						int prev_state = prev_seg_node_start_state + prev_lab;
+						fst->AddArc(prev_state,Arc(0,0,value,cur_state));
+
+						// just for debugging
+//						cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//								<< ", prev_lab=" << prev_lab
+//								<< ", AddArc(" << prev_state << ",Arc("
+//								<< 0 << "," << 0 << ","
+//								<< value << "," << cur_state << "));" << endl;
+
+						prev_lab = lab;
+						value = -1 * this->nodeList->at(nodeCnt)->getTransValue(prev_lab,lab);
+						prev_state = prev_seg_node_start_state + prev_lab;
+						fst->AddArc(prev_state,Arc(0,0,value,cur_state));
+
+						// just for debugging
+//						cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//								<< ", prev_lab=" << prev_lab
+//								<< ", AddArc(" << prev_state << ",Arc("
+//								<< 0 << "," << 0 << ","
+//								<< value << "," << cur_state << "));" << endl;
+					}
+				}
+			}
+
+			// to add the segment node.
+
+			// just for debugging
+//			cout << "Adding states for the segment node..." << endl;
+
+			for (int lab = 0; lab < this->nActualLabs; lab++)
+			{
+				cur_state = fst->AddState();
+				num_new_states++;
+
+				int cur_lab = lab;
+
+				for (int dur = 1; dur <= numPrevNodes; dur++)
+				{
+					float value = -1 * this->nodeList->at(nodeCnt)->getStateValue(lab, dur);
+
+					// just for debugging
+//					cout << "nodeCnt=" << nodeCnt << ", dur=" << dur << ", lab=" << lab << endl;
+//					cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getStateValue(lab=" << lab << ", dur=" << dur << ")=" << value << ";\t";
+
+					// obtain the state id of the previous boundary node with lab.
+					int prev_state = this->nodeStartStates->at(nodeCnt-dur + 1) + lab;
+					fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
+
+					// just for debugging
+//					cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//							<< ", dur=" << dur
+//							<< ", AddArc(" << prev_state << ",Arc("
+//							<< cur_lab+1 << "," << cur_lab+1 << ","
+//							<< value << "," << cur_state << "));" << endl;
+
+					cur_lab += this->nActualLabs;
+				}
+				for (int dur = numPrevNodes + 1; dur <= nodeMaxDur; dur++)
+				{
+					float value = -1 * this->nodeList->at(nodeCnt)->getStateValue(lab, dur);
+
+					// just for debugging
+//					cout << "nodeCnt=" << nodeCnt << ", dur=" << dur << ", lab=" << lab << endl;
+//					cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getStateValue(lab=" << lab << ", dur=" << dur << ")=" << value << ";\t";
+
+					// we are in the starting segment of the utterance, link to the starting state of the lattice
+					fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
+
+					// just for debugging
+//					cout << "nodeCnt=" << nodeCnt << ", lab=" << lab
+//							<< ", dur=" << dur
+//							<< ", AddArc(" << startState << ",Arc("
+//							<< cur_lab+1 << "," << cur_lab+1 << ","
+//							<< value << "," << cur_state << "));" << endl;
+
+					cur_lab += this->nActualLabs;
+				}
+			}
+
+			QNUInt32 nextNodeCnt = nodeCnt + 1;
+			QNUInt32 nextNodeStartState = this->nodeStartStates->at(nodeCnt) + num_new_states;
+
+			// just for debugging
+//			cout << "To add start state " << nextNodeStartState << " to node " << nextNodeCnt << endl;
+
+			this->setNodeStartState(nextNodeCnt, nextNodeStartState);
+
+			// just for debugging
+//			cout << "Finish building fst for nodeCnt=" << nodeCnt << "!" << endl;
+
+			//***********************************//
+
+			// TODO: need to change the following block to implement the segmental level forced alignment.
+			if (align) {
+				if (this->labs_width == 0)
+				{
+					string errstr="CRF_LatticeBuilder::buildLattice() caught exception: The label stream is found NULL or the label width is found 0 under the align mode.";
+					throw runtime_error(errstr);
+				}
+				QNUInt32 lab=this->nodeList->at(nodeCnt)->getLabel()+1;
+				if (firstLab or (lab != curLab)) {
+					int prevLabState=curLabState;
+					curLabState=labFst->AddState();
+					labFst->AddArc(prevLabState,Arc(lab,lab,0,curLabState));
+					labFst->AddArc(curLabState,Arc(lab,lab,0,curLabState)); // Add self loop
+					firstLab=false;
+					curLab=lab;
+				}
+			}
+
+			// just for debugging
+//			cout << endl;
+
+			if (prevNodes != NULL)
+				delete [] prevNodes;
+			nodeCnt++;
+		}
+
+		// bunch_size (number of windows ending at next frame) is added by 1 at each node, until being equal to lab_max_dur.
+		if (this->bunch_size < this->lab_max_dur)
+			this->bunch_size++;
+
+	} while (ftr_count > 0);
+
+	this->nodeList->setNodeCount(nodeCnt);
+
+	// added by Ryan, to make sure nodeCnt is larger than 0.
+	if (nodeCnt > 0)
+	{
+
+		double Zx = 0;
+		//double Zx=this->nodeList->at(nodeCnt-1)->computeAlphaSum();
+		if (norm) { Zx = -1*this->nodeList->at(nodeCnt-1)->computeAlphaSum(); }
+		//cout << "Zx: " << Zx << endl;
+		int final_state = fst->AddState();
+		int lastNodeNumAvailLabs = this->nodeList->at(nodeCnt-1)->getNumAvailLabs();
+		for (int prev_lab = 0; prev_lab < lastNodeNumAvailLabs; prev_lab++) {
+
+			// Changed by Ryan
+
+			// obtain the state id of the previous segment node with prev_lab.
+			// this->nodeStartStates->at(nodeCnt-1) only records the start state of the boundary
+			// node, so it has to add prev_numAvailLabs to skip all states of the boundary node
+			// to get to the real start state of the segment node.
+			// The second node (nodeCnt == 1) is an exception. Since its previous node (nodeCnt == 0)
+			// does not have boundary node, it should not add prev_numAvailLabs.
+			int prev_state;
+			if (nodeCnt == 1)
+			{
+				prev_state = this->nodeStartStates->at(nodeCnt-1) + prev_lab;
+			}
+			else
+			{
+				prev_state = this->nodeStartStates->at(nodeCnt-1) + lastNodeNumAvailLabs + prev_lab;
+			}
+			//int prev_state = this->nodeStartStates->at(nodeCnt-1) + prev_lab;
+
+			//fst->AddArc(prev_state,Arc(0,0,0,final_state));
+			fst->AddArc(prev_state,Arc(0,0,-Zx,final_state));
 
 			// just for debugging
 //			cout << "Zx=" << Zx << ", final_state=" << final_state << ";\t";

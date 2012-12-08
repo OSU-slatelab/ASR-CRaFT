@@ -160,8 +160,9 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //		labFst->SetFinal(curLabState,0);
 //	}
 //#else
-	// this is important! Every time bunch_size has to be reset to 1.
-	// since it must start from 1 and be added by 1 every iteration up to lab_max_dur.
+	// this is important! For each utterance, bunch_size has to be reset to 1.
+	// since within an utterance, bunch_size must start from 1 and be added by 1 at every node,
+	// until it is equal to lab_max_dur.
 	this->bunch_size = 1;
 	do {
 		ftr_count=this->ftr_strm->read(this->bunch_size,this->ftr_buf,this->lab_buf);
@@ -621,6 +622,8 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				// just for debugging
 //				cout << "end of a regular node: " << nodeCnt << endl;
 			}
+
+			// TODO: need to change the following block to implement the segmental level forced alignment.
 			if (align) {
 				if (this->labs_width == 0)
 				{
@@ -646,7 +649,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 			nodeCnt++;
 		}
 
-		// bunch_size (number of windows ending at next frame) is added by 1 in each iteration, until being equal to lab_max_dur.
+		// bunch_size (number of windows ending at next frame) is added by 1 at each node, until being equal to lab_max_dur.
 		if (this->bunch_size < this->lab_max_dur)
 			this->bunch_size++;
 
@@ -662,7 +665,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 	for (int prev_lab = 0; prev_lab < lastNodeNumAvailLabs; prev_lab++) {
 		int prev_state = this->nodeStartStates->at(nodeCnt-1) + prev_lab;
 		//fst->AddArc(prev_state,Arc(0,0,0,final_state));
-		fst->AddArc(prev_state,Arc(0,0,Zx,final_state));
+		fst->AddArc(prev_state,Arc(0,0,-Zx,final_state));
 
 		// just for debugging
 //		cout << "Zx=" << Zx << ", final_state=" << final_state << ";\t";

@@ -44,7 +44,7 @@ all: CRFTrain
 CRFTrain: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	/u/drspeech/opt/gcc-4.4.0/x86_64/bin/g++ -L/u/drspeech/src/quicknet-v3_20/H-x86_64 -L/u/drspeech/opt/OpenFst-1.1/x86_64/lib -L/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L"/home3/hey/segmental-branch/CRF/Debug" -Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/ -o "CRFTrain" $(OBJS) $(USER_OBJS) $(LIBS)
+	/usr/bin/g++ -L/u/drspeech/src/quicknet-v3_20/H-x86_64 -L/u/drspeech/opt/OpenFst-1.1/x86_64/lib -L/u/drspeech/src/ATLAS-3.8.2/Linux_XE64SSE3/lib -L"/home3/hey/segmental-branch/CRF/Debug" -Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/usr/lib/gcc/x86_64-redhat-linux/4.4.6/ -fopenmp -o "CRFTrain" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

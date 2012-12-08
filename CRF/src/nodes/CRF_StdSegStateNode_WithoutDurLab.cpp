@@ -23,14 +23,18 @@ CRF_StdSegStateNode_WithoutDurLab::CRF_StdSegStateNode_WithoutDurLab(float* fb, 
 	this->stateArray = new double[this->nActualLabs * this->nodeLabMaxDur];
 //	for (QNUInt32 id = 0; id < this->nActualLabs * this->nodeLabMaxDur; id++)
 //	{
-//		this->stateArray[id] = 0.0;
+//		// Changed by Ryan. It should be CRF_LogMath::LOG0 instead of 0.0. TODO: verify.
+//		//this->stateArray[id] = 0.0;
+//		this->stateArray[id] = CRF_LogMath::LOG0;
 //	}
 
 	delete [] this->transMatrix;
 	this->transMatrix = new double[this->nActualLabs * this->nActualLabs * this->nodeLabMaxDur];
 //	for (QNUInt32 id = 0; id < this->nActualLabs * this->nActualLabs * this->nodeLabMaxDur; id++)
 //	{
-//		this->transMatrix[id] = 0.0;
+//		// Changed by Ryan. It should be CRF_LogMath::LOG0 instead of 0.0. TODO: verify.
+//		//this->transMatrix[id] = 0.0;
+//		this->transMatrix[id] = CRF_LogMath::LOG0;
 //	}
 
 	delete [] this->tempBeta;
@@ -380,11 +384,11 @@ double CRF_StdSegStateNode_WithoutDurLab::computeBeta(double scale)
 		double* next_adj_seg_beta = nextAdjacentSeg->getBeta();
 
 //		double* stateArrayForCurDur = &(this->stateArray[this->nActualLabs * (dur - 1)]);
-		double* tempBetaForCurDur = &(this->tempBeta[this->nActualLabs * (dur - 1)]);
+		double* tempBetaForNextDur = &(this->tempBeta[this->nActualLabs * (dur - 1)]);
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 		{
 			//this->tempBeta[nextlab] = next_adj_seg_beta[nextlab] + nextAdjacentSeg->getStateValue(nextlab);
-			tempBetaForCurDur[lab] = next_adj_seg_beta[lab] + nextAdjacentSeg->getStateValue(lab,dur);
+			tempBetaForNextDur[lab] = next_adj_seg_beta[lab] + nextAdjacentSeg->getStateValue(lab,dur);
 //			this->tempBeta[this->nActualLabs * (dur - 1) + lab] = next_adj_seg_beta[lab] + nextAdjacentSeg->getStateValue(lab,dur);
 
 			// just for debugging
@@ -414,14 +418,14 @@ double CRF_StdSegStateNode_WithoutDurLab::computeBeta(double scale)
 		for (QNUInt32 dur = 1; dur <= this->numNextNodes; dur++)
 		{
 			nextAdjacentSeg = this->nextNodes[dur - 1];
-			double* tempBetaForCurDur = &(this->tempBeta[this->nActualLabs * (dur - 1)]);
+			double* tempBetaForNextDur = &(this->tempBeta[this->nActualLabs * (dur - 1)]);
 			//TODO: It should be nActualLabs_of_nextNode instead of nActualLabs_of_thisNode as the number of iterations.
 			for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++) {
 //			for (QNUInt32 lab = 0; lab < this->nextNodeNActualLabs; lab++) {
 
 				//this->logAddAcc[nextlab] = nextAdjacentSeg->getTransValue(clab, nextlab) + this->tempBeta[nextlab];
 //				this->logAddAcc[logAddID] = nextAdjacentSeg->getTransValue(clab, lab, dur) + nextAdjacentSeg->getTempBeta(lab, dur);
-				this->logAddAcc[logAddID] = nextAdjacentSeg->getTransValue(clab, lab, dur) + tempBetaForCurDur[lab];
+				this->logAddAcc[logAddID] = nextAdjacentSeg->getTransValue(clab, lab, dur) + tempBetaForNextDur[lab];
 //				this->logAddAcc[logAddID] = nextAdjacentSeg->getTransValue(clab, lab, dur) + this->tempBeta[this->nActualLabs * (dur - 1) + lab];
 
 				// just for debugging
@@ -744,12 +748,12 @@ double CRF_StdSegStateNode_WithoutDurLab::computeExpF(double* ExpF, double* grad
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Correct getTransValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
 	// just for debugging
 //	cout << "getting transMatrix[" << this->nActualLabs << "*" << this->nActualLabs << "*" << (dur - 1) << "+" << prev_lab
@@ -758,41 +762,41 @@ double CRF_StdSegStateNode_WithoutDurLab::getTransValue(QNUInt32 prev_lab, QNUIn
 //			//<< this->transMatrix[this->nActualLabs * this->nActualLabs * (dur - 1) + prev_lab * this->nActualLabs + cur_lab]
 //			<< endl;
 
-	return this->transMatrix[this->nActualLabs * this->nActualLabs * (dur - 1) + prev_lab * this->nActualLabs + cur_lab];
+	return this->transMatrix[this->nActualLabs * this->nActualLabs * (cur_dur - 1) + prev_lab * this->nActualLabs + cur_lab];
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Correct getStateValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab::getStateValue(QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
-	return this->stateArray[this->nActualLabs * (dur - 1) + cur_lab];
+	return this->stateArray[this->nActualLabs * (cur_dur - 1) + cur_lab];
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Correct getFullTransValue() function for CRF_StdSegStateNode_WithoutDurLab.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
-	return getTransValue(prev_lab, cur_lab, dur) + getStateValue(cur_lab, dur);
+	return getTransValue(prev_lab, cur_lab, cur_dur) + getStateValue(cur_lab, cur_dur);
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
 {
-	return this->tempBeta[this->nActualLabs * (dur - 1) + cur_lab];
+	return this->tempBeta[this->nActualLabs * (next_dur - 1) + next_lab];
 }
 
 // Disable all these functions by overriding them with exception handling. Use their modified version below.

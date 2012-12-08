@@ -67,32 +67,48 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 		// modified for context features
 		if (extract_segment_features)
 		{
+			// original sample-avg-max-min-dur features without context features
 			//out_width = 8 * in_width + max_win_len;   //TODO: Currently hard-coded. Need to be parameterized.
 			////out_width = 488 + max_win_len;
+
+			// various feature combinations with context features.
+			// need to change the feature combinations in read_ftrs() accordingly as well.
+//			out_width = 9 * in_width + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sum-sample-avg-max-min-dur TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 9 * in_width +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sum-sample-avg-max-min TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 8 * in_width + 3 + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min-avg_kl-max_kl-min_kl-dur TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 8 * in_width + 3 +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min-avg_kl-max_kl-min_kl TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 8 * in_width + 1 + max_win_len +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min-avg_kl-dur TODO: Currently hard-coded. Need to be parameterized.
+//			out_width = 8 * in_width + 1 +
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min-avg_kl TODO: Currently hard-coded. Need to be parameterized.
 			out_width = 8 * in_width + max_win_len +
-					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 8 * in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-min TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 7 * in_width + max_win_len +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 7 * in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-max TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 6 * in_width + max_win_len +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 6 * in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-avg TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 5 * in_width + max_win_len +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 5 * in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. sample TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 2 * in_width + max_win_len +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. avg-max-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = 2 * in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. avg-max TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = in_width + max_win_len +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. avg-dur TODO: Currently hard-coded. Need to be parameterized.
 //			out_width = in_width +
-//					(left_context_len + right_context_len) * in_width;  //TODO: Currently hard-coded. Need to be parameterized.
+//					(left_context_len + right_context_len) * in_width;  //e.g. avg TODO: Currently hard-coded. Need to be parameterized.
 
 		} else {
 			if (use_boundary_delta_ftrs)
@@ -107,6 +123,14 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 			else
 			{
 				out_width = (left_context_len + 1 + right_context_len) * in_width;
+
+				// add KL divergence to the boundary features
+//				QNUInt32 both_context_len = left_context_len;
+//				if (both_context_len > right_context_len + 1)
+//				{
+//					both_context_len = right_context_len + 1;
+//				}
+//				out_width = (left_context_len + 1 + both_context_len + right_context_len) * in_width;
 			}
 		}
 	}
@@ -437,13 +461,18 @@ size_t CRF_InFtrStream_SeqMultiWindow::read_ftrs(size_t cnt, float* ftrs, size_t
 	//		numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 			if (extract_segment_features)
 			{
+				// various feature combinations with context features
+//				numWrittenFtrPerWin += sum_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 				numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 				numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 				numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 				numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
+//				numWrittenFtrPerWin += kl_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 				numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 			} else {
 				numWrittenFtrPerWin += first_frame_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
+				// use KL divergence between boundary frames as a feature
+//				numWrittenFtrPerWin += boundary_kl_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 			}
 		}
 
@@ -505,6 +534,45 @@ QN_SegID CRF_InFtrStream_SeqMultiWindow::set_pos(size_t segno, size_t frameno)
 	return QN_SEGID_BAD;
 }
 
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::sum_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::sum_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride)
+{
+	//for win_len=1
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
+
+	float* acc_sum_ftrs(new float[in_width]);
+	for (size_t acc_i = 0; acc_i < in_width; acc_i++)
+	{
+		acc_sum_ftrs[acc_i] = 0.0f;
+	}
+
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	{
+		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
+		{
+			acc_sum_ftrs[ftr_i] += cur_win_in_buf[ftr_i];
+			cur_win_out_buf[ftr_i] = acc_sum_ftrs[ftr_i];
+
+			// just for debugging
+//			cout << "ftr_buf(" << &cur_win_out_buf[ftr_i] << ")=" << cur_win_out_buf[ftr_i] << ", sum_ftrs" << endl;
+		}
+		cur_win_in_buf -= in_width;
+//		cur_win_out_buf += out_width;
+		cur_win_out_buf += stride;
+	}
+
+	delete [] acc_sum_ftrs;
+	return in_width;        //TODO: Currently hard-coded. Need to be parameterized.
+}
 
 // Each individual window-based feature function
 
@@ -523,7 +591,7 @@ size_t CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* out_ftr_buf, size_t av
 	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		//cout << "cur_win_len=" << cur_win_len << " frameSteps:";
 		float* cur_sample_frame_in_buf = cur_win_in_buf;
@@ -566,6 +634,17 @@ size_t CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* out_ftr_buf, size_t av
 		//cout << endl;
 	}
 
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (size_t ftr_i = 0; ftr_i < 5 * in_width; ftr_i++)
+//		{
+//			cur_win_out_buf[ftr_i] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
+
 	return 5 * in_width;	    //TODO: Currently hard-coded. Need to be parameterized.
 }
 
@@ -590,7 +669,7 @@ size_t CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* out_ftr_buf, size_t avail
 		acc_sum_ftrs[acc_i] = 0.0f;
 	}
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
@@ -604,6 +683,17 @@ size_t CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* out_ftr_buf, size_t avail
 //		cur_win_out_buf += out_width;
 		cur_win_out_buf += stride;
 	}
+
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
+//		{
+//			cur_win_out_buf[ftr_i] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
 
 	delete [] acc_sum_ftrs;
 	return in_width;        //TODO: Currently hard-coded. Need to be parameterized.
@@ -630,7 +720,7 @@ size_t CRF_InFtrStream_SeqMultiWindow::max_ftrs(float* out_ftr_buf, size_t avail
 		acc_max_ftrs[acc_i] = cur_win_in_buf[acc_i];
 	}
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
@@ -647,6 +737,17 @@ size_t CRF_InFtrStream_SeqMultiWindow::max_ftrs(float* out_ftr_buf, size_t avail
 //		cur_win_out_buf += out_width;
 		cur_win_out_buf += stride;
 	}
+
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
+//		{
+//			cur_win_out_buf[ftr_i] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
 
 	delete [] acc_max_ftrs;
 	return in_width;       //TODO: Currently hard-coded. Need to be parameterized.
@@ -673,7 +774,7 @@ size_t CRF_InFtrStream_SeqMultiWindow::min_ftrs(float* out_ftr_buf, size_t avail
 		acc_min_ftrs[acc_i] = cur_win_in_buf[acc_i];
 	}
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
@@ -691,8 +792,117 @@ size_t CRF_InFtrStream_SeqMultiWindow::min_ftrs(float* out_ftr_buf, size_t avail
 		cur_win_out_buf += stride;
 	}
 
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
+//		{
+//			cur_win_out_buf[ftr_i] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
+
 	delete [] acc_min_ftrs;
 	return in_width;      //TODO: Currently hard-coded. Need to be parameterized.
+}
+
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::kl_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::kl_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride)
+{
+	//for win_len=1
+	float* cur_win_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
+
+	float acc_kl_div = 0.0f;
+	float max_kl_div = 0.0f;
+	float min_kl_div = FLT_MAX;
+
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	{
+		if (cur_win_len == 1) {
+			cur_win_out_buf[0] = 0.0f;
+			cur_win_out_buf[1] = 0.0f;
+			cur_win_out_buf[2] = 0.0f;
+		} else {
+			float* cur_frame = cur_win_in_buf;
+			float* next_frame = cur_frame + in_width;
+			float cur_kl_div = get_kl_div(cur_frame, next_frame, in_width);
+			acc_kl_div += cur_kl_div;
+			if (cur_kl_div > max_kl_div)
+			{
+				max_kl_div = cur_kl_div;
+			}
+			if (cur_kl_div < min_kl_div)
+			{
+				min_kl_div = cur_kl_div;
+			}
+			cur_win_out_buf[0] = acc_kl_div / (cur_win_len - 1);
+			cur_win_out_buf[1] = max_kl_div;
+			cur_win_out_buf[2] = min_kl_div;
+		}
+
+		// just for debugging
+//		cout << "cur_win_len=" << cur_win_len << endl;
+//		cout << "ftr_buf(" << &cur_win_out_buf[0] << ")=" << cur_win_out_buf[0] << ", avg_kl_div" << endl;
+//		cout << "ftr_buf(" << &cur_win_out_buf[1] << ")=" << cur_win_out_buf[1] << ", max_kl_div" << endl;
+//		cout << "ftr_buf(" << &cur_win_out_buf[2] << ")=" << cur_win_out_buf[2] << ", min_kl_div" << endl;
+
+		cur_win_in_buf -= in_width;
+//		cur_win_out_buf += out_width;
+		cur_win_out_buf += stride;
+	}
+
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
+//		{
+//			cur_win_out_buf[ftr_i] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
+
+	return 3;        //TODO: Currently hard-coded. Need to be parameterized.
+}
+
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::get_kl_div
+ *
+ *  Input: P: vector for P(x) (discrete random variable)
+ *         Q: vector for Q(x) (discrete random variable)
+ *         n: number of values of x
+ *
+ *  Return: KL-divergence: KL(P(x)||Q(x))
+ *
+ */
+float CRF_InFtrStream_SeqMultiWindow::get_kl_div(float* P, float* Q, size_t n)
+{
+	float kl_div = 0.0f;
+
+	for (size_t i = 0; i < n; i++)
+	{
+		if (P[i] != 0.0f && Q[i] != 0.0f)
+		{
+			kl_div += P[i] * logE(P[i] / Q[i]);
+		} else {
+			// just for debugging
+			// this situation should not happen when using the dense MLP posterior input
+			cout << "P(x) or Q(x) equals to 0 when calculating KL(P(x)||Q(x)): P(x_"
+					<< i << ")=" << P[i] << ", Q(x_" << i << ")=" << Q[i] << endl;
+		}
+	}
+
+	return kl_div;
 }
 
 /*
@@ -709,20 +919,20 @@ size_t CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* out_ftr_buf, size_t avail
 	//for win_len=1
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
-		for (QNUInt32 tmp_win_len=1; tmp_win_len <= max_win_len; tmp_win_len++)
+		for (QNUInt32 tmp_win_len = 1; tmp_win_len <= max_win_len; tmp_win_len++)
 		{
 			if (tmp_win_len == cur_win_len)
 			{
-				cur_win_out_buf[tmp_win_len-1] = 1;
+				cur_win_out_buf[tmp_win_len - 1] = 1;
 
 				// just for debugging
 //				cout << "ftr_buf(" << &cur_win_out_buf[tmp_win_len-1] << ")=" << cur_win_out_buf[tmp_win_len-1] << ", dur_ftrs" << endl;
 			}
 			else
 			{
-				cur_win_out_buf[tmp_win_len-1] = 0;
+				cur_win_out_buf[tmp_win_len - 1] = 0;
 
 				// just for debugging
 //				cout << "ftr_buf(" << &cur_win_out_buf[tmp_win_len-1] << ")=" << cur_win_out_buf[tmp_win_len-1] << ", dur_ftrs" << endl;
@@ -731,6 +941,17 @@ size_t CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* out_ftr_buf, size_t avail
 //		cur_win_out_buf += out_width;
 		cur_win_out_buf += stride;
 	}
+
+	// experiment: multiply/devide by the segment length, to account for the length bias
+//	cur_win_out_buf = out_ftr_buf;
+//	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+//	{
+//		for (QNUInt32 tmp_win_len = 1; tmp_win_len <= max_win_len; tmp_win_len++)
+//		{
+//			cur_win_out_buf[tmp_win_len - 1] *= cur_win_len;
+//		}
+//		cur_win_out_buf += stride;
+//	}
 
 	return max_win_len;   //TODO: Currently hard-coded. Need to be parameterized.
 }
@@ -752,7 +973,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_left_ctx_ftrs(float* out_ftr_
 	float* cur_win_first_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		float* cur_left_ctx_frame_in_buf = cur_win_first_frame_in_buf - left_context_len * in_width;
 		float* cur_left_ctx_frame_out_buf = cur_win_out_buf;
@@ -792,7 +1016,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_right_ctx_ftrs(float* out_ftr
 	float* cur_win_first_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		float* cur_right_ctx_frame_in_buf = cur_win_first_frame_in_buf + in_width;
 		float* cur_right_ctx_frame_out_buf = cur_win_out_buf;
@@ -832,7 +1059,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::last_frame_right_ctx_ftrs(float* out_ftr_
 	float* cur_win_last_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		float* cur_right_ctx_frame_in_buf = cur_win_last_frame_in_buf + in_width;
 		float* cur_right_ctx_frame_out_buf = cur_win_out_buf;
@@ -872,7 +1102,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_ftrs(float* out_ftr_buf, size
 	float* cur_win_first_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
@@ -916,7 +1149,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::boundary_delta_ftrs(float* out_ftr_buf, s
 	float* cur_win_first_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
 	float* cur_win_out_buf = out_ftr_buf;
 
-	for (QNUInt32 cur_win_len=1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
 		float* cur_left_side_frame_in_buf = cur_win_first_frame_in_buf - in_width;
 		float* cur_right_side_frame_in_buf = cur_win_first_frame_in_buf;
@@ -952,4 +1188,66 @@ size_t CRF_InFtrStream_SeqMultiWindow::boundary_delta_ftrs(float* out_ftr_buf, s
 	}
 
 	return in_width * both_context_len;        //TODO: Currently hard-coded. Need to be parameterized.
+}
+
+// added for context features
+/*
+ *  CRF_InFtrStream_SeqMultiWindow::boundary_kl_ftrs
+ *
+ *  Input: out_multi_win_buf: output multiple windows feature buffer
+ *         avail_max_win_len: available maximum window length
+ *
+ *  Return: the number of features that have been written in each output window
+ *
+ */
+size_t CRF_InFtrStream_SeqMultiWindow::boundary_kl_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride)
+{
+	if (this->extract_segment_features)
+	{
+		log.error("extract_segment_features must be false to use boundary_kl_ftrs.");
+	}
+
+	QNUInt32 both_context_len = left_context_len;
+	if (both_context_len > right_context_len + 1)
+	{
+		both_context_len = right_context_len + 1;
+	}
+
+	//for win_len=1
+	float* cur_win_first_frame_in_buf = cur_line_ptr + (avail_max_win_len - 1) * in_width;
+	float* cur_win_out_buf = out_ftr_buf;
+
+	// Commented by Ryan
+	// can only calculate for cur_win_len = 1 to avoid redundent computation
+	// if this is not a *segmental* transition feature
+	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
+	{
+		float* cur_left_side_frame_in_buf = cur_win_first_frame_in_buf - in_width;
+		float* cur_right_side_frame_in_buf = cur_win_first_frame_in_buf;
+		float* cur_frames_kl_out_buf = cur_win_out_buf;
+		for (size_t side_frame_idx = 0; side_frame_idx < both_context_len; side_frame_idx++)
+		{
+			// just for debugging
+//			cout << "Context " << side_frame_idx << endl;
+
+			cur_frames_kl_out_buf[0] = get_kl_div(cur_left_side_frame_in_buf,
+					cur_left_side_frame_in_buf, in_width);
+
+			// just for debugging
+//			cout << "ftr_buf(" << &cur_frames_kl_out_buf[0] << ")="
+//					<< cur_frames_kl_out_buf[0] << ", left frame=-"
+//					<< side_frame_idx << ", right frame=+"
+//					<< side_frame_idx << ", boundary_kl_ftrs"
+//					<< endl;
+
+			cur_left_side_frame_in_buf -= in_width;
+			cur_right_side_frame_in_buf += in_width;
+			cur_frames_kl_out_buf += 1;
+		}
+		cur_win_first_frame_in_buf -= in_width;
+//		cur_win_out_buf += out_width;
+		cur_win_out_buf += stride;
+	}
+
+	return both_context_len;        //TODO: Currently hard-coded. Need to be parameterized.
 }

@@ -27,9 +27,9 @@ protected:
 	double* stateArray;
 	double* denseTransMatrix;
 	double* diagTransMatrix;
-	double* offDiagTransMatrix;
+	double* offDiagTransMatrix;  // indexed by the previous state
 	QNUInt32 nStates;
-	QNUInt32 nFullLabs;
+	QNUInt32 nFullLabs;  // nFullLabs = nLabs / nStates
 	double* tempBeta;
 	double* logAddAcc;
 public:

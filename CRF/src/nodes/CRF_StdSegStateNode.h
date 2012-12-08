@@ -41,7 +41,7 @@ public:
 	virtual bool checkNumPrevNodes();
 	virtual bool checkNumNextNodes();
 
-	// Override these functions from CRF_StdStateNode but do not work for CRF_StdSegStateNode.
+	// Override these functions from CRF_StdStateNode which do not work for CRF_StdSegStateNode.
 	virtual double computeAlpha(double* prev_alpha);
 	virtual double computeFirstAlpha(double* prev_alpha);
 	virtual double computeBeta(double* result_beta, double scale=1.0);

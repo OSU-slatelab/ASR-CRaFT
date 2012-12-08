@@ -67,10 +67,12 @@ protected:
     // The number of the current segment (for debugging).
     long segno;
 
+    size_t sum_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t sample_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t avg_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t max_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t min_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t kl_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t dur_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
 
     // added for context features
@@ -79,6 +81,9 @@ protected:
     size_t last_frame_right_ctx_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t first_frame_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
     size_t boundary_delta_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+    size_t boundary_kl_ftrs(float* out_ftr_buf, size_t avail_max_win_len, size_t stride);
+
+    float get_kl_div(float* P, float* Q, size_t n);
 
 public:
     // modified for context features

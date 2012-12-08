@@ -52,6 +52,10 @@ protected:
 	QNUInt32 numAvailLabs;
 
 public:
+
+	// Commented by Ryan
+	// TODO: change the name of viterbiPointers to viterbiPointers_nStates and
+	//       change the name of viterbiDurs to viterbiDurs_nStates
 	vector<uint> viterbiPhnIds;
 	vector<int> viterbiPointers;
 

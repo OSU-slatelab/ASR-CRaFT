@@ -237,6 +237,31 @@ public:
 //				cout << "  addNonEpsVtbState(): addedCounter++, addedCounter=" << addedCounter << endl;
 //				}
 
+				// just for debugging
+				if (viterbiStateIds.size() != viterbiPhnIds.size() ||
+						viterbiPhnIds.size() != viterbiWrdIds.size() ||
+						viterbiWrdIds.size() != viterbiWts.size() ||
+						viterbiWts.size() != isPhoneStartBoundary.size())
+				{
+					string errstr="CRF_ViterbiNode::addNonEpsVtbState() caught exception: size does not match among "
+							"viterbiStateIds, viterbiPhnIds, viterbiWrdIds, viterbiWts and isPhoneStartBoundary.";
+					throw runtime_error(errstr);
+				}
+				if (viterbiWts_nStates.size() != viterbiPtrs_nStates.size() ||
+						viterbiPtrs_nStates.size() != viterbiDurs_nStates.size() ||
+						viterbiDurs_nStates.size() != viterbiAcouWts_nStates.size() ||
+						viterbiAcouWts_nStates.size() != viterbiLmWts_nStates.size())
+				{
+					string errstr="CRF_ViterbiNode::addNonEpsVtbState() caught exception: size does not match among "
+							"viterbiWts_nStates, viterbiPtrs_nStates, viterbiDurs_nStates, viterbiAcouWts_nStates and viterbiLmWts_nStates.";
+					throw runtime_error(errstr);
+				}
+				if (viterbiWts.size() * nStates != viterbiWts_nStates.size()) {
+					string errstr="CRF_ViterbiNode::addNonEpsVtbState() caught exception: size of viterbiWts * number of states("
+							+ stringify(nStates) + ") != size of viterbiWts_nStates.";
+					throw runtime_error(errstr);
+				}
+
 				// the above means that it is not in our expansion list
 				// so we expand it as new and add it
 				viterbiStateIds.push_back(stateId);
@@ -284,9 +309,26 @@ public:
 
 					// this transition is better than the one we've previously
 					// expanded on, so replace the one we've got with it
-//					viterbiPhnIds[stateIdxInVtbList] = phnId;  // viterbiStateIds and viterbiPhnIds remains unchanged
 					viterbiWrdIds[stateIdxInVtbList] = wrdId;
 					viterbiWts[stateIdxInVtbList] = min_wt;
+
+					// just for debugging
+					if (viterbiStateIds[stateIdxInVtbList] != stateId) //  viterbiStateId should be the same
+					{
+						string errstr="CRF_ViterbiNode::addNonEpsVtbState() caught exception: state id update does not match: "
+								"old state id in viterbiStateIds[" + stringify(stateIdxInVtbList) + "] = " +
+								stringify(viterbiStateIds[stateIdxInVtbList]) + ", new state id = " +
+								stringify(stateId);
+						throw runtime_error(errstr);
+					}
+					if (viterbiPhnIds[stateIdxInVtbList] != phnId) //  viterbiPhnId should be the same
+					{
+						string errstr="CRF_ViterbiNode::addNonEpsVtbState() caught exception: phone id update does not match: "
+								"old phone id in viterbiPhnIds[" + stringify(stateIdxInVtbList) + "] = " +
+								stringify(viterbiPhnIds[stateIdxInVtbList]) + ", new phone id = " +
+								stringify(phnId);
+						throw runtime_error(errstr);
+					}
 				}
 				for (uint st = 0; st < nStates; st++) {
 					int nStateIdxInVtbList = stateIdxInVtbList * nStates + st;

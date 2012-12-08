@@ -6,15 +6,18 @@
  */
 
 #include "CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.h"
+#include <omp.h>
 
 CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs, QNUInt32 nextNode_nActualLabs)
 	: CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs)
 {
 	delete [] this->transMatrix;
 	this->transMatrix = new double[this->nActualLabs * this->nActualLabs];
-//	for (QNUInt32 id = 0; id < this->nActualLabs * this->nActualLabs * this->nodeLabMaxDur; id++)
+//	for (QNUInt32 id = 0; id < this->nActualLabs * this->nActualLabs; id++)
 //	{
-//		this->transMatrix[id] = 0.0;
+//      // Changed by Ryan. It should be CRF_LogMath::LOG0 instead of 0.0. TODO: verify.
+//		//this->transMatrix[id] = 0.0;
+//		this->transMatrix[id] = CRF_LogMath::LOG0;
 //	}
 
 	alphaPlusTrans = new double[this->nActualLabs];
@@ -144,7 +147,6 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeTransMatrix(
  *
  * Read alpha vectors of previous nodes directly from prevNode and store the result of the alpha vector in alphaArray.
  *
- * Stub function.
  * Should compute the alpha vector for the forward backward computation for this node.
  */
 double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeAlpha()
@@ -422,7 +424,6 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeAlpha()
 /*
  * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeFirstAlpha
  *
- * Stub function.
  * Should compute the alpha vector for this node for the special case where the node is the first
  * node in the sequence.
  */
@@ -510,7 +511,6 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeFirstAlpha()
  *
  * Read the beta vectors of next nodes directly from nextNode and store the result of the beta vector in betaArray.
  *
- * Stub function.
  * Should compute the beta vector for the node before this one and store it in result_beta
  */
 double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeBeta(double scale)
@@ -534,7 +534,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeBeta(double 
 	double* tmpLogAddAcc = new double[logAddAccSize];
 
 	// add state value of next nodes to the log-betas of next nodes,
-	// (log-)summing the state-value-added log-betas for the same next label over different next nodes
+	// (log-)summing the state-value-added log-betas for the same next label over different next nodes (i.e. different next durations)
 
 	// just for debugging
 //	cout << "adding state value to the log-betas of next nodes..." << endl;
@@ -784,7 +784,6 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeBeta(double 
  *
  * Read alpha vectors of previous nodes directly from prevNode for use in transition feature ExpF computation.
  *
- * Stub function.
  * Should compute gradient and expected values for features in this node and store them in *grad and
  *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
  */
@@ -847,11 +846,34 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 	// just for debugging
 //	cout << "computing expected state features: " << endl;
 
-	for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
+	// Changed by Ryan, using OpenMP for parallel
+	QNUInt32 lab, dur, next_lab, clab;
+//	int tid, nthreads, chunk = 6;
+//	nthreads = omp_get_num_threads();
+//	//omp_set_num_threads(4);
+//	//printf("%d\n", omp_get_num_threads());
+///*** Spawn a parallel region explicitly scoping all variables ***/
+//#pragma omp parallel shared(nthreads,chunk) private(tid,lab,dur,next_lab,clab)
+//	{
+//		//tid = omp_get_thread_num();
+//		//if (tid == 0)
+//		//{
+//		//	nthreads = omp_get_num_threads();
+//		//	printf("Starting to compute expected state features with %d threads\n", nthreads);
+//		//}
+//		//printf("Thread %d starting to compute expected state features...\n",tid);
+//	#pragma omp for schedule (static, chunk)
+	for (lab = 0; lab < this->nActualLabs; lab++)
 	{
-		float* seg_ftr_buf = this->ftrBuf;
-		for (QNUInt32 dur = 1; dur <= this->nodeLabMaxDur; dur++)
+		//printf("Thread=%d did lab=%d\n", tid, lab);
+
+		//float* seg_ftr_buf = this->ftrBuf;
+
+		//#pragma omp for schedule (static, 2)
+		for (dur = 1; dur <= this->nodeLabMaxDur; dur++)
 		{
+			float* seg_ftr_buf = this->ftrBuf + (dur - 1) * this->nFtrsPerSeg;
+
 			// just for debugging
 //			cout << "dur: " << dur << endl;
 
@@ -881,8 +903,10 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 			}
 
 //			clab++;
-			seg_ftr_buf += this->nFtrsPerSeg;
+
+			//seg_ftr_buf += this->nFtrsPerSeg;
 		}
+	}
 //		// These are the cases when the current node serves as the beginning segment of the sequence, so there is no previous node.
 //		for (QNUInt32 dur = this->numPrevNodes + 1; dur <= this->nodeLabMaxDur; dur++)
 //		{
@@ -918,7 +942,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 ////			clab++;
 //			seg_ftr_buf += this->nFtrsPerSeg;
 //		}
-	}
+	//}  /*** End of parallel region ***/
 
 	// compute expected transition features
 
@@ -943,13 +967,32 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 	{
 		CRF_StateNode* nextAdjacentSeg = this->nextNodes[0];
 
+		// Changed by Ryan, using OpenMP for parallel
+//		//QNUInt32 next_lab, clab;
+//		//int tid, nthreads, chunk = 6;
+//		//omp_set_num_threads(4);
+//		//printf("%d\n", omp_get_num_threads());
+///*** Spawn a parallel region explicitly scoping all variables ***/
+////#pragma omp parallel shared(nthreads,chunk) private(tid,next_lab,clab)
+//		//{
+//			//tid = omp_get_thread_num();
+//			//if (tid == 0)
+//			//{
+//			//	nthreads = omp_get_num_threads();
+//			//	printf("Starting to compute expected transition features with %d threads\n", nthreads);
+//			//}
+//			//printf("Thread %d starting to compute expected transition features...\n",tid);
+//		#pragma omp for schedule (static, chunk)
 		// assuming the number of labels in the next node is equal to that in the current node
-		for (QNUInt32 next_lab = 0; next_lab < this->nActualLabs; next_lab++)
+		for (next_lab = 0; next_lab < this->nActualLabs; next_lab++)
 		{
+			//printf("Thread=%d did next_lab=%d\n", tid, next_lab);
+
 			// just for debugging
 //			cout << "next_lab: " << next_lab << endl;
 
-			for (QNUInt32 clab = 0; clab < this->nActualLabs; clab++)
+			//#pragma omp for schedule (static, chunk)
+			for (clab = 0; clab < this->nActualLabs; clab++)
 			{
 				// just for debugging
 //				cout << "clab: " << clab << ", ";
@@ -998,6 +1041,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 				}
 			}
 		}
+
 
 //	if (this->numPrevNodes > 0)
 //	{
@@ -1179,6 +1223,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeExpF(double*
 		// but set the alpha_beta_trans_tot to 1.0 for the check below
 		alpha_beta_trans_tot=1.0;
 	}
+//	} /*** End of parallel region ***/
 
 
 	//just for debugging
@@ -1427,7 +1472,7 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeAlphaPlusTra
 //			cout << "alphaPlusTrans[next_lab=" << next_lab << "]=" << this->alphaPlusTrans[next_lab] << endl;
 		}
 		catch (exception &e) {
-			string errstr="CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeAlpha() caught exception: "+string(e.what())+", while computing alpha";
+			string errstr="CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::computeAlphaPlusTrans() caught exception: "+string(e.what())+", while computing alpha plus trans";
 			throw runtime_error(errstr);
 			return(-1);
 		}
@@ -1466,24 +1511,24 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUIn
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Correct getFullTransValue() function for CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
-	return getTransValue(prev_lab, cur_lab) + getStateValue(cur_lab, dur);
+	return getTransValue(prev_lab, cur_lab) + getStateValue(cur_lab, cur_dur);
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
  *
  * Disabled. Not applicable in CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
 {
 	string errstr="Error: getTempBeta() is not applicable in CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.";
 	throw runtime_error(errstr);
@@ -1492,12 +1537,12 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTempBeta(QNUInt3
 // Disable all these functions by overriding them with exception handling. Use their modified version below.
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Disabled in CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr, use getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab) instead.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
 	string errstr="Error: use CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab) instead.";
 	throw runtime_error(errstr);

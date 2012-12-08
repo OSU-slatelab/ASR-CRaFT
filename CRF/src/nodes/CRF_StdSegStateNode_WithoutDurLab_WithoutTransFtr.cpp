@@ -14,7 +14,9 @@ CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::CRF_StdSegStateNode_WithoutDu
 	this->transMatrix = new double[this->nActualLabs * this->nActualLabs];
 //	for (QNUInt32 id = 0; id < this->nActualLabs * this->nActualLabs * this->nodeLabMaxDur; id++)
 //	{
-//		this->transMatrix[id] = 0.0;
+//      // Changed by Ryan. It should be CRF_LogMath::LOG0 instead of 0.0. TODO: verify.
+//		//this->transMatrix[id] = 0.0;
+//		this->transMatrix[id] = CRF_LogMath::LOG0;
 //	}
 
 	alphaPlusTrans = new double[this->nActualLabs];
@@ -1457,24 +1459,24 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Correct getFullTransValue() function for CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
-	return getTransValue(prev_lab, cur_lab) + getStateValue(cur_lab, dur);
+	return getTransValue(prev_lab, cur_lab) + getStateValue(cur_lab, cur_dur);
 }
 
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
  *
  * Disabled. Not applicable in CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur)
 {
 	string errstr="Error: getTempBeta() is not applicable in CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.";
 	throw runtime_error(errstr);
@@ -1483,12 +1485,12 @@ double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTempBeta(QNUInt32 c
 // Disable all these functions by overriding them with exception handling. Use their modified version below.
 // Added by Ryan
 /*
- * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+ * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
  *
  * Disabled in CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr, use getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab) instead.
  *
  */
-double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+double CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur)
 {
 	string errstr="Error: use CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab) instead.";
 	throw runtime_error(errstr);

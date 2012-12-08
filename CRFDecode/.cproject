@@ -64,7 +64,7 @@
 									<listOptionValue builtIn="false" value="/u/drspeech/opt/OpenFst-1.1/x86_64/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.shared.1625546756" name="Shared (-shared)" superClass="gnu.cpp.link.option.shared" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.link.option.flags.1183641507" superClass="gnu.cpp.link.option.flags" value="-Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.1183641507" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-Wl,-rpath=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/ -Wl,-rpath=/u/drspeech/opt/gcc-4.4.0/x86_64/lib64/" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1054141200" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -137,5 +137,8 @@
 		<project id="CRFDecode.cdt.managedbuild.target.gnu.exe.1822006523" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/CRFDecode"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

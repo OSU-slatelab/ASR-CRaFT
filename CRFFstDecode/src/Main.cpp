@@ -844,6 +844,9 @@ int main(int argc, const char* argv[]) {
 
 //				lb->buildLattice(phn_lat,alignMode,lab_lat, false);
 
+				// Commented by Ryan
+				// Important: the order of the following "if else" cannot be changed
+				// due to the heritance relationships!
 				if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*>(lb))
 				{
 					// just for debugging
@@ -877,9 +880,18 @@ int main(int argc, const char* argv[]) {
 //				cout << "After lb.buildLattice." << endl;
 			}
 			else {
-				// Changed by Ryan
-//				nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
-				nodeCnt=lb->nStateBuildLattice(phn_lat,alignMode,lab_lat);
+				if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*>(lb))
+				{
+					// just for debugging
+//					cout << "((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->nStateBuildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
+
+					nodeCnt=((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->nStateBuildLattice(phn_lat,alignMode,lab_lat, false);
+				}
+				else {
+					// Changed by Ryan
+//					nodeCnt=lb.nStateBuildLattice(phn_lat,alignMode,lab_lat);
+					nodeCnt=lb->nStateBuildLattice(phn_lat,alignMode,lab_lat, false);
+				}
 			}
 			if (config.crf_lat_outdir != NULL) {
 				// Dump the lattice to a file in openfst format

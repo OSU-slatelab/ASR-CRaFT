@@ -19,7 +19,7 @@ protected:
 	// over all cur_lab for a given next_lab,
 	// for future calculation of alphas in next nodes.
 	double* alphaPlusTrans;
-	// the array of the summation of [next_node_beta(next_lab, dur) + next_node_state_value(next_lab, dur)]
+	// the array of the summation of [next_node_beta(next_lab, next_dur) + next_node_state_value(next_lab, next_dur)]
 	// over all duration for a given next_lab,
 	// for calculation of betas and ExpF(trans) in the current node.
 	double* tmpBetaArray_nextBetasPlusNextStateValue_sumOverDur;
@@ -45,7 +45,7 @@ public:
 //	virtual bool checkNumPrevNodes();
 //	virtual bool checkNumNextNodes();
 //
-//	// Override these functions from CRF_StdStateNode but do not work for CRF_StdSegStateNode.
+//	// Override these functions from CRF_StdStateNode which do not work for CRF_StdSegStateNode.
 //	virtual double computeAlpha(double* prev_alpha);
 //	virtual double computeFirstAlpha(double* prev_alpha);
 //	virtual double computeBeta(double* result_beta, double scale=1.0);
@@ -55,16 +55,16 @@ public:
 
 	// These are the correct versions for CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.
 	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);    // without dur
-//	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 dur);
-	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
+//	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 cur_dur);
+	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur);
 
 	// Disable all these functions by overriding them with exception handling. Use their modified versions above.
-	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);   // with dur
+	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 cur_dur);   // with dur
 //	virtual double getStateValue(QNUInt32 cur_lab);
 //	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab);
 
 	// Disabled in CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr
-	virtual double getTempBeta(QNUInt32 cur_lab, QNUInt32 dur);
+	virtual double getTempBeta(QNUInt32 next_lab, QNUInt32 next_dur);
 
 	// only specific to CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr
 	virtual double getAlphaPlusTrans(QNUInt32 next_lab);
