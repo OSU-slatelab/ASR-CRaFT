@@ -106,9 +106,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 	// Added by Ryan
 //	typedef ArcTpl<FloatWeight> Arc;
 
-	// just for debugging
-//	cout << "Beginning of CRF_LatticeBuilder::buildLattice";
-
 	// Returns the best path through the current segment
 	QNUInt32 ftr_count;
 
@@ -140,11 +137,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 			}
 			this->nodeList->set(nodeCnt,new_buf,num_ftrs,this->lab_buf[i],this->crf);
 
-			// Added by Ryan, just for debugging
-//			cout << "Before computing state and transition matrix for node " << nodeCnt << ": ";
-//			int pauseTemp;
-//			cin >> pauseTemp;
-
 			float value=this->nodeList->at(nodeCnt)->computeTransMatrix();
 
 			// Commented by Ryan
@@ -171,9 +163,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 					float value=-1*this->nodeList->at(nodeCnt)->getStateValue(cur_lab);
 					int cur_state=fst->AddState();
 					fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-					// just for debugging
-//					cout << "AddArc(" << startState << ",Arc(" << cur_lab+1 << "," << cur_lab+1 << "," << value << "," << cur_state << "));" << endl;
 				}
 			}
 			else {
@@ -184,9 +173,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 						float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 						int prev_state=(this->num_labs)*(cur_time-2)+(prev_lab+1);
 						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-						// just for debugging
-//						cout << "AddArc(" << prev_state << ",Arc(" << cur_lab+1 << "," << cur_lab+1 << "," << value << "," << cur_state << "));" << endl;
 					}
 				}
 			}
@@ -201,10 +187,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 					curLab=lab;
 				}
 			}
-
-			// just for debugging
-//			cout << endl;
-
 			nodeCnt++;
 		}
 	} while (ftr_count >= this->bunch_size);
@@ -220,9 +202,6 @@ template <class Arc> int CRF_LatticeBuilder::buildLattice(VectorFst<Arc>* fst,
 
 		// Commented by Ryan, why not "-Zx" instead of "Zx"?
 		fst->AddArc(prev_state,Arc(0,0,Zx,final_state));
-
-		// just for debugging
-//		cout << "AddArc(" << prev_state << ",Arc(" << 0 << "," << 0 << "," << Zx << "," << final_state << "));" << endl;
 	}
 	fst->SetFinal(final_state,0);
 	if (align) {
@@ -804,12 +783,6 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 					float value=-1*this->nodeList->at(nodeCnt)->getStateValue(cur_lab);
 					int cur_state=fst->AddState();
 					fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-					// just for debugging
-//					cout << "nodeCnt=" << nodeCnt << ", cur_lab=" << cur_lab
-//							<< ", AddArc(" << startState << ",Arc("
-//							<< cur_lab+1 << "," << cur_lab+1 << ","
-//							<< value << "," << cur_state << "));" << endl;
 				}
 			}
 			else {
@@ -822,12 +795,6 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 							float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 							int prev_state=(this->num_labs)*(cur_time-2)+(prev_lab+1);
 							fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-							// just for debugging
-//							cout << "nodeCnt=" << nodeCnt << ", cur_lab=" << cur_lab
-//									<< ", AddArc(" << prev_state << ",Arc("
-//									<< cur_lab+1 << "," << cur_lab+1 << ","
-//									<< value << "," << cur_state << "));" << endl;
 						}
 						// Special case handling - if we have more than one state we have to explicitly
 						// put a self loop in
@@ -835,12 +802,6 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 							float value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(cur_lab,cur_lab);
 							int prev_state=(this->num_labs)*(cur_time-2)+(cur_lab+1);
 							fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-							// just for debugging
-//							cout << "nodeCnt=" << nodeCnt << ", cur_lab=" << cur_lab
-//									<< ", AddArc(" << prev_state << ",Arc("
-//									<< cur_lab+1 << "," << cur_lab+1 << ","
-//									<< value << "," << cur_state << "));" << endl;
 						}
 					}
 					else {
@@ -851,22 +812,10 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 						int prev_state=this->num_labs*(cur_time-2)+(prev_lab+1);
 						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 
-						// just for debugging
-//						cout << "nodeCnt=" << nodeCnt << ", cur_lab=" << cur_lab
-//								<< ", AddArc(" << prev_state << ",Arc("
-//								<< cur_lab+1 << "," << cur_lab+1 << ","
-//								<< value << "," << cur_state << "));" << endl;
-
 						prev_lab=cur_lab;
 						value=-1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,cur_lab);
 						prev_state=this->num_labs*(cur_time-2)+(prev_lab+1);
 						fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-						// just for debugging
-//						cout << "nodeCnt=" << nodeCnt << ", cur_lab=" << cur_lab
-//								<< ", AddArc(" << prev_state << ",Arc("
-//								<< cur_lab+1 << "," << cur_lab+1 << ","
-//								<< value << "," << cur_state << "));" << endl;
 					}
 				}
 			}
@@ -895,12 +844,6 @@ template <class Arc> int CRF_LatticeBuilder::nStateBuildLattice(VectorFst<Arc>* 
 
 		// Commented by Ryan, why not "-Zx" instead of "Zx"?
 		fst->AddArc(prev_state,Arc(0,0,Zx,final_state));
-
-		// just for debugging
-//		cout << "final_state: nodeCnt=" << nodeCnt << ", prev_lab=" << prev_lab
-//				<< ", AddArc(" << prev_state << ",Arc("
-//				<< 0 << "," << 0 << ","
-//				<< Zx << "," << final_state << "));" << endl;
 	}
 	fst->SetFinal(final_state,0);
 	//StdVectorFst* final_result=new StdVectorFst();

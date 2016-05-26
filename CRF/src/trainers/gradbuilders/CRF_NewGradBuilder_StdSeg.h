@@ -2,7 +2,7 @@
  * CRF_NewGradBuilder_StdSeg.h
  *
  *  Created on: Nov 11, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_NEWGRADBUILDER_STDSEG_H_

@@ -368,13 +368,6 @@ double CRF_StdNStateNode::computeAlphaSum()
 {
 	double Zx = 0.0;
 	QNUInt32 nLabs=this->crf_ptr->getNLabs();
-
-	// Added by Ryan, just for debugging
-//	for (int i = 0; i < nLabs; i++)
-//	{
-//		cout << "alphaArray[" << i << "] = " << alphaArray[i] << endl;
-//	}
-
 	Zx=logAdd(alphaArray,nLabs);
 	return Zx;
 }

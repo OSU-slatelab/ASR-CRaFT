@@ -2,7 +2,7 @@
  * CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.h
  *
  *  Created on: Nov 17, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_StateNode.h"

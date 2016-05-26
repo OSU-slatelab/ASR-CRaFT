@@ -43,14 +43,6 @@
  *
  */
 // modified by Ryan, for context features
-//CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
-//									char* fname, const char* fmt, char* ht_fname, size_t ht_offset,
-//									size_t width, size_t first_ftr, size_t num_ftrs,
-//									size_t win_ext, size_t win_off, size_t win_len,
-//									int delta_o, int delta_w,
-//									char* trn_rng, char* cv_rng,
-//									FILE* nfile, int n_mode, double n_am, double n_av, seqtype ts,
-//									QNUInt32 rseed, size_t n_threads)
 CRF_FeatureStreamManager::CRF_FeatureStreamManager(int dbg, const char* dname,
 									char* fname, const char* fmt, char* ht_fname, size_t ht_offset,
 									size_t width, size_t first_ftr, size_t num_ftrs,
@@ -206,10 +198,6 @@ void CRF_FeatureStreamManager::create()
 //                                     *train_randftr_str, this->window_len,
 //                                      this->window_offset, bot_margin);
 			// modified by Ryan, for context features
-//			train_winftr_str =
-//				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
-//                        *train_randftr_str, this->window_len,
-//                         this->window_offset, bot_margin);
 			train_winftr_str =
 				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
 						*train_randftr_str, this->window_len,
@@ -227,10 +215,6 @@ void CRF_FeatureStreamManager::create()
 //                                     *train_randftr_str, this->window_len,
 //                                      this->window_offset, bot_margin);
 			// modified by Ryan, for context features
-//			train_winftr_str =
-//				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
-//						*train_randftr_str, this->window_len,
-//						 this->window_offset, bot_margin);
 			train_winftr_str =
 				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
 						*train_randftr_str, this->window_len,
@@ -245,10 +229,6 @@ void CRF_FeatureStreamManager::create()
 //   						*train_ftr_str, this->window_len,
 //   						this->window_offset, bot_margin);
 			// modified by Ryan, for context features
-//			train_winftr_str =
-//				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
-//						*train_ftr_str, this->window_len,
-//						 this->window_offset, bot_margin);
 			train_winftr_str =
 				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
 						*train_ftr_str, this->window_len,
@@ -273,10 +253,6 @@ void CRF_FeatureStreamManager::create()
 //	                                  this->window_offset, bot_margin
 //                                      );
 		// modified by Ryan, for context features
-//		cv_winftr_str =
-//				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
-//										*cv_ftr_str, this->window_len,
-//										 this->window_offset, bot_margin);
 		cv_winftr_str =
 				new CRF_InFtrStream_SeqMultiWindow(this->debug, this->dbgname,
 										*cv_ftr_str, this->window_len,
@@ -342,11 +318,6 @@ void CRF_FeatureStreamManager::create()
 		bot_margin = this->window_extent - this->hardtarget_window_offset - this->window_len;
 
 	    // Added by Ryan
-//	    if (this->hardtarget_window_offset + window_len > this->window_extent)
-//		{
-//			string errstr="CRF_FeatureStreamManager::create() caught exception: this->hardtarget_window_offset + window_len > this->window_extent.";
-//			throw runtime_error(errstr);
-//		}
 	    if (this->hardtarget_window_offset + this->window_len > this->window_extent)
 		{
 			string errstr="CRF_FeatureStreamManager::create() caught exception: this->hardtarget_window_offset + this->window_len > this->window_extent.";
@@ -461,16 +432,6 @@ void CRF_FeatureStreamManager::create()
 				}
 			}
 			// modified by Ryan, for context features
-//			children[i]=new CRF_FeatureStreamManager(this->debug, this->dbgname, this->filename,
-//													 this->format, this->hardtarget_filename,
-//													 this->hardtarget_window_offset,
-//													 this->width, this->first_ftr, this->num_ftrs,
-//													 this->window_extent,this->window_offset, this->window_len,
-//													 this->delta_order, this->delta_win, this->train_sent_range,
-//													 this->cv_sent_range,
-//													 this->normfile, // WARNING needs rewinding
-//													 this->norm_mode,this->norm_am, this->norm_av,
-//													 this->train_seq_type, this->rseed, 1);
 			children[i]=new CRF_FeatureStreamManager(this->debug, this->dbgname, this->filename,
 													 this->format, this->hardtarget_filename,
 													 this->hardtarget_window_offset,
@@ -488,6 +449,15 @@ void CRF_FeatureStreamManager::create()
 			// the stuff below doesn't work because the streams aren't indexed
 			// need to modify crf_featurestream instead
 
+
+			// Commented by Ryan, note two points:
+			// 1. view() would run rewind() again, so each child's random sequence generator goes
+			//    one epoch further than the parent's. It should be fine. But keep in mind the
+			//    trained result using the multi-threaded version would be slightly different
+			//    from the single-threaded version due to this one epoch offset of random sequence
+			//    generators.
+			// 2. the underlying feature stream in each child cannot use set_pos(), so each one
+			//    has to go through in a hard way (segment by segment) to its starting offset.
 
 			// make each child cover a portion of the stream
 			//cout << "stream " << i << " view " << (i*nseg_per_child) << " " << ((i==nthreads-1)?QN_ALL:nseg_per_child) << endl;
@@ -511,7 +481,7 @@ void CRF_FeatureStreamManager::create()
  */
 void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 	this->old_trn_stream=this->trn_stream;
-	this->trn_stream = this->trn_stream->join(instr->trn_stream);
+	this->trn_stream = this->trn_stream->join(instr->trn_stream);  // Ryan: shouldn't we delete old_trn_stream to avoid memory leak?
 	//cout << "Joined numsegs: " << this->trn_stream->num_segs();
 	cout << "Old trn_stream id: " << this->old_trn_stream << endl;
 	cout << "Joined trn_stream id: " << this->trn_stream << endl;
@@ -531,6 +501,19 @@ void CRF_FeatureStreamManager::join(CRF_FeatureStreamManager* instr) {
 		}
 	}
 	//this->display();
+}
+
+// Added by Ryan
+/*
+ * rewind all children's training streams.
+ */
+void CRF_FeatureStreamManager::rewindAllChildrenTrn()
+{
+	if (this->nthreads > 1) {
+		for(size_t i = 0; i < this->nthreads; i++) {
+			this->children[i]->trn_stream->rewind();
+		}
+	}
 }
 
 /*

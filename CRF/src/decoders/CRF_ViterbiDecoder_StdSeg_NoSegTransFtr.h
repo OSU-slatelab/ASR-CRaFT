@@ -2,7 +2,7 @@
  * CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h
  *
  *  Created on: Feb 6, 2012
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_VITERBIDECODER_STDSEG_NOSEGTRANSFTR_H_
@@ -16,6 +16,7 @@
 #include "CRF_ViterbiDecoder.h"  // for the definition of class CRF_ViterbiState
 #include <vector>
 #include <map>
+#include <set>
 #include <deque>
 //#include <hash_map>
 //#include <unordered_map>
@@ -30,7 +31,6 @@ const int BEFORE_START_TIME_STAMP = -1;  // the starting point before the first 
 
 template <class CRF_VtbNode> class CRF_ViterbiDecoder_StdSeg_NoSegTransFtr;  // forward declaration
 
-// Added by Ryan
 class CRF_TimedState {
 public:
 	int time_stamp;  // time stamp of the utterance. -1 means starting point before the first frame.
@@ -51,7 +51,6 @@ public:
 	}
 };
 
-// Added by Ryan
 /*
  * Segmental lattice state composed of lm/dict fst state and phone fst state
  */
@@ -116,7 +115,7 @@ protected:
 	vector<uint> viterbiStateIds;
 	vector<uint> viterbiPhnIds;
 	vector<uint> viterbiWrdIds;
-	vector<float> viterbiWts; // each weight in this list is the minimum weight of the weights of n states for the same phone/word in viterbiWts_nState.
+	vector<float> viterbiWts; // each weight in this list is the minimum weight among n states for the same phone/word in viterbiWts_nState.
 	map<CRF_ComposedLat_Seg_State, uint> viterbiStateIdMap;
 	float min_weight;		// minimum weight of any path up to the current state
 	vector<bool> isPhoneStartBoundary; // if the first state of the current hypothesized phone is a starting boundary of this phone
@@ -150,6 +149,7 @@ public:
 	CRF_ViterbiNode(uint nStates_in) : nStates(nStates_in)
 	{
 		// infinity for our initial minimum weight
+		// TODO: change it to FLT_MAX. Need to include <cfloat>.
 		min_weight = 99999.0;
 
 		trans_addedCounter = 0;
@@ -167,6 +167,7 @@ public:
 		viterbiWrdIds.clear();
 		viterbiWts.clear();
 		viterbiStateIdMap.clear();
+		// TODO: change it to FLT_MAX. Need to include <cfloat>.
 		min_weight = 99999.0;
 		isPhoneStartBoundary.clear();
 
@@ -194,7 +195,7 @@ public:
 			float* acou_wts_nStates, float* lm_wts_nStates, double beam=0.0)
 	{
 
-		// just for debugging
+		// for debugging
 //		cout << "addNonEpsVtbState(): stateId=" << stateId << " phnId=" << phnId
 //				<< " wrdId=" << wrdId << " dur=" << dur << " min_wt=" << min_wt;
 //		for (uint st = 0; st < nStates; st++)
@@ -213,7 +214,7 @@ public:
 //				min_weight = min_wt;
 //			}
 
-		// just for debugging
+		// for debugging
 //		if (stateId == 2 || phnId == 2)
 //		{
 //			assert(stateId == 2 || phnId == 2);
@@ -231,13 +232,12 @@ public:
 			if (vtbStateIt == viterbiStateIdMap.end()) {
 				trans_addedCounter++;
 
-				// just for debugging
+				// for debugging
 //				if (stateId == 2 || phnId == 2)
 //				{
 //				cout << "  addNonEpsVtbState(): addedCounter++, addedCounter=" << addedCounter << endl;
 //				}
 
-				// just for debugging
 				if (viterbiStateIds.size() != viterbiPhnIds.size() ||
 						viterbiPhnIds.size() != viterbiWrdIds.size() ||
 						viterbiWrdIds.size() != viterbiWts.size() ||
@@ -277,7 +277,7 @@ public:
 					viterbiAcouWts_nStates.push_back(acou_wts_nStates[st]);
 					viterbiLmWts_nStates.push_back(lm_wts_nStates[st]);
 
-					// just for debugging
+					// for debugging
 //					if (stateId == 2 || phnId == 2)
 //					{
 //					cout << "-->[Inserted!] nState=" << st << ", viterbiWts_nStates["
@@ -291,7 +291,7 @@ public:
 			else {
 				trans_updateCheckCounter++;
 
-				// just for debugging
+				// for debugging
 //				if (stateId == 2 || phnId == 2)
 //				{
 //				cout << "  addNonEpsVtbState(): updateCheckCounter++, updateCheckCounter=" << updateCheckCounter << endl;
@@ -301,7 +301,7 @@ public:
 				if (min_wt < viterbiWts[stateIdxInVtbList]) {
 					trans_updateCounter++;
 
-					// just for debugging
+					// for debugging
 //					if (stateId == 2 || phnId == 2)
 //					{
 //					cout << "  addNonEpsVtbState(): updateCounter++, updateCounter=" << updateCounter << endl;
@@ -333,7 +333,7 @@ public:
 				for (uint st = 0; st < nStates; st++) {
 					int nStateIdxInVtbList = stateIdxInVtbList * nStates + st;
 
-					// just for debugging
+					// for debugging
 //					if (stateId == 2 || phnId == 2)
 //					{
 //					cout << "  wts_nStates[" << st << "]=" << wts_nStates[st] <<
@@ -357,7 +357,7 @@ public:
 							isPhoneStartBoundary[stateIdxInVtbList] = isStartBound;
 						}
 
-						// just for debugging
+						// for debugging
 //						if (stateId == 2 || phnId == 2)
 //						{
 //						cout << "-->[Updated!] nState=" << st << ", viterbiWts_nStates["
@@ -371,7 +371,7 @@ public:
 //		}
 
 
-			// just for debugging
+			// for debugging
 //			if (stateId == 2 || phnId == 2)
 //			{
 //				assert(stateId == 2 || phnId == 2);
@@ -382,7 +382,7 @@ public:
 	// This function has to be run after both transition and state values are updated for all segments.
 	void choose_nState_Best_Seg()
 	{
-		// just for debugging
+		// for debugging
 //		cout << "viterbiStateIds.size()=" << viterbiStateIds.size() << endl;
 
 		bestSegPointers_nStates.clear();
@@ -432,7 +432,7 @@ public:
 			}
 		}
 
-		// just for debugging
+		// for debugging
 //		cout << "bestSegPointers_nStates.size()=" << bestSegPointers_nStates.size() <<
 //				", startState_pointer_of_bestSegPointers_nStates_map.size()=" << startState_pointer_of_bestSegPointers_nStates_map.size() <<
 //				", bestSegWts.size()=" << bestSegWts.size() << endl;
@@ -442,7 +442,7 @@ public:
 				startState_pointer_of_bestSegPointers_nStates < bestSegPointers_nStates.size();
 				startState_pointer_of_bestSegPointers_nStates += nStates)
 		{
-			// just for debugging
+			// for debugging
 //			cout << "startState_pointer_of_bestSegPointers_nStates=" << startState_pointer_of_bestSegPointers_nStates << ", ";
 
 			uint nStateBestSegPointer = bestSegPointers_nStates[startState_pointer_of_bestSegPointers_nStates];
@@ -456,11 +456,11 @@ public:
 			}
 			bestSegWts.push_back(bestSegWeight);
 
-			// just for debugging
+			// for debugging
 //			cout << "bestSegWts[" << bestSegWtsCount++ << "]=" << bestSegWeight << endl;
 		}
 
-		// just for debugging
+		// for debugging
 //		cout << "bestSegWts.size()=" << bestSegWts.size() << endl;
 	}
 
@@ -550,6 +550,9 @@ protected:
 	map<CRF_TimedState,int> timedLmState_to_fullFstStateId_map;
 	vector<CRF_TimedState> fullFstStateId_to_timedLmState_vector;
 
+	// the set of final FST states that are reached at the end of the utterance
+	set<CRF_ViterbiState> finalStateSet;
+
 public:
 	CRF_ViterbiDecoder_StdSeg_NoSegTransFtr(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in);
 	virtual ~CRF_ViterbiDecoder_StdSeg_NoSegTransFtr();
@@ -560,7 +563,12 @@ public:
 	virtual float crossStateTransUpdate(uint nodeCnt, uint state_id, uint phn_id, uint wrd_id, uint prevPhn_EndStateIdx_InPrunedVtbList, uint prev_phn_id, float expand_wt, double beam=0.0);
 	virtual void expandCrossStateFromPrevNode(uint nodeCnt, VectorFst<StdArc>* lm_fst, double beam=0.0);
 	virtual void pruning(uint nodeCnt, double beam=0.0);
+	virtual void expandFinalNode(uint finalNodeCnt, VectorFst<StdArc>* lm_fst, double beam=0.0);
+	virtual void addToFinalSet(uint stateId, float total_weight, int end_idx);
+	virtual void pruneFinal(double beam=0.0);
+
 	virtual int nStateDecode(VectorFst<StdArc>* fst, VectorFst<StdArc>* lm_fst, VectorFst<StdArc>* out_full_fst, double beam=0.0, uint min_hyps=0, uint max_hyps=0, float beam_inc=0.05);
+
 	virtual CRF_StateVector* getNodeList();
 	virtual void createFreePhoneLmFst(VectorFst<StdArc>* new_lm_fst);
 	virtual StateId getOutputFullFstStateIdByTimedLmStateId(int nodeCnt, int lm_stateId);

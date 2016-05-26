@@ -2,7 +2,7 @@
  * CRF_NewGradBuilder_StdSeg.cpp
  *
  *  Created on: Nov 11, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_NewGradBuilder_StdSeg.h"
@@ -30,9 +30,6 @@ CRF_NewGradBuilder_StdSeg::~CRF_NewGradBuilder_StdSeg()
  */
 double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)
 {
-	// just for debugging
-//	cout << endl << "CRF_NewGradBuilder_StdSeg::buildGradient()" << endl << endl;
-
 	QNUInt32 lambda_len = this->crf->getLambdaLen();
 
 	double logLi = 0.0;
@@ -153,23 +150,14 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 			QNUInt32 ifBrokenLab = CRF_LAB_BAD;
 			QNUInt32 label = CRF_LAB_BAD;
 
-			// just for debugging
-//			cout << "NodeCnt=" << nodeCnt << endl;
-
 //			for (QNUInt32 dur = 1; dur <= ftr_count; dur++)
 //			{
 //				actualLab = this->lab_buf[labs_width * (dur - 1)];
-//
-//				// just for debugging
-//				cout << "dur" << dur << " actualLab=" << actualLab << endl;
 //
 //				if (actualLab == CRF_LAB_BAD)
 //					continue;
 //				QNUInt32 begin = this->lab_buf[labs_width * (dur - 1) + 1];
 //				QNUInt32 end = this->lab_buf[labs_width * (dur - 1) + 2];
-//
-//				// just for debugging
-//				cout << "begin=" << begin << " end=" << end;
 //
 //				assert(end - begin + 1 == dur);
 //				//ifBrokenLab = this->lab_buf[labs_width * (dur - 1) + 3];
@@ -180,14 +168,8 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 //				}
 //				label = nActualLabs * (dur - 1) + actualLab;
 //				//label = nActualLabs * 2 * (dur - 1) + actualLab * 2 + ifBrokenLab;
-//
-//				// just for debugging
-//				cout << " label=" << label << endl;
 //			}
 				actualLab = this->lab_buf[0];
-
-				// just for debugging
-//				cout << "actualLab=" << actualLab << endl;
 
 				if (actualLab != CRF_LAB_BAD)
 				{
@@ -196,9 +178,6 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 
 					QNUInt32 dur = end - begin + 1;
 
-					// just for debugging
-//					cout << "begin=" << begin << " end=" << end;
-
 					// for phn_dur label
 					label = nActualLabs * (dur - 1) + actualLab;
 
@@ -206,9 +185,6 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 //					ifBrokenLab = this->lab_buf[3];
 //					label = nActualLabs * (dur - 1) + actualLab * 2 + ifBrokenLab;
 				}
-
-				// just for debugging
-//				cout << " label=" << label << endl;
 
 			//cout << endl;
 			// Store the current frame/label information in a sequence node
@@ -233,16 +209,7 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 			QNUInt32 prevNode_nLabs = this->crf->getNLabs();
 			QNUInt32 nextNode_nActualLabs = nActualLabs;
 
-			// just for debugging
-//			cout << "size of feature buffer: " << cur_ftr_buf_size << ", maximum duration for this node: " << nodeMaxDur << endl;
-
-			// just for debugging
-//			cout << "nodeList access 1(set): " << nodeCnt << endl;
-
 			this->nodeList->set(nodeCnt,new_buf,cur_ftr_buf_size,label,this->crf,nodeMaxDur,prevNode_nLabs,nextNode_nActualLabs);
-
-			// just for debugging
-//			cout << "Label: " << label << endl;
 
 			QNUInt32 numPrevNodes;
 			if (nodeCnt + 1 <= lab_max_dur)
@@ -261,45 +228,24 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 				for (QNUInt32 i = 0; i < numPrevNodes; i++)
 				{
 					QNUInt32 ni = nodeCnt - numPrevNodes + i;
-
-					// just for debugging
-//					cout << "nodeList access 2(at): " << ni << endl;
-
 					prevNodes[i] = this->nodeList->at(ni);
 				}
 			}
 
-			// just for debugging
-//			cout << "nodeList access 3(at): " << nodeCnt << endl;
-
 			this->nodeList->at(nodeCnt)->setPrevNodes(prevNodes, numPrevNodes);
-
-			// just for debugging
-//			cout << "nodeList access 4(at): " << nodeCnt << endl;
 
 			this->nodeList->at(nodeCnt)->computeTransMatrix();
 			double scale;
 			if (nodeCnt == 0) {
-
-				// just for debugging
-//				cout << "nodeList access 5(at): " << nodeCnt << endl;
-
 				scale=this->nodeList->at(nodeCnt)->computeFirstAlpha();
 			}
 			else {
-
-				// just for debugging
-//				cout << "nodeList access 6(at): " << nodeCnt << endl;
-
 				scale=this->nodeList->at(nodeCnt)->computeAlpha();
 			}
 			//scale=this->nodeList->at(nodeCnt)->computeAlpha(prev_alpha);
 
 			//double sum = this->nodeList.at(nodeCnt)->computeAlphaSum();
 			//double* alpha=this->nodeList.at(nodeCnt)->getAlpha();
-
-			// just for debugging
-//			cout << "Computed alpha for node[" << nodeCnt << "]." << endl;
 
 			logLi-=scale;
 			nodeCnt++;
@@ -322,10 +268,6 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 
 	nodeCnt--;//Correct for the fact that we add 1 to the nodeCnt at the end of the above loop...
 	QNUInt32 lastNode=nodeCnt;
-
-	// just for debugging
-//	cout << "Last node count: " << lastNode << endl << endl;
-//	cout << "nodeList access 7(at): " << lastNode << endl;
 
 	double Zx=this->nodeList->at(lastNode)->computeAlphaSum();
 
@@ -369,10 +311,6 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 //	}
 	bool stop=false;
 	while (!stop) {
-
-		// just for debugging
-//		cout << "NodeCnt=" << nodeCnt << endl;
-
 		QNUInt32 numNextNodes;
 		if (lastNode - nodeCnt <= lab_max_dur)
 		{
@@ -390,44 +328,21 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 			for (QNUInt32 i = 0; i < numNextNodes; i++)
 			{
 				QNUInt32 ni = nodeCnt + 1 + i;
-
-				// just for debugging
-//				cout << "nodeList access 8(at): " << ni << endl;
-
 				nextNodes[i] = this->nodeList->at(ni);
 			}
 		}
-
-		// just for debugging
-//		cout << "nodeList access 9(at): " << nodeCnt << endl;
-
 		this->nodeList->at(nodeCnt)->setNextNodes(nextNodes, numNextNodes);
 
 		if (nodeCnt==lastNode) {
-
-			// just for debugging
-//			cout << "nodeList access 10(at): " << nodeCnt << endl;
-
 			this->nodeList->at(nodeCnt)->setTailBeta();
 		}
 		else {
-
-			// just for debugging
-//			cout << "nodeList access 11(at): " << nodeCnt << endl;
-
 			this->nodeList->at(nodeCnt)->computeBeta(this->nodeList->at(nodeCnt)->getAlphaScale());
 		}
-
-		// just debugging
-//		cout << "Computed beta for node[" << nodeCnt << "]." << endl;
 
 		QNUInt32 prev_lab = CRF_LAB_BAD;
 		QNUInt32 prev_adj_seg_nodeCnt = nodeCnt;
 		while (prev_adj_seg_nodeCnt > 0) {
-
-			// just for debugging
-//			cout << "nodeList access 12(at): " << prev_adj_seg_nodeCnt-1 << endl;
-
 			prev_lab = this->nodeList->at(prev_adj_seg_nodeCnt-1)->getLabel();
 			if (prev_lab != CRF_LAB_BAD)
 				break;
@@ -435,35 +350,9 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 			prev_adj_seg_nodeCnt--;
 		}
 
-		// just for debugging
-//		cout << "Previous adjacent segment label: " << prev_lab << endl;
-
-		// just debugging
-		//cout << "Before computing alpha sum." << endl;
-
 		//double cur_alpha_sum = this->nodeList->at(nodeCnt)->computeAlphaSum(); //*DEBUG*//
 
-		// just debugging
-		//cout << "After computing alpha sum." << endl;
-
-		//cout << "\t" << nodeCnt << ":\tAlpha Sum: " << cur_alpha_sum;  //Added by Ryan, just for debugging
-
-		// just debugging
-		//cout << "Before computing ExpF." << endl;
-
-		// just for debugging
-//		cout << "nodeList access 13(at): " << nodeCnt << endl;
-
 		logLi += this->nodeList->at(nodeCnt)->computeExpF(this->ExpF, grad, Zx, prev_lab);
-
-		// just debugging
-		//cout << "After computing ExpF." << endl;
-
-		//cout << "\t" << nodeCnt << ":\tLogLi is now: " << logLi << "\tAlpha Sum: " << cur_alpha_sum << endl; //*DEBUG*//
-		//cout << "\tLogLi is now: " << logLi << endl;  //Added by Ryan, just for debugging
-
-		// just for debugging
-//		cout << "nodeList access 14(at): " << nodeCnt << endl;
 
 		if (this->nodeList->at(nodeCnt)->getPrevNodes() != NULL)
 			delete [] this->nodeList->at(nodeCnt)->getPrevNodes();
@@ -479,16 +368,9 @@ double CRF_NewGradBuilder_StdSeg::buildGradient(CRF_FeatureStream* ftr_strm, dou
 
 	for (QNUInt32 i=0; i<lambda_len; i++) {
 		grad[i]-=this->ExpF[i];
-
-		// just for debugging
-//		cout << "total grad[" << i << "]=" << grad[i] << endl;
 	}
 	*Zx_out=Zx;
 	//logLi-=Zx;
-
-
-	// just for debugging
-//	cout << endl;
 
 	//nodeList.clear();
 	return logLi;

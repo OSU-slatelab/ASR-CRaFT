@@ -37,6 +37,9 @@ CRF_Model::~CRF_Model()
 	if (this->lambda != NULL ) {delete [] this->lambda;}
 	if (this->lambdaAcc != NULL ) {delete [] this->lambdaAcc;}
 	if (this->featureMap != NULL ) {delete this->featureMap;}
+
+	// added by Ryan
+	if (this->gradSqrAcc != NULL ) {delete [] this->gradSqrAcc;}
 }
 
 /*
@@ -75,6 +78,10 @@ void CRF_Model::setFeatureMap(CRF_FeatureMap* map)
 	QNUInt32 len=map->getNumFtrFuncs();
 	this->setLambda(new double[len],len);
 	this->setLambdaAcc(new double[len]);
+
+	// Added by Ryan
+	this->setGradSqrAcc(new double[len]);
+
 	this->resetLambda();
 	this->setNodeType();
 }
@@ -123,6 +130,19 @@ QNUInt32 CRF_Model::getLambdaLen()
 	return this->lambda_len;
 }
 
+// Added by Ryan
+/*
+ * CRF_Model::getGradSqrAcc
+ *
+ * Accessor function to retrieve the model's gradient square sum accumulator vector
+ *
+ * The accumulator vector is used for AdaGrad in stochastic gradient descent processing
+ */
+double* CRF_Model::getGradSqrAcc()
+{
+	return this->gradSqrAcc;
+}
+
 /*
  * CRF_Model::setLambda
  *
@@ -130,8 +150,8 @@ QNUInt32 CRF_Model::getLambdaLen()
  */
 void CRF_Model::setLambda(double* lam, QNUInt32 lam_len)
 {
-	this->lambda=lam;
-	this->lambda_len=lam_len;
+	this->lambda = lam;
+	this->lambda_len = lam_len;
 }
 
 /*
@@ -142,7 +162,19 @@ void CRF_Model::setLambda(double* lam, QNUInt32 lam_len)
  */
 void CRF_Model::setLambdaAcc(double* lam)
 {
-	this->lambdaAcc=lam;
+	this->lambdaAcc = lam;
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::setGradSqrAcc
+ *
+ * Mutator function to set the accumulated gradient square sum vector
+ * (Note that this vector will be treated as the same length as the lambda vector)
+ */
+void CRF_Model::setGradSqrAcc(double* grad)
+{
+	this->gradSqrAcc = grad;
 }
 
 /*
@@ -152,9 +184,12 @@ void CRF_Model::setLambdaAcc(double* lam)
  */
 void CRF_Model::resetLambda()
 {
-	for (QNUInt32 i=0; i<this->lambda_len; i++) {
-		this->lambda[i]=0.0;
-		this->lambdaAcc[i]=0.0;
+	for (QNUInt32 i = 0; i < this->lambda_len; i++) {
+		this->lambda[i] = 0.0;
+		this->lambdaAcc[i] = 0.0;
+
+		// Added by Ryan
+		this->gradSqrAcc[i] = 0.0;
 	}
 }
 
@@ -175,10 +210,26 @@ bool CRF_Model::writeToFile(const char* fname)
 		for (QNUInt32 i=0; i<this->lambda_len; i++) {
 			ofile << lambda[i] << std::endl;
 		}
+
+		// Added by Ryan
+		if (ofile.bad() || ofile.fail()) {
+			string errstr="CRF_Model::writeToFile() caught exception: errors when writing the weights to the file:\n";
+			errstr += string(fname) + "\n";
+			errstr += "Maybe because it is running out of space, or the file is deleted, or the permission is changed.";
+			throw runtime_error(errstr);
+		}
+
 		ofile.close();
 		return true;
 	}
 	else {
+
+		// Added by Ryan
+		string errstr="CRF_Model::writeToFile() caught exception: cannot open the file:\n";
+		errstr += string(fname) + "\n";
+		errstr += "Maybe because it is running out of space, or the file is deleted, or the permission is changed.";
+		throw runtime_error(errstr);
+
 		return false;
 	}
 }
@@ -203,10 +254,26 @@ bool CRF_Model::writeToFile(const char* fname, double* lam, QNUInt32 ll)
 		for (QNUInt32 i=0; i<ll; i++) {
 			ofile << lam[i] << std::endl;
 		}
+
+		// Added by Ryan
+		if (ofile.bad()) {
+			string errstr="CRF_Model::writeToFile() caught exception: errors when writing the weights to the file:\n";
+			errstr += string(fname) + "\n";
+			errstr += "Maybe because it is running out of space, or the file is deleted, or the permission is changed.";
+			throw runtime_error(errstr);
+		}
+
 		ofile.close();
 		return true;
 	}
 	else {
+
+		// Added by Ryan
+		string errstr="CRF_Model::writeToFile() caught exception: cannot open the file:\n";
+		errstr += string(fname) + "\n";
+		errstr += "Maybe because it is running out of space, or the file is deleted, or the permission is changed.";
+		throw runtime_error(errstr);
+
 		return false;
 	}
 }
@@ -225,7 +292,7 @@ bool CRF_Model::readFromFile(const char* fname)
 	std::ifstream ifile;
 	ifile.open(fname);
 	if (ifile.is_open()) {
-		for (QNUInt32 i=0; i<this->lambda_len; i++) {
+		for (QNUInt32 i = 0; i < this->lambda_len; i++) {
 			std::string s;
 			getline(ifile,s);
 			std::istringstream iss(s);
@@ -255,21 +322,51 @@ bool CRF_Model::readFromFile(const char* fname)
  */
 bool CRF_Model::readAverageFromFile(const char* fname, int present)
 {
-	this->init_present=present;
+	this->init_present = present;
 	std::ifstream ifile;
 	ifile.open(fname);
 	if (ifile.is_open()) {
-		for (QNUInt32 i=0; i<this->lambda_len; i++) {
+		for (QNUInt32 i = 0; i < this->lambda_len; i++) {
 			std::string s;
 			getline(ifile,s);
 			std::istringstream iss(s);
 			iss >> std::dec >> lambdaAcc[i];
-			if (present>0) {
-				lambdaAcc[i]=lambdaAcc[i]*present;
+			if (present > 0) {
+				lambdaAcc[i] = lambdaAcc[i] * present;
 
 				// added by Ryan, just for debugging
 				//std::cout << lambdaAcc[i] << std::endl;
 			}
+		}
+		ifile.close();
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+// Added by Ryan
+/*
+ * CRF_Model::readGradSqrAccFromFile
+ *
+ * Inputs: fname - file name to read lambda values from
+ *
+ * Returns: true if file can be read, false otherwise
+ *
+ * Reads values from file fname into the accumulated square sum vector
+ */
+bool CRF_Model::readGradSqrAccFromFile(const char* fname)
+{
+	std::ifstream ifile;
+	ifile.open(fname);
+	if (ifile.is_open()) {
+		for (QNUInt32 i = 0; i < this->lambda_len; i++) {
+			std::string s;
+			getline(ifile,s);
+			std::istringstream iss(s);
+			iss >> std::dec >> this->gradSqrAcc[i];
+			//std::cout << this->gradSqrAcc[i] << std::endl;
 		}
 		ifile.close();
 		return true;

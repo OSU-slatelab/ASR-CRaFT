@@ -39,6 +39,7 @@ protected:
 	modeltype model_type;
 	bool use_broken_class_label;
 	QNUInt32 init_iter;
+	double* gradSqrAcc;  // Holds the accumulated gradient square sums for AdaGrad
 
 public:
 	CRF_Model(QNUInt32 num_labs);
@@ -58,7 +59,7 @@ public:
 	virtual void setLambdaAcc(double*);
 	virtual void resetLambda();
 	virtual bool writeToFile(const char* fname);
-	virtual bool writeToFile(const char* fname,double* lam, QNUInt32 ll);
+	virtual bool writeToFile(const char* fname, double* lam, QNUInt32 ll);
 	virtual bool readFromFile(const char* fname);
 	virtual bool readAverageFromFile(const char* fname, int present);
 	virtual void setUseLog(bool isLog);
@@ -77,6 +78,9 @@ public:
 	virtual bool ifUseBrokenClassLabel();
 	virtual void setInitIter(QNUInt32 start_iter);
 	virtual QNUInt32 getInitIter();
+	virtual bool readGradSqrAccFromFile(const char* fname);
+	virtual void setGradSqrAcc(double* grad);
+	virtual double* getGradSqrAcc();
 };
 
 #endif /*CRF_H_*/

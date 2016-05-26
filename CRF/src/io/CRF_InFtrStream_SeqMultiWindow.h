@@ -2,7 +2,7 @@
  * CRF_InFtrStream_SeqMultiWindow.h
  *
  *  Created on: Aug 19, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_INFTRSTREAM_SEQMULTIWINDOW_H_
@@ -87,11 +87,6 @@ protected:
 
 public:
     // modified for context features
-//	CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
-//            QN_InFtrStream& a_str,
-//            size_t a_max_win_len, size_t a_top_margin,
-//            size_t a_bot_margin,
-//            size_t a_bunch_frames = QN_SIZET_BAD);
 	CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
 	            QN_InFtrStream& a_str,
 	            size_t a_max_win_len, size_t a_top_margin,

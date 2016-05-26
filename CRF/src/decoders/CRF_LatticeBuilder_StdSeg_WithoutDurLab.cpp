@@ -2,7 +2,7 @@
  * CRF_LatticeBuilder_StdSeg_WithoutDurLab.cpp
  *
  *  Created on: Oct 17, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_LatticeBuilder_StdSeg_WithoutDurLab.h"

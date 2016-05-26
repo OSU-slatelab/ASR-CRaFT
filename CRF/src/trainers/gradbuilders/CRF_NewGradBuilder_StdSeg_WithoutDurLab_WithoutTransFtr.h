@@ -2,7 +2,7 @@
  * CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h
  *
  *  Created on: Dec 1, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_NEWGRADBUILDER_STDSEG_WITHOUTDURLAB_WITHOUTTRANSFTR_H_

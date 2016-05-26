@@ -2,7 +2,7 @@
  * CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr.h
  *
  *  Created on: May 2, 2012
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_STDSEGNSTATENODE_WITHOUTDURLAB_WITHOUTSEGTRANSFTR_H_

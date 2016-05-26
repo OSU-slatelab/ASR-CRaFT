@@ -2,7 +2,7 @@
  * CRF_InLabStream_SeqMultiWindow.cpp
  *
  *  Created on: Sep 10, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_InLabStream_SeqMultiWindow.h"
@@ -278,13 +278,6 @@ size_t CRF_InLabStream_SeqMultiWindow::read_labs(size_t cnt, QNUInt32* labs, siz
 
 	if (cur_out_win < num_out_wins && cur_in_frame < end_in_frame)
 	{
-		//just for debugging
-//		cout << cur_in_frame << "\t"
-//				<< out_lab_buf[cur_out_win] << "\t"
-//				<< out_t_start_buf[cur_out_win] << "\t"
-//				<< out_t_end_buf[cur_out_win] << "\t"
-//				<< out_broken_flag_buf[cur_out_win] << endl;
-
 		size_t ret_lab_idx = 0;
 		//for (size_t frameMove = 0; frameMove < cnt; frameMove++)
 		//{

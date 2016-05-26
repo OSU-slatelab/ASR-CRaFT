@@ -2,7 +2,7 @@
  * CRF_LatticeBuilder_StdSeg.h
  *
  *  Created on: Oct 16, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_LATTICEBUILDER_STDSEG_H_
@@ -37,19 +37,10 @@ public:
 	virtual void setNodeStartState(QNUInt32 nodeCnt, QNUInt32 nodeStartState);
 };
 
-//template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>* fst,
-//									  bool align,
-//									  VectorFst<Arc>*labFst,
-//									  bool norm) {
 template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>* fst,
 									  bool align,
 									  VectorFst<Arc>*labFst,
 									  bool norm) {
-
-
-	// just for debugging
-//	cout << "Beginning of CRF_LatticeBuilder_StdSeg::buildLattice";
-
 	// Returns the best path through the current segment
 	QNUInt32 ftr_count;
 
@@ -169,13 +160,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 
 		if (ftr_count > 0) {
 
-			// just for debugging
-//			cout << "before creating new_buf." << endl;
-
 			QNUInt32 cur_ftr_buf_size = this->num_ftrs * ftr_count;
-
-			// Just for debugging
-//			cout << "QNUInt32 cur_ftr_buf_size = num_ftrs * ftr_count = " << num_ftrs << " * " << ftr_count << " = " << cur_ftr_buf_size << endl;
 
 			float* new_buf = new float[cur_ftr_buf_size];
 			for (QNUInt32 j=0; j<cur_ftr_buf_size; j++) {
@@ -209,18 +194,12 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //				}
 					actualLab = this->lab_buf[0];
 
-					// just for debugging
-//					cout << "actualLab=" << actualLab << endl;
-
 					if (actualLab != CRF_LAB_BAD)
 					{
 						QNUInt32 begin = this->lab_buf[1];
 						QNUInt32 end = this->lab_buf[2];
 
 						QNUInt32 dur = end - begin + 1;
-
-						// just for debugging
-//						cout << "begin=" << begin << " end=" << end;
 
 						// for phn_dur label
 						label = this->nActualLabs * (dur - 1) + actualLab;
@@ -229,9 +208,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //						ifBrokenLab = this->lab_buf[3];
 //						label = nActualLabs * (dur - 1) + actualLab * 2 + ifBrokenLab;
 					}
-
-					// just for debugging
-//					cout << " label=" << label << endl;
 			}
 
 			QNUInt32 nodeMaxDur;
@@ -248,9 +224,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 			QNUInt32 nextNode_nActualLabs = this->nActualLabs;
 			this->nodeList->set(nodeCnt,new_buf,cur_ftr_buf_size,label,this->crf,nodeMaxDur,prevNode_nLabs,nextNode_nActualLabs);
 
-			// just for debugging
-//			cout << "Label: " << label << endl;
-
 			QNUInt32 numPrevNodes;
 			if (nodeCnt + 1 <= this->lab_max_dur)
 			{
@@ -265,9 +238,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 			if (numPrevNodes > 0)
 			{
 
-				// just for debugging
-//				cout << "before creating prevNodes." << endl;
-
 				prevNodes = new CRF_StateNode*[numPrevNodes];
 				for (QNUInt32 i = 0; i < numPrevNodes; i++)
 				{
@@ -276,11 +246,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				}
 			}
 			this->nodeList->at(nodeCnt)->setPrevNodes(prevNodes, numPrevNodes);
-
-			// just for debugging
-			//cout << "Before computing state and transition matrix for node " << nodeCnt << ": ";
-			//int pauseTemp;
-			//cin >> pauseTemp;
 
 			float value = this->nodeList->at(nodeCnt)->computeTransMatrix();
 			double scale;
@@ -294,9 +259,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 			}
 			seq_len++;
 			if (nodeCnt == startState) {
-
-				// just for debugging
-//				cout << "beginning of the first node: " << nodeCnt << endl;
 
 				assert(numPrevNodes == 0 && nodeMaxDur == 1);
 				// Add arcs from the startState to each possible label
@@ -338,14 +300,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //						float value = -1*this->nodeList->at(nodeCnt)->getStateValue(lab, dur);
 						//***********************************//
 
-						// just for debugging
-//						cout << "nodeCnt=" << nodeCnt << ", dur=" << dur << ", lab=" << lab << endl;
-//						cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getStateValue(lab=" << lab << ", dur=" << dur << ")=" << value << ";\t";
-
 						fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-						// just for debugging
-//						cout << "AddArc(" << startState << ",Arc(" << cur_lab+1 << "," << cur_lab+1 << "," << value << "," << cur_state << "));" << endl;
 
 						cur_lab++;
 
@@ -359,9 +314,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 					//***********************************//
 				}
 
-				// just for debugging
-//				cout << "To add start state " << startState << " to node " << nodeCnt << endl;
-
 //				assert(nodeCnt <= this->nodeStartStates->size());
 //				if (nodeCnt < this->nodeStartStates->size()) {
 //					this->nodeStartStates->at(nodeCnt) = startState + 1;
@@ -374,9 +326,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				QNUInt32 nextNodeCnt = nodeCnt + 1;
 				QNUInt32 nextNodeStartState = this->nodeStartStates->at(nodeCnt) + num_new_states;
 
-				// just for debugging
-//				cout << "To add start state " << nextNodeStartState << " to node " << nextNodeCnt << endl;
-
 //				assert(nextNodeCnt <= this->nodeStartStates->size());
 //				if (nextNodeCnt < this->nodeStartStates->size()) {
 //					this->nodeStartStates->at(nextNodeCnt) = nextNodeStartState;
@@ -386,13 +335,8 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 
 				setNodeStartState(nextNodeCnt, nextNodeStartState);
 
-				// just for debugging
-//				cout << "end of the first node." << nodeCnt << endl;
 			}
 			else if (numPrevNodes < nodeMaxDur) {
-
-				// just for debugging
-//				cout << "beginning of one of the starting nodes: " << nodeCnt << endl;
 
 				int cur_time = nodeCnt + 1;
 				int cur_lab = 0;
@@ -440,15 +384,9 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //							float value = -1*this->nodeList->at(nodeCnt)->getFullTransValue(prev_lab,lab,dur);
 							//***********************************//
 
-							// just for debugging
-//							cout << "nodeCnt=" << nodeCnt << ", dur=" << dur << ", lab=" << lab << ", prev_lab=" << prev_lab << endl;
-//							cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getFullTransValue(prev_lab=" << prev_lab << ", lab=" << lab << ", dur=" << dur << ")=" << value << ";\t";
-
 							int prev_state = this->nodeStartStates->at(nodeCnt-dur) + prev_lab;
 							fst->AddArc(prev_state,Arc(cur_lab+1,cur_lab+1,value,cur_state));
 
-							// just for debugging
-//							cout << "AddArc(" << prev_state << ",Arc(" << cur_lab+1 << "," << cur_lab+1 << "," << value << "," << cur_state << "));" << endl;
 						}
 						cur_lab++;
 
@@ -492,14 +430,7 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 //						float value = -1*this->nodeList->at(nodeCnt)->getStateValue(lab, dur);
 						//***********************************//
 
-						// just for debugging
-//						cout << "nodeCnt=" << nodeCnt << ", dur=" << dur << ", lab=" << lab << endl;
-//						cout << "Arc value = -1*this->nodeList->at(" << nodeCnt << ")->getStateValue(lab=" << lab << ", dur=" << dur << ")=" << value << ";\t";
-
 						fst->AddArc(startState,Arc(cur_lab+1,cur_lab+1,value,cur_state));
-
-						// just for debugging
-//						cout << "AddArc(" << startState << ",Arc(" << cur_lab+1 << "," << cur_lab+1 << "," << value << "," << cur_state << "));" << endl;
 
 						cur_lab++;
 
@@ -516,9 +447,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				QNUInt32 nextNodeCnt = nodeCnt + 1;
 				QNUInt32 nextNodeStartState = this->nodeStartStates->at(nodeCnt) + num_new_states;
 
-				// just for debugging
-//				cout << "To add start state " << nextNodeStartState << " to node " << nextNodeCnt << endl;
-
 //				assert(nextNodeCnt <= this->nodeStartStates->size());
 //				if (nextNodeCnt < this->nodeStartStates->size()) {
 //					this->nodeStartStates->at(nextNodeCnt) = nextNodeStartState;
@@ -528,13 +456,8 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 
 				setNodeStartState(nextNodeCnt, nextNodeStartState);
 
-				// just for debugging
-//				cout << "end of one of the starting nodes: " << nodeCnt << endl;
 			}
 			else {
-
-				// just for debugging
-//				cout << "beginning of a regular node: " << nodeCnt << endl;
 
 				int cur_time = nodeCnt + 1;
 				int cur_lab = 0;
@@ -570,9 +493,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 
 						int prev_numAvailLabs = this->nodeList->at(nodeCnt-dur)->getNumAvailLabs();
 
-						// just for debugging
-//						cout << "prev_numAvailLabs=" << prev_numAvailLabs << endl;
-
 						for (int prev_lab = 0; prev_lab < prev_numAvailLabs; prev_lab++) {
 
 							//***** for CRF_StdSegStateNode *****//
@@ -607,9 +527,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 				QNUInt32 nextNodeCnt = nodeCnt + 1;
 				QNUInt32 nextNodeStartState = this->nodeStartStates->at(nodeCnt) + num_new_states;
 
-				// just for debugging
-//				cout << "To add start state " << nextNodeStartState << " to node " << nextNodeCnt << endl;
-
 //				assert(nextNodeCnt <= this->nodeStartStates->size());
 //				if (nextNodeCnt < this->nodeStartStates->size()) {
 //					this->nodeStartStates->at(nextNodeCnt) = nextNodeStartState;
@@ -619,8 +536,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 
 				setNodeStartState(nextNodeCnt, nextNodeStartState);
 
-				// just for debugging
-//				cout << "end of a regular node: " << nodeCnt << endl;
 			}
 
 			// TODO: need to change the following block to implement the segmental level forced alignment.
@@ -640,9 +555,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 					curLab=lab;
 				}
 			}
-
-			// just for debugging
-//			cout << endl;
 
 			if (prevNodes != NULL)
 				delete [] prevNodes;
@@ -666,10 +578,6 @@ template <class Arc> int CRF_LatticeBuilder_StdSeg::buildLattice(VectorFst<Arc>*
 		int prev_state = this->nodeStartStates->at(nodeCnt-1) + prev_lab;
 		//fst->AddArc(prev_state,Arc(0,0,0,final_state));
 		fst->AddArc(prev_state,Arc(0,0,-Zx,final_state));
-
-		// just for debugging
-//		cout << "Zx=" << Zx << ", final_state=" << final_state << ";\t";
-//		cout << "AddArc(" << prev_state << ",Arc(" << 0 << "," << 0 << "," << Zx << "," << final_state << "));" << endl;
 
 	}
 	fst->SetFinal(final_state,0);

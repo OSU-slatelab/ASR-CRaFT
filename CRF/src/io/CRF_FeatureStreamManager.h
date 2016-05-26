@@ -74,14 +74,6 @@ protected:
 	int childnum;
 public:
 	// modified by Ryan, for context features
-//	CRF_FeatureStreamManager(int debug, const char* debug_name,
-//										char* ftr_fname, const char* ftr_file_fmt, char* ht_fname, size_t ht_offset,
-//										size_t ftr_width, size_t first_ftr, size_t num_ftrs,
-//										size_t win_ext, size_t win_off, size_t win_len,
-//										int delta_o, int delta_w,
-//										char* trn_rng, char* cv_rng,
-//										FILE* nfile, int n_mode, double n_am, double n_av, seqtype ts,
-//										QNUInt32 rseed=0, size_t n_threads=1);
 	CRF_FeatureStreamManager(int debug, const char* debug_name,
 									char* ftr_fname, const char* ftr_file_fmt, char* ht_fname, size_t ht_offset,
 									size_t ftr_width, size_t first_ftr, size_t num_ftrs,
@@ -109,6 +101,10 @@ public:
 		return (children==NULL || child>=nthreads || child<0)?NULL:children[child];
 	}
 	inline size_t getNThreads() { return nthreads; }
+
+	// Added by Ryan
+	void rewindAllChildrenTrn();
+
 	CRF_FeatureStream* trn_stream;
 	CRF_FeatureStream* cv_stream;
 	CRF_FeatureStream* old_trn_stream;

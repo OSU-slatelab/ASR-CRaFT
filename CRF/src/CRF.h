@@ -59,4 +59,9 @@ enum modeltype { STDFRAME, STDSEG, STDSEG_NO_DUR, STDSEG_NO_DUR_NO_TRANSFTR, STD
 #define SEGMENTAL_CRF
 #endif
 
+// Added by Ryan
+#ifndef BAD_TIME_FRAME
+#define BAD_TIME_FRAME (-1)
+#endif
+
 #endif /*CRF_H_*/

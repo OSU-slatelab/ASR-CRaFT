@@ -493,16 +493,10 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 
 		modeltype mtype = crf->getModelType();
 
-		// just for debugging
-		//cout << "Inside segmental CRF_StateNode::createStateNode()" << endl;
-
 		if (mtype == STDSEG)
 		{
 			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
 			throw runtime_error(errstr);
-
-			// just for debugging
-			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode" << endl;
 
 			return new CRF_StdSegNStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
@@ -511,25 +505,15 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode_WithoutDurLab has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
 			throw runtime_error(errstr);
 
-			// just for debugging
-			//cout << "STDSEG_NO_DUR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab" << endl;
-
 			return new CRF_StdSegNStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
 		{
-			// just for debugging
-//			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr" << endl;
-			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
-
 //			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
 		{
-			// just for debugging
-			//cout << "STDSEG_NO_DUR_NO_SEGTRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
-
 			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else
@@ -544,35 +528,20 @@ CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNU
 
 		modeltype mtype = crf->getModelType();
 
-		// just for debugging
-		//cout << "Inside segmental CRF_StateNode::createStateNode()" << endl;
-
 		if (mtype == STDSEG)
 		{
-			// just for debugging
-			//cout << "STDSEG, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode" << endl;
-
 			return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR)
 		{
-			// just for debugging
-			//cout << "STDSEG_NO_DUR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab" << endl;
-
 			return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
 		{
-			// just for debugging
-			//cout << "STDSEG_NO_DUR_NO_TRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr" << endl;
-
 			return new CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
 		{
-			// just for debugging
-			//cout << "STDSEG_NO_DUR_NO_SEGTRANSFTR, CRF_StateNode::createStateNode(), create CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr" << endl;
-
 			return new CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
 		}
 		else
@@ -731,21 +700,7 @@ double CRF_StateNode::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
 // */
 //void CRF_StateNode::deleteFtrBuf()
 //{
-//	// just for debugging
-//	cout << "before delete ftrBuf. ";
-//
 //	if (this->ftrBuf != NULL) {
-//
-//		// just for debugging
-//		cout << "why this ftrBuf cannot be deleted???" << endl;
-//		for (QNUInt32 ftrID = 0; ftrID < this->ftrBuf_size; ftrID++)
-//		{
-//			cout << "ftrBuf[" << ftrID << "]=" << ftrBuf[ftrID] << endl;
-//		}
-//
 //		delete [] this->ftrBuf;
 //	}
-//
-//	// just for debugging
-//	cout << "after delete ftrBuf" << endl;
 //}

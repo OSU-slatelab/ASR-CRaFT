@@ -2,7 +2,7 @@
  * CRF_StdSegNStateNode.cpp
  *
  *  Created on: Apr 29, 2012
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_StdSegNStateNode.h"
@@ -22,16 +22,6 @@
 CRF_StdSegNStateNode::CRF_StdSegNStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs, QNUInt32 nextNode_nActualLabs)
 	: CRF_StdNStateNode(fb, sizeof_fb, lab, crf)
 {
-	// just for debugging
-//	cout << "Creating a CRF_StdSegNStateNode node:" << endl;
-//	cout << "sizeof_fb=" << sizeof_fb << endl;
-//	cout << "lab=" << lab << endl;
-//	cout << "nLabs=" << crf_ptr->getNLabs() << endl;
-//	cout << "labMaxDur=" << crf_ptr->getLabMaxDur() << endl;
-//	cout << "nodeLabMaxDur=" << nodeMaxDur << endl;
-//	cout << "prevNode_nLabs=" << prevNode_nLabs << endl;
-//	cout << "nextNode_nActualLabs=" << nextNode_nActualLabs << endl;
-
 	this->labMaxDur = crf_ptr->getLabMaxDur();
 	this->nodeLabMaxDur = nodeMaxDur;
 	if (this->nodeLabMaxDur > this->labMaxDur)
@@ -77,12 +67,6 @@ CRF_StdSegNStateNode::CRF_StdSegNStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt
 	// but we need them to be different for this class.
 //	delete [] this->transMatrix;
 //	this->transMatrix = new double[this->prevNodeNLabs * this->nLabs];
-
-	// just for debugging
-//	cout << "nActualLabs=" << this->nActualLabs << endl;
-//	cout << "numAvailLabs=" << this->numAvailLabs << endl;
-//	cout << "nFtrsPerSeg=" << this->nFtrsPerSeg << endl;
-//	cout << "transMatrix_size=" << this->prevNodeNLabs << "*" << this->nLabs << endl;
 }
 
 /*
@@ -103,9 +87,6 @@ double CRF_StdSegNStateNode::computeTransMatrix()
 	string errstr="CRF_StdSegNStateNode::computeTransMatrix() threw exception: 3-state segmental models for phone-duration labels are not implemented yet!";
 	throw runtime_error(errstr);
 
-//	// just for debugging
-////	cout << "CRF_StdSegNStateNode::computeTransMatrix(): " << endl;
-//
 //	checkNumPrevNodes();
 //
 //	double result=0.0;
@@ -124,10 +105,6 @@ double CRF_StdSegNStateNode::computeTransMatrix()
 //
 //			// TODO: to delete this chunk of code, which is from 1-state segmental model and only for reference
 ///*
-////			// just for debugging
-//////			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "TransMatrix: plab=";
-//////			cout << "clab=" << clab << endl << "TransMatrix: plab=";
-////
 ////			//TODO: for (QNUInt32 plab=0; plab<nLabs_of_prevNode; plab++) {
 ////			//for (QNUInt32 plab=0; plab<nLabs; plab++) {
 ////			for (QNUInt32 plab = 0; plab < prevAdjacentSeg->getNumAvailLabs(); plab++) {
@@ -164,18 +141,10 @@ double CRF_StdSegNStateNode::computeTransMatrix()
 //				this->offDiagTransMatrix[clab-1]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,clab-1,clab);
 //			}
 //
-//
-//			// just for debugging
-////			cout << endl;
-////			cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
-//
 //			clab++;
 //
 //		}
 //		seg_ftr_buf += this->nFtrsPerSeg;
-//
-//		// just for debugging
-////		cout << "seg_ftr_buf moved forward by nFtrsPerSeg(" << nFtrsPerSeg << ")" << endl;
 //	}
 //	// These are the cases when the current node serves as the beginning segment of the sequence, so there is no previous node.
 //	for (QNUInt32 dur = this->numPrevNodes + 1; dur <= this->nodeLabMaxDur; dur++)
@@ -183,13 +152,6 @@ double CRF_StdSegNStateNode::computeTransMatrix()
 //		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 //		{
 //			this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(seg_ftr_buf,lambda,clab);
-//
-//			// just for debugging
-////			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "plab=";
-//			//cout << "clab=" << clab << endl << "TransMatrix: plab=";
-////			cout << endl;
-////			cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
-//
 //			clab++;
 //		}
 //		seg_ftr_buf += this->nFtrsPerSeg;
@@ -209,9 +171,6 @@ double CRF_StdSegNStateNode::computeAlpha()
 	string errstr="CRF_StdSegNStateNode::computeAlpha() threw exception: 3-state segmental models for phone-duration labels are not implemented yet!";
 	throw runtime_error(errstr);
 
-//	// just for debugging
-////	cout << "CRF_StdSegNStateNode::computeAlpha(): " << endl;
-//
 //	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 //	this->alphaScale=0.0;
 //
@@ -232,17 +191,11 @@ double CRF_StdSegNStateNode::computeAlpha()
 ///*
 ////			this->logAddAcc[0]=prev_adj_seg_alpha[0]+this->transMatrix[0+clab];
 ////
-////			// just for debugging
-//////			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "alphaArray = logAdd(prev alpha + trans): plab=[0]=" << this->logAddAcc[0] << " ";
-////
 ////			double maxv=this->logAddAcc[0];
 ////			//TODO: for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNLabs(); plab++) {  //full implementation. But not working now because logAdd() cannot do calculation on LOG0 yet.
 ////			for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNumAvailLabs(); plab++) {   //faster implementation, not guaranteed to work for all classes of previous nodes.
 ////				//this->logAddAcc[plab]=prev_adj_seg_alpha[plab]+this->transMatrix[plab * prevAdjacentSeg->getNLabs() + clab];
 ////				this->logAddAcc[plab]=prev_adj_seg_alpha[plab]+this->transMatrix[plab * this->nLabs + clab];
-////
-////				// just for debugging
-//////				cout << "[" << plab << "]=" << this->logAddAcc[plab] << " ";
 ////
 ////				if (this->logAddAcc[plab]>maxv) {
 ////					maxv=logAddAcc[plab];
@@ -289,16 +242,7 @@ double CRF_StdSegNStateNode::computeAlpha()
 //				throw runtime_error(errstr);
 //				return(-1);
 //			}
-//
-//
-//			// just for debugging
-////			cout << endl << "alphaArray[" << clab << "](" << this->alphaArray[clab] << ") + stateArray[" << clab << "](" << this->stateArray[clab] << ") =";
-//
 //			this->alphaArray[clab]+=this->stateArray[clab];
-//
-//			// just for debugging
-////			cout << this->alphaArray[clab] << endl;
-//
 //			clab++;
 //		}
 //	}
@@ -308,11 +252,6 @@ double CRF_StdSegNStateNode::computeAlpha()
 //		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 //		{
 //			this->alphaArray[clab]=this->stateArray[clab];
-//
-//			// just for debugging
-////			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl;
-////			cout << "alphaArray[" << clab << "] added stateArray[" << clab << "]=" << this->stateArray[clab] << endl;
-//
 //			clab++;
 //		}
 //	}
@@ -333,24 +272,14 @@ double CRF_StdSegNStateNode::computeFirstAlpha()
 	string errstr="CRF_StdSegNStateNode::computeFirstAlpha() threw exception: 3-state segmental models for phone-duration labels are not implemented yet!";
 	throw runtime_error(errstr);
 
-//	// just for debugging
-////	cout << "CRF_StdSegNStateNode::computeFirstAlpha()" << endl;
-//
 //	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 //	this->alphaScale = 0.0;
 //
 //	//numAvailLabs for the first node of the sequence is usually equal to nActualLabs (since nodeLabMaxDur==1).
 //	for (QNUInt32 clab = 0; clab < this->numAvailLabs; clab++)
 //	{
-//		// just for debugging
-////		cout << "alphaArray[" << clab << "]=stateArray[" << clab << "]=" << this->stateArray[clab] << " ";
-//
 //		this->alphaArray[clab] = this->stateArray[clab];
 //	}
-//
-//	// just for debugging
-////	cout << endl;
-//
 //	return this->alphaScale;
 
 }
@@ -376,9 +305,6 @@ double CRF_StdSegNStateNode::computeBeta(double scale)
 //	//	* Compute beta_i[size of alpha[]+1] to be all 1s
 //	//	* Multiply M_i[current] by beta_i[current+1] to get beta_i[current]
 //
-//	// just for debugging
-////	cout << "CRF_StdSegNStateNode::computeBeta(): " << endl;
-//
 //	checkNumNextNodes();
 //
 //	// if numNextNodes == 0, this is the last node of the sequence.
@@ -396,10 +322,6 @@ double CRF_StdSegNStateNode::computeBeta(double scale)
 //		double* next_adj_seg_beta = nextAdjacentSeg->getBeta();
 //		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++) {
 //			this->tempBeta[nextlab] = next_adj_seg_beta[nextlab] + nextAdjacentSeg->getStateValue(nextlab);
-//
-//			// just for debugging
-////			cout << "tempBeta[" << nextlab << "]=" << "next_seg_beta[" << nextlab << "](" << next_adj_seg_beta[nextlab] << ") + next_seg_state_value[" << nextlab << "](" << nextAdjacentSeg->getStateValue(nextlab) << ")=" << this->tempBeta[nextlab] << endl;
-//
 //			nextlab++;
 //		}
 //	}
@@ -425,9 +347,6 @@ double CRF_StdSegNStateNode::computeBeta(double scale)
 //
 //		QNUInt32 nextlab = 0;
 //
-//		// just for debugging
-////		cout << "clab=" << clab << ", betaArray = logAdd(trans + tempBeta):" << endl;
-//
 //		for (QNUInt32 dur = 1; dur <= this->numNextNodes; dur++)
 //		{
 //			nextAdjacentSeg = this->nextNodes[dur - 1];
@@ -448,9 +367,6 @@ double CRF_StdSegNStateNode::computeBeta(double scale)
 //
 //					//this->logAddAcc[clab]=this->transMatrix[plab*nLabs+clab]+this->tempBeta[clab];
 //					this->logAddAcc[nextlab] = nextAdjacentSeg->getTransValue(clab, nextlab) + this->tempBeta[nextlab];
-//
-//					// just for debugging
-//	//				cout << " nextlab=[" << nextlab << "]=" << "trans(" << nextAdjacentSeg->getTransValue(clab, nextlab) << ") + tempBeta(" << this->tempBeta[nextlab] << ")="<< this->logAddAcc[nextlab];
 //
 //					if (this->logAddAcc[nextlab] > cross_phone_maxv) {
 //						cross_phone_maxv = logAddAcc[nextlab];
@@ -485,9 +401,6 @@ double CRF_StdSegNStateNode::computeBeta(double scale)
 //				double logSum = logAdd(this->logAddAcc,cross_phone_maxv,this->nextNodeNActualLabs * this->numNextNodes);
 //				this->betaArray[clab] = logAdd(this->betaArray[clab],logSum);
 //			}
-//
-//			// just for debugging
-////			cout << endl << "betaArray[" << clab << "] = logAdd(trans + tempBeta) = " << this->betaArray[clab] << endl;
 //		}
 //		catch (exception &e) {
 //			string errstr="CRF_StdSegNStateNode::computeBeta() caught exception: "+string(e.what())+" while computing beta";
@@ -551,15 +464,8 @@ double CRF_StdSegNStateNode::computeAlphaSum()
 {
 	double Zx;
 	try {
-
-		// just for debugging
-//		cout << "before compute alpha sum" << endl;
-
 		//Zx=logAdd(this->alphaArray,this->nLabs);  // full implementation. But not working now because logAdd() cannot do calculation on LOG0 yet.
 		Zx=logAdd(this->alphaArray,this->numAvailLabs);
-
-		// just for debugging
-//		cout << "Zx=logAdd(this->alphaArray, " << this->numAvailLabs << ")=" << Zx << endl;
 	}
 	catch (exception& e) {
 		string errstr="CRF_StdSegNStateNode::computeAlphaSum() threw exception: "+string(e.what());

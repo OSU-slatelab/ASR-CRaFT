@@ -2,7 +2,7 @@
  * CRF_ViterbiNode_PruneTrans.h
  *
  *  Created on: Mar 6, 2012
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_VITERBINODE_PRUNETRANS_H_
@@ -107,7 +107,7 @@ public:
 			float min_wt, float* wts_nStates, int* ptrs_nStates, bool isStartBound,
 			float* acou_wts_nStates, float* lm_wts_nStates, double beam=0.0)
 	{
-		// just for debugging
+		// for debugging
 //		cout << "addNonEpsVtbState(): stateId=" << stateId << " phnId=" << phnId
 //				<< " wrdId=" << wrdId << " dur=" << dur << " min_wt=" << min_wt;
 //		for (uint st = 0; st < nStates; st++)
@@ -123,7 +123,7 @@ public:
 //		if (min_wt < min_weight + beam || !prune) {
 		if (min_wt < min_trans_weight + beam || !prune) {
 
-			// just for debugging
+			// for debugging
 //			cout << "incoming min_wt = " << min_wt << ", min_trans_weight = "
 //					<< min_trans_weight << ", beam size = "
 //					<< beam << ", keep the hypothesis." << endl;
@@ -142,7 +142,7 @@ public:
 			if (vtbStateIt == viterbiStateIdMap.end()) {
 				addedCounter++;
 
-				// just for debugging
+				// for debugging
 //				cout << "addNonEpsVtbState(): addedCounter++, addedCounter=" << addedCounter << endl;
 
 				// the above means that it is not in our expansion list
@@ -165,14 +165,14 @@ public:
 			else {
 				updateCheckCounter++;
 
-				// just for debugging
+				// for debugging
 //				cout << "addNonEpsVtbState(): updateCheckCounter++, updateCheckCounter=" << updateCheckCounter << endl;
 
 				uint stateIdxInVtbList = vtbStateIt->second;
 				if (min_wt < viterbiWts[stateIdxInVtbList]) {
 					updateCounter++;
 
-					// just for debugging
+					// for debugging
 //					cout << "addNonEpsVtbState(): updateCounter++, updateCounter=" << updateCounter << endl;
 
 					// this transition is better than the one we've previously
@@ -200,7 +200,7 @@ public:
 			}
 		}
 		else {
-			// just for debugging
+			// for debugging
 //			cout << "incoming min_wt = " << min_wt << ", min_trans_weight = "
 //					<< min_trans_weight << ", beam size = "
 //					<< beam << ", prune away the hypothesis." << endl;

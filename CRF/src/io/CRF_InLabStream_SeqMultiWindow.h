@@ -2,7 +2,7 @@
  * CRF_InLabStream_SeqMultiWindow.h
  *
  *  Created on: Sep 10, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_INLABSTREAM_SEQMULTIWINDOW_H_

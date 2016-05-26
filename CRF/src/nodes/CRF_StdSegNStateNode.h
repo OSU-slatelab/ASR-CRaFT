@@ -2,7 +2,7 @@
  * CRF_StdSegNStateNode.h
  *
  *  Created on: Apr 29, 2012
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #ifndef CRF_STDSEGNSTATENODE_H_

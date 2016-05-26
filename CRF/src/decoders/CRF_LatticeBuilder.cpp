@@ -20,9 +20,6 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	: crf(crf_in),
 	  ftr_strm(ftr_strm_in)
 {
-	// just for debugging
-	//cout << "beginning of CRF_LatticeBuilder constructor." << endl;
-
 	this->nodeList= new CRF_StateVector();
 
 	// Commented by Ryan, bunch_size can be only equal to 1 for
@@ -58,9 +55,6 @@ CRF_LatticeBuilder::CRF_LatticeBuilder(CRF_FeatureStream* ftr_strm_in, CRF_Model
 	for (QNUInt32 i=0; i<this->num_labs; i++) {
 		this->alpha_base[i]=0.0;
 	}
-
-	// just for debugging
-	//cout << "end of CRF_LatticeBuilder constructor." << endl;
 }
 
 /*

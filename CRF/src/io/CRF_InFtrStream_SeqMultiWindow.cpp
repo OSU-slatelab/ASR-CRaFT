@@ -2,17 +2,12 @@
  * CRF_InFtrStream_SeqMultiWindow.cpp
  *
  *  Created on: Aug 19, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_InFtrStream_SeqMultiWindow.h"
 
 // modified for context features
-//CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
-//        QN_InFtrStream& a_str,
-//        size_t a_max_win_len, size_t a_top_margin,
-//        size_t a_bot_margin,
-//        size_t a_bunch_frames)
 CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, const char* a_dbgname,
 		QN_InFtrStream& a_str,
 		size_t a_max_win_len, size_t a_top_margin,
@@ -34,10 +29,6 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 	  max_win_in_width(max_win_len * in_width),
 
 	  // modified for context features
-//	  bunch_frames(a_bunch_frames==QN_SIZET_BAD
-//	             ? top_margin + max_win_len + bot_margin
-//	             : a_bunch_frames),
-//	  max_buf_lines(bunch_frames + max_win_len + bot_margin-1),
 	  bunch_frames(a_bunch_frames==QN_SIZET_BAD
 				 ? top_margin + left_context_len + max_win_len + right_context_len + bot_margin
 				 : a_bunch_frames),
@@ -49,7 +40,6 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 	  max_win_buf(new float[max_buf_lines*in_width]),
 
 	  // modified for context features
-//	  first_line_ptr(&max_win_buf[top_margin*in_width]),
 	  first_line_ptr(&max_win_buf[(top_margin+left_context_len)*in_width]),
 
 	  segno(-1)
@@ -60,7 +50,6 @@ CRF_InFtrStream_SeqMultiWindow::CRF_InFtrStream_SeqMultiWindow(int a_debug, cons
 	if (max_win_len == 1)
 	{
 		// modified for context features
-		//out_width = in_width;
 		out_width = (left_context_len + 1 + right_context_len) * in_width;
 	} else {
 
@@ -182,30 +171,14 @@ QN_SegID CRF_InFtrStream_SeqMultiWindow::nextseg()
 	    buf_lines = in_str.read_ftrs(bunch_frames, max_win_buf);
 
 	    //modified for context features
-//	    cur_line = top_margin;
 	    cur_line = top_margin + left_context_len;
 
 		cur_line_ptr = first_line_ptr;
 
 	    cur_avail_max_win_len = 1;
 
-	    // just for debugging
-//	    cout << "top_margin:" << top_margin << ", bot_margin:" << bot_margin << ", buf_lines:" << buf_lines << endl;
-
 	    // Count how many frames are available in the longest window for this sentence.
 	    // modified for context features
-//	    if (top_margin + bot_margin >= buf_lines)   // No frames available.
-//	    {
-//	    	seg_max_win_len = 0;
-//	    }
-//	    else if (top_margin + max_win_len + bot_margin <= buf_lines)  // More than max_win_len frames available.
-//	    {
-//	    	seg_max_win_len = max_win_len;
-//	    }
-//	    else                          // Less than max_win_len frames available.
-//	    {
-//	    	seg_max_win_len = buf_lines - top_margin - bot_margin;
-//	    }
 	    if (top_margin + left_context_len + right_context_len + bot_margin >= buf_lines)   // No frames available.
 		{
 			seg_max_win_len = 0;
@@ -454,11 +427,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::read_ftrs(size_t cnt, float* ftrs, size_t
 			numWrittenFtrPerWin += first_frame_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 		} else {
 			// modified for context features
-	//		numWrittenFtrPerWin += sample_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
-	//		numWrittenFtrPerWin += avg_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
-	//		numWrittenFtrPerWin += max_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
-	//		numWrittenFtrPerWin += min_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
-	//		numWrittenFtrPerWin += dur_ftrs(ftrs + numWrittenFtrPerWin, multi_win_count, real_stride);
 			if (extract_segment_features)
 			{
 				// various feature combinations with context features
@@ -593,7 +561,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* out_ftr_buf, size_t av
 
 	for (QNUInt32 cur_win_len = 1; cur_win_len <= avail_max_win_len; cur_win_len++)
 	{
-		//cout << "cur_win_len=" << cur_win_len << " frameSteps:";
 		float* cur_sample_frame_in_buf = cur_win_in_buf;
 		float* cur_sample_frame_out_buf = cur_win_out_buf;
 		float one_tenth_win_len = cur_win_len * 0.1;
@@ -602,36 +569,18 @@ size_t CRF_InFtrStream_SeqMultiWindow::sample_ftrs(float* out_ftr_buf, size_t av
 			QNUInt32 frameStep = (QNUInt32)ceil(one_tenth_win_len * i) - 1;   //it might be not accurate for some integral value since it is floating point calculation
 			//QNUInt32 frameStep = (QNUInt32)(one_tenth_win_len * i);   //it might be not accurate for some integral value since it is floating point calculation
 
-			// just for debugging
-//			cout << "frameStep=" << frameStep << endl;
-
 			cur_sample_frame_in_buf += in_width * frameStep;
-
-			// just for debugging
-//			cout << "cur_sample_frame_in_buf+=" << in_width << "*" << frameStep << endl;
-//			cout << "cur_sample_frame_in_buf[0]=" << cur_sample_frame_in_buf[0];
-//			cout << " cur_sample_frame_in_buf[1]=" << cur_sample_frame_in_buf[1];
-//			cout << " cur_sample_frame_in_buf[2]=" << cur_sample_frame_in_buf[2] << endl;
 
 			if (cur_sample_frame_out_buf != NULL)
 			{
 				qn_copy_vf_vf(in_width, cur_sample_frame_in_buf, cur_sample_frame_out_buf);
-
-				// just for debugging
-//				for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
-//				{
-//					cout << "ftr_buf(" << &cur_sample_frame_out_buf[ftr_i] << ")=" << cur_sample_frame_out_buf[ftr_i] << ", sample_ftrs" << endl;
-//				}
-
 				cur_sample_frame_out_buf += in_width;
 			}
 			cur_sample_frame_in_buf = cur_win_in_buf;
-			//cout << " " << frameStep;
 		}
 		cur_win_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
 		cur_win_out_buf += stride;
-		//cout << endl;
 	}
 
 	// experiment: multiply/devide by the segment length, to account for the length bias
@@ -675,9 +624,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::avg_ftrs(float* out_ftr_buf, size_t avail
 		{
 			acc_sum_ftrs[ftr_i] += cur_win_in_buf[ftr_i];
 			cur_win_out_buf[ftr_i] = acc_sum_ftrs[ftr_i] / cur_win_len;
-
-			// just for debugging
-//			cout << "ftr_buf(" << &cur_win_out_buf[ftr_i] << ")=" << cur_win_out_buf[ftr_i] << ", avg_ftrs" << endl;
 		}
 		cur_win_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
@@ -729,9 +675,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::max_ftrs(float* out_ftr_buf, size_t avail
 				acc_max_ftrs[ftr_i] = cur_win_in_buf[ftr_i];
 			}
 			cur_win_out_buf[ftr_i] = acc_max_ftrs[ftr_i];
-
-			// just for debugging
-//			cout << "ftr_buf(" << &cur_win_out_buf[ftr_i] << ")=" << cur_win_out_buf[ftr_i] << ", max_ftrs" << endl;
 		}
 		cur_win_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
@@ -783,9 +726,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::min_ftrs(float* out_ftr_buf, size_t avail
 				acc_min_ftrs[ftr_i] = cur_win_in_buf[ftr_i];
 			}
 			cur_win_out_buf[ftr_i] = acc_min_ftrs[ftr_i];
-
-			// just for debugging
-//			cout << "ftr_buf(" << &cur_win_out_buf[ftr_i] << ")=" << cur_win_out_buf[ftr_i] << ", min_ftrs" << endl;
 		}
 		cur_win_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
@@ -849,13 +789,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::kl_ftrs(float* out_ftr_buf, size_t avail_
 			cur_win_out_buf[1] = max_kl_div;
 			cur_win_out_buf[2] = min_kl_div;
 		}
-
-		// just for debugging
-//		cout << "cur_win_len=" << cur_win_len << endl;
-//		cout << "ftr_buf(" << &cur_win_out_buf[0] << ")=" << cur_win_out_buf[0] << ", avg_kl_div" << endl;
-//		cout << "ftr_buf(" << &cur_win_out_buf[1] << ")=" << cur_win_out_buf[1] << ", max_kl_div" << endl;
-//		cout << "ftr_buf(" << &cur_win_out_buf[2] << ")=" << cur_win_out_buf[2] << ", min_kl_div" << endl;
-
 		cur_win_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
 		cur_win_out_buf += stride;
@@ -926,16 +859,10 @@ size_t CRF_InFtrStream_SeqMultiWindow::dur_ftrs(float* out_ftr_buf, size_t avail
 			if (tmp_win_len == cur_win_len)
 			{
 				cur_win_out_buf[tmp_win_len - 1] = 1;
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_win_out_buf[tmp_win_len-1] << ")=" << cur_win_out_buf[tmp_win_len-1] << ", dur_ftrs" << endl;
 			}
 			else
 			{
 				cur_win_out_buf[tmp_win_len - 1] = 0;
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_win_out_buf[tmp_win_len-1] << ")=" << cur_win_out_buf[tmp_win_len-1] << ", dur_ftrs" << endl;
 			}
 		}
 //		cur_win_out_buf += out_width;
@@ -985,9 +912,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_left_ctx_ftrs(float* out_ftr_
 			for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 			{
 				cur_left_ctx_frame_out_buf[ftr_i] = cur_left_ctx_frame_in_buf[ftr_i];
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_left_ctx_frame_out_buf[ftr_i] << ")=" << cur_left_ctx_frame_out_buf[ftr_i] << ", first_frame_left_ctx_ftrs" << endl;
 			}
 			cur_left_ctx_frame_in_buf += in_width;
 			cur_left_ctx_frame_out_buf += in_width;
@@ -1028,9 +952,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_right_ctx_ftrs(float* out_ftr
 			for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 			{
 				cur_right_ctx_frame_out_buf[ftr_i] = cur_right_ctx_frame_in_buf[ftr_i];
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_right_ctx_frame_out_buf[ftr_i] << ")=" << cur_right_ctx_frame_out_buf[ftr_i] << ", first_frame_right_ctx_ftrs" << endl;
 			}
 			cur_right_ctx_frame_in_buf += in_width;
 			cur_right_ctx_frame_out_buf += in_width;
@@ -1071,9 +992,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::last_frame_right_ctx_ftrs(float* out_ftr_
 			for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 			{
 				cur_right_ctx_frame_out_buf[ftr_i] = cur_right_ctx_frame_in_buf[ftr_i];
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_right_ctx_frame_out_buf[ftr_i] << ")=" << cur_right_ctx_frame_out_buf[ftr_i] << ", last_frame_right_ctx_ftrs" << endl;
 			}
 			cur_right_ctx_frame_in_buf += in_width;
 			cur_right_ctx_frame_out_buf += in_width;
@@ -1110,9 +1028,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::first_frame_ftrs(float* out_ftr_buf, size
 		for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 		{
 			cur_win_out_buf[ftr_i] = cur_win_first_frame_in_buf[ftr_i];
-
-			// just for debugging
-//			cout << "ftr_buf(" << &cur_win_out_buf[ftr_i] << ")=" << cur_win_out_buf[ftr_i] << ", first_frame_ftrs" << endl;
 		}
 		cur_win_first_frame_in_buf -= in_width;
 //		cur_win_out_buf += out_width;
@@ -1159,9 +1074,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::boundary_delta_ftrs(float* out_ftr_buf, s
 		float* cur_delta_frame_out_buf = cur_win_out_buf;
 		for (size_t side_frame_idx = 0; side_frame_idx < both_context_len; side_frame_idx++)
 		{
-			// just for debugging
-//			cout << "Context " << side_frame_idx << endl;
-
 			for (size_t ftr_i = 0; ftr_i < in_width; ftr_i++)
 			{
 				float deltaFtr;
@@ -1174,9 +1086,6 @@ size_t CRF_InFtrStream_SeqMultiWindow::boundary_delta_ftrs(float* out_ftr_buf, s
 					deltaFtr = cur_right_side_frame_in_buf[ftr_i] - cur_left_side_frame_in_buf[ftr_i];
 				}
 				cur_delta_frame_out_buf[ftr_i] = deltaFtr;
-
-				// just for debugging
-//				cout << "ftr_buf(" << &cur_delta_frame_out_buf[ftr_i] << ")=" << deltaFtr << ", left frame=" << cur_left_side_frame_in_buf[ftr_i] << ", right frame=" << cur_right_side_frame_in_buf[ftr_i] << ", boundary_delta_ftrs" << endl;
 			}
 			cur_left_side_frame_in_buf -= in_width;
 			cur_right_side_frame_in_buf += in_width;
@@ -1227,19 +1136,8 @@ size_t CRF_InFtrStream_SeqMultiWindow::boundary_kl_ftrs(float* out_ftr_buf, size
 		float* cur_frames_kl_out_buf = cur_win_out_buf;
 		for (size_t side_frame_idx = 0; side_frame_idx < both_context_len; side_frame_idx++)
 		{
-			// just for debugging
-//			cout << "Context " << side_frame_idx << endl;
-
 			cur_frames_kl_out_buf[0] = get_kl_div(cur_left_side_frame_in_buf,
 					cur_left_side_frame_in_buf, in_width);
-
-			// just for debugging
-//			cout << "ftr_buf(" << &cur_frames_kl_out_buf[0] << ")="
-//					<< cur_frames_kl_out_buf[0] << ", left frame=-"
-//					<< side_frame_idx << ", right frame=+"
-//					<< side_frame_idx << ", boundary_kl_ftrs"
-//					<< endl;
-
 			cur_left_side_frame_in_buf -= in_width;
 			cur_right_side_frame_in_buf += in_width;
 			cur_frames_kl_out_buf += 1;

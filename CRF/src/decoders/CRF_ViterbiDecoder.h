@@ -42,8 +42,6 @@ public:
 	int end_idx;
 
 	// Changed by Ryan
-//	CRF_ViterbiState(uint st, uint lab, float wt, uint idx) :
-//		label(lab), state(st), weight(wt), end_idx(idx) { wrd_label=0;}
 	CRF_ViterbiState(uint st, uint lab, float wt, int idx) :
 		label(lab), state(st), weight(wt), end_idx(idx) { wrd_label=0;}
 

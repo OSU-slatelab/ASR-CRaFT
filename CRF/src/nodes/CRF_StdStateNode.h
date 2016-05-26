@@ -26,6 +26,10 @@ protected:
 	double* transMatrix;
 	double* tempBeta;
 	double* logAddAcc;
+
+	// added by Ryan, transition matrix for the whole utterance
+	static double* transMatrix_utt;
+
 public:
 	CRF_StdStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual ~CRF_StdStateNode();

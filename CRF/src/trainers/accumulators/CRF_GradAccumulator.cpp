@@ -15,6 +15,9 @@ CRF_GradAccumulator::CRF_GradAccumulator(CRF_Model *myCrf,
 
 	uttReport=0;
 	objective=EXPF;
+
+	// Added by Ryan
+	minibatch = QN_UINT32_MAX;
 }
 
 CRF_GradAccumulator::~CRF_GradAccumulator() {
@@ -32,6 +35,12 @@ double CRF_GradAccumulator::accumulateGradient(CRF_FeatureStreamManager* ftr_str
 	CRF_GradBuilder *gbuild=CRF_GradBuilder::create(crf,this->objective);
 	if (nStreams!=1) {
 		cerr << "CRF_GradAccumulator can only handle one stream" << endl;
+		exit(1);
+	}
+
+	// Added by Ryan
+	if (minibatch != 1) {
+		cerr << "CRF_GradAccumulator::accumulateGradient can only handle minibatch size 1." << endl;
 		exit(1);
 	}
 
@@ -85,4 +94,27 @@ double CRF_GradAccumulator::accumulateGradient(CRF_FeatureStreamManager* ftr_str
 	ftr_str->nextseg();
 	*uttCount=uCounter;
 	return totLogLi;
+}
+
+// Added by Ryan
+double CRF_GradAccumulator::accumulateGradientMinibatch(CRF_FeatureStreamManager* ftr_str_mgr,
+												int nStreams,
+												double* grad,
+												double* Zx_out,
+												QNUInt32 *uttCount,
+												bool *endOfIter) {
+
+	if (nStreams == 1) {
+		cerr << "Error in CRF_GradAccumulator::accumulateGradientMinibatch(): "
+				<< "CRF_GradAccumulator::accumulateGradient() should be called when the number of threads is 1." << endl
+				<< "Do you forget to set the number of threads?" << endl
+				<< "If so, set it to a number greater than 1 and use CRF_Pthread_GradAccumulator::accumulateGradientMinibatch() instead."
+				<< endl;
+		exit(1);
+	} else {
+		cerr << "Error in CRF_GradAccumulator::accumulateGradientMinibatch(): "
+				<< "Use CRF_Pthread_GradAccumulator::accumulateGradientMinibatch() for multithreading."
+				<< endl;
+		exit(1);
+	}
 }

@@ -70,19 +70,11 @@ double CRF_StdFeatureMap::computeStateArrayValue(float* ftr_buf, double* lambda,
 		for (QNUInt32 fidx=config->stateFidxStart; fidx<=config->stateFidxEnd; fidx++)
 		{
 			stateValue+=ftr_buf[fidx]*lambda[lc];
-
-			// just for debugging
-//			cout << "stateValue+=ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
-
 			lc++;
 		}
 	}
 	if (config->useStateBias) {
 		stateValue+=lambda[lc]*config->stateBiasVal;
-
-		// just for debugging
-//		cout << "stateValue+=config->stateBiasVal(" << config->stateBiasVal << ")*lambda[" << lc << "](" << lambda[lc] << ")=" << stateValue << endl;
-
 		lc++;
 	}
 	return stateValue;
@@ -107,19 +99,11 @@ double CRF_StdFeatureMap::computeTransMatrixValue(float* ftr_buf, double* lambda
 		for (QNUInt32 fidx=config->transFidxStart; fidx<=config->transFidxEnd; fidx++)
 		{
 			transMatrixValue+=ftr_buf[fidx]*lambda[lc];
-
-			//just for debugging
-//			cout << "transMatrixValue for (plab=" << plab << ",clab=" << clab << ") += ftr_buf[" << fidx << "](" << ftr_buf[fidx] << ") * lambda[" << lc << "](" << lambda[lc] << ") = " << transMatrixValue << endl;
-
 			lc++;
 		}
 	}
 	if (config->useTransBias) {
 		transMatrixValue+=lambda[lc]*config->transBiasVal;
-
-		//just for debugging
-//		cout << "transMatrixValue for (plab=" << plab << ",clab=" << clab << ") += config->transBiasVal(" << config->transBiasVal << ") * lambda[" << lc << "](" << lambda[lc] << ") = " << transMatrixValue << endl;
-
 		lc++;
 	}
 	return transMatrixValue;
@@ -170,22 +154,8 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 		for (QNUInt32 fidx=config->stateFidxStart; fidx<=config->stateFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
-
-			//just for debugging
-//			if (lc == 0)
-//			{
-//				cout << "StateFeature for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
-//			}
-
 			if (compute_grad && (t_clab == clab)) {
 				grad[lc]+=ftr_buf[fidx];
-
-				//just for debugging
-//				if (lc == 0)
-//				{
-//					cout << "StateFeature for lab=" << clab << ": grad[" << lc << "]+=" << ftr_buf[fidx] << "=" << grad[lc] << endl;
-//				}
-
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
 			lc++;
@@ -195,16 +165,8 @@ double CRF_StdFeatureMap::computeStateExpF(float* ftr_buf, double* lambda, doubl
 
 	if (config->useStateBias) {
 		ExpF[lc]+=alpha_beta*config->stateBiasVal;
-
-		//just for debugging
-//		cout << "StateBias for lab=" << clab << ": ExpF[" << lc << "]+=" << alpha_beta << "*" << config->stateBiasVal << "=" << ExpF[lc] << endl;
-
 		if (compute_grad && (t_clab == clab)) {
 			grad[lc]+=config->stateBiasVal;
-
-			//just for debugging
-//			cout << "StateBias for lab=" << clab << ": grad[" << lc << "]+=" << config->stateBiasVal << "=" << grad[lc] << endl;
-
 			logLi += lambda[lc]*config->stateBiasVal;
 		}
 		lc++;
@@ -241,16 +203,8 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 		for (QNUInt32 fidx=config->transFidxStart; fidx<=config->transFidxEnd; fidx++)
 		{
 			ExpF[lc]+=alpha_beta*ftr_buf[fidx];
-
-			//just for debugging
-//			cout << "TransFeature for (plab=" << plab << ",clab=" << clab << "): ExpF[" << lc << "]+=" << alpha_beta << "*" << ftr_buf[fidx] << "=" << ExpF[lc] << endl;
-
 			if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
 				grad[lc]+=ftr_buf[fidx];
-
-				//just for debugging
-//				cout << "TransFeature for (plab=" << plab << ",clab=" << clab << "): grad[" << lc << "]+=" << ftr_buf[fidx] << "=" << grad[lc] << endl;
-
 				logLi += lambda[lc]*ftr_buf[fidx];
 			}
 			lc++;
@@ -258,16 +212,8 @@ double CRF_StdFeatureMap::computeTransExpF(float* ftr_buf, double* lambda, doubl
 	}
 	if (config->useTransBias) {
 		ExpF[lc] += alpha_beta*config->transBiasVal;
-
-		//just for debugging
-//		cout << "TransBias for (plab=" << plab << ",clab=" << clab << "): ExpF[" << lc << "]+=" << alpha_beta << "*" << config->transBiasVal << "=" << ExpF[lc] << endl;
-
 		if (compute_grad && (clab==t_clab) && (plab==t_plab)) {
 			grad[lc]+=config->transBiasVal;
-
-			//just for debugging
-//			cout << "TransBias for (plab=" << plab << ",clab=" << clab << "): grad[" << lc << "]+=" << config->transBiasVal << "=" << grad[lc] << endl;
-
 			logLi+=lambda[lc]*config->transBiasVal;
 		}
 		lc++;

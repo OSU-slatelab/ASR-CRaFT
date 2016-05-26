@@ -45,6 +45,7 @@ protected:
 	double* prevAlpha;
 
 	// Added by Ryan
+	static QNUInt32 uttCurLen;
 	CRF_StateNode** prevNodes;
 	CRF_StateNode** nextNodes;
 	QNUInt32 numPrevNodes;

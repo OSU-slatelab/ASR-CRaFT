@@ -153,18 +153,6 @@ float CRF_ViterbiDecoder::internalStateUpdate(int nodeCnt, uint phn_id, int prev
 
 	}
 
-	// Added by Ryan, just for debugging
-//	cout << "internalStateUpdate(): phnId=" << phn_id << " min_wt=" << min_wt;
-//	uint curWtsSize = curWts->size();
-//	for (uint st = 0; st < nStates; st++)
-//	{
-//		cout << " wts_nStates[" << st << "]=" << curWts->at(curWtsSize - nStates + st);
-//	}
-//	cout << " isStartBound=" << 0 << endl;
-
-	// Added by Ryan, just for debugging
-//	cout << "Internal state update ended." << endl;
-
 	return min_wt;
 }
 
@@ -191,20 +179,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 {
 	QNUInt32 nStates = this->crf->getFeatureMap()->getNumStates();
 
-	// just for debugging
-//	cout << "Starting crossStateUpdate" << endl;
-
-	// Added by Ryan, just for debugging
-//	cout << "crossStateUpdate_new(): stateId=" << check_state << " phnId=" << phn_lab
-//			<< " wrdId=" << wrd_lab << " min_wt=" << transw;
-//	cout << " wts_nStates[0]=" << transw;
-//	for (uint st = 1; st < nStates; st++)
-//	{
-//		cout << " wts_nStates[" << st << "]=" << 99999.0;
-//	}
-//	cout << " isStartBound=" << 1 << endl;
-
-
 	// Changed by Ryan, for tmpViterbiStateIdMap_new
 //	map<uint,uint>::iterator tmpVitStateIt;
 	map<CRF_ComposedLatState,uint>::iterator tmpVitStateIt;
@@ -222,9 +196,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 
 	if (tmpVitStateIt == tmpViterbiStateIdMap_new.end()) {
 		addedCounter++;
-
-		// Added by Ryan, just for debugging
-//		cout << "crossStateUpdate_new(): addedCounter++, addedCounter=" << addedCounter << endl;
 
 		// the above means that it is not in our expansion list
 		// so we expand it as new and add it
@@ -255,9 +226,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 	else {
 		updateCheckCounter++;
 
-		// Added by Ryan, just for debugging
-//		cout << "crossStateUpdate_new(): updateCheckCounter++, updateCheckCounter=" << updateCheckCounter << endl;
-
 		uint exp_idx=tmpVitStateIt->second;
 		int exp_wt_idx=exp_idx*nStates;
 
@@ -266,9 +234,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 //		if (transw<tmpPruneWts[exp_idx]) {
 
 			updateCounter++;
-
-			// Added by Ryan, just for debugging
-//			cout << "crossStateUpdate_new(): updateCounter++, updateCounter=" << updateCounter << endl;
 
 			// this transition is better than the one we've previously
 			// expanded on, so replace the one we've got with it
@@ -327,11 +292,6 @@ void CRF_ViterbiDecoder::crossStateUpdate_new(uint check_state, uint end_idx,
 			tmpViterbiWrdIds[exp_idx]=wrd_lab;
 		}
 	}
-
-	// just for debugging
-//	cout << "Ending crossStateUpdate" << endl;
-	//cout << "Counter: " << counter << endl;
-
 }
 
 // added by Ryan
@@ -656,13 +616,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				epsAdded=0;
 				epsModified=0;
 
-
-				// Added by Ryan, just for debugging
-//				cout << "Current node: " << nodeCnt << endl;
-//				cout << "Expand cross state from previous node." << endl;
-//				cout << "Previous minimum weight: " << prev_min_weight << endl;
-
-
 				//cout << "Cross state update" << endl;
 				time1=time(NULL);
 				for (uint idx=0; idx<prevViterbiStateIds_new->size(); idx++) {
@@ -815,11 +768,6 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				time2=time(NULL);
 				cross_time+=time2-time1;
 				epsMapSize=epsMap.size();
-
-
-				// Added by Ryan, just for debugging
-//				cout << "Ended Expanding cross state from previous node." << endl;
-
 
 				num_pruned=0;
 				// Now that we have our minimum weights at this time frame, we need to go through
@@ -1006,8 +954,7 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 	}
 	else {
 
-		// added by Ryan, just for debugging
-		cout << "Reverse label sequence: ";
+		//cout << "Reverse label sequence: ";
 
 	for (int idx=nodeCnt-1; idx>=0; idx--) {
 		int cur_min_idx_ptr=min_idx/nStates;
@@ -1045,8 +992,7 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 				//cout << idx << " cur_lab: " << cur_lab << endl;
 				fst->AddArc(cur_state,StdArc(cur_lab_ptr+1,cur_lab+1,trans_w,next_state));
 
-				// added by Ryan, just for debugging
-				cout << " " << cur_lab;
+				//cout << " " << cur_lab;
 			}
 			else {
 				//cout << idx << " cur_lab: " << cur_lab << endl;
@@ -1062,8 +1008,7 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 			float trans_w=-1*this->nodeList->at(idx)->getStateValue(cur_lab_ptr);
 			fst->AddArc(startState,StdArc(cur_lab_ptr+1,cur_lab+1,trans_w,next_state));
 
-			// added by Ryan, just for debugging
-			cout << " " << cur_lab;
+			//cout << " " << cur_lab;
 		}
 		this->nodeList->at(idx)->viterbiPointers.clear();
 		this->nodeList->at(idx)->viterbiPhnIds.clear();
@@ -1072,14 +1017,12 @@ int CRF_ViterbiDecoder::nStateDecode(VectorFst<StdArc>* result_fst, VectorFst<St
 		this->nodeList->at(idx)->isPhoneStartBoundary.clear();
 	}
 
-		// added by Ryan, just for debugging
-		cout << endl;
+		//cout << endl;
 	}
 	Connect(fst);
 	Compose(*fst,*lm_fst,result_fst);
 
-	// added by Ryan, just for debugging
-	cout << "result_fst has " << result_fst->NumStates() << " states." << endl;
+	//cout << "result_fst has " << result_fst->NumStates() << " states." << endl;
 
 	delete fst;
 

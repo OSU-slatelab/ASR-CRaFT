@@ -561,33 +561,6 @@ int main(int argc, const char* argv[]) {
 	CRF_FeatureStreamManager* str3=NULL;
 
 	// modified by Ryan, for context features
-//    CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
-//							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
-//							config.ftr1_delta_order, config.ftr1_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//	if (strcmp(config.ftr2_file,"") != 0) {
-//
-//		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
-//							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
-//							config.ftr2_delta_order, config.ftr2_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//		str1.join(str2);
-//	}
-//	if (strcmp(config.ftr3_file,"") != 0) {
-//
-//		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
-//							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
-//							config.ftr3_delta_order, config.ftr3_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//		str1.join(str3);
-//
-//	}
 	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
 							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,

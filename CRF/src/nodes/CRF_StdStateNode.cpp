@@ -45,7 +45,7 @@ CRF_StdStateNode::~CRF_StdStateNode()
 	delete [] this->tempBeta;
 	delete [] this->logAddAcc;
 
-	// Ryan: why not deleting alphaBetaArray?
+	// Ryan: why not delete alphaBetaArray?
 }
 
 
@@ -57,29 +57,16 @@ CRF_StdStateNode::~CRF_StdStateNode()
  */
 double CRF_StdStateNode::computeTransMatrix()
 {
-	// Added by Ryan, just for debugging
-//	cout << "CRF_StdStateNode::computeTransMatrix(): " << endl;
-
 	double result=0.0;
 
 	double* lambda = this->crf_ptr->getLambda();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(this->ftrBuf,lambda,clab);
 
-		// Added by Ryan, just for debugging
-//		cout << "clab=" << clab << endl << "TransMatrix: plab=";
-
 		for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			QNUInt32 idx=plab*nLabs+clab;
 			this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,plab,clab);
-
-			// Added by Ryan, just for debugging
-//			cout << "[" << plab << "]=" << this->transMatrix[idx] << " ";
 		}
-
-		// Added by Ryan, just for debugging
-//		cout << endl;
-//		cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
 	}
 	return result;
 }
@@ -210,22 +197,10 @@ double* CRF_StdStateNode::computeAlphaBeta(double Zx)
  */
 void CRF_StdStateNode::setTailBeta()
 {
-	// just for debugging
-//	cout << "CRF_StdStateNode::setTailBeta()." << endl;
-
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->betaArray[clab]=0.0;
-
-		// just for debugging
-//		cout << "this->betaArray[clab=" << clab << "]=0.0;" << endl;
 	}
-
-	// just for debugging
-//	cout << "Tail betas have been set." << endl;
-
-	// just for debugging
-//	cout << endl;
 }
 
 /*
@@ -274,10 +249,6 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 			}
 		}
 	}
-
-	//Added by Ryan, just for debugging
-	//cout << "\tAlpha_beta_tot: " << alpha_beta_tot << "\tAlpha_beta_trans_tot: " << alpha_beta_trans_tot;
-
 	if ((alpha_beta_tot >1.1))  {
 		//changed by Ryan
 		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Probability sums greater than 1.0 "+stringify(alpha_beta_tot);
@@ -345,9 +316,6 @@ double CRF_StdStateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
  */
 double CRF_StdStateNode::getStateValue(QNUInt32 cur_lab)
 {
-	// Added by Ryan, just for debugging
-//	cout << "getStateValue(" << cur_lab << "): " << this->stateArray[cur_lab] << " ";
-
 	return this->stateArray[cur_lab];
 }
 
@@ -359,12 +327,6 @@ double CRF_StdStateNode::getStateValue(QNUInt32 cur_lab)
  */
 double CRF_StdStateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
-	// Added by Ryan, just for debugging
-	//cout << "CRF_StdStateNode::getFullTransValue(): " << endl;
-
-	// Added by Ryan, just for debugging
-//	cout << "getFullTransValue(" << prev_lab << ", " << cur_lab << "): " << this->transMatrix[prev_lab*nLabs+cur_lab]+this->stateArray[cur_lab] << " ";
-
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	return this->transMatrix[prev_lab*nLabs+cur_lab]+this->stateArray[cur_lab];
 

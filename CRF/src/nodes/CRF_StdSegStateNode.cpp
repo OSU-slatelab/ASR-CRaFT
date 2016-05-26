@@ -2,7 +2,7 @@
  * CRF_StdSegStateNode.cpp
  *
  *  Created on: Sep 13, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_StdSegStateNode.h"
@@ -21,16 +21,6 @@
 CRF_StdSegStateNode::CRF_StdSegStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs, QNUInt32 nextNode_nActualLabs)
 	: CRF_StdStateNode(fb, sizeof_fb, lab, crf)
 {
-	// just for debugging
-//	cout << "Creating a CRF_StdSegStateNode node:" << endl;
-//	cout << "sizeof_fb=" << sizeof_fb << endl;
-//	cout << "lab=" << lab << endl;
-//	cout << "nLabs=" << crf_ptr->getNLabs() << endl;
-//	cout << "labMaxDur=" << crf_ptr->getLabMaxDur() << endl;
-//	cout << "nodeLabMaxDur=" << nodeMaxDur << endl;
-//	cout << "prevNode_nLabs=" << prevNode_nLabs << endl;
-//	cout << "nextNode_nActualLabs=" << nextNode_nActualLabs << endl;
-
 	this->labMaxDur = crf_ptr->getLabMaxDur();
 	this->nodeLabMaxDur = nodeMaxDur;
 	if (this->nodeLabMaxDur > this->labMaxDur)
@@ -75,12 +65,6 @@ CRF_StdSegStateNode::CRF_StdSegStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32
 	// but we need them to be different for this class.
 	delete [] this->transMatrix;
 	this->transMatrix = new double[this->prevNodeNLabs * this->nLabs];
-
-	// just for debugging
-//	cout << "nActualLabs=" << this->nActualLabs << endl;
-//	cout << "numAvailLabs=" << this->numAvailLabs << endl;
-//	cout << "nFtrsPerSeg=" << this->nFtrsPerSeg << endl;
-//	cout << "transMatrix_size=" << this->prevNodeNLabs << "*" << this->nLabs << endl;
 }
 
 /*
@@ -98,9 +82,6 @@ CRF_StdSegStateNode::~CRF_StdSegStateNode() {
  */
 double CRF_StdSegStateNode::computeTransMatrix()
 {
-	// just for debugging
-//	cout << "CRF_StdSegStateNode::computeTransMatrix(): " << endl;
-
 	checkNumPrevNodes();
 
 	double result=0.0;
@@ -117,10 +98,6 @@ double CRF_StdSegStateNode::computeTransMatrix()
 		{
 			this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(seg_ftr_buf,lambda,clab);
 
-			// just for debugging
-//			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "TransMatrix: plab=";
-//			cout << "clab=" << clab << endl << "TransMatrix: plab=";
-
 			//TODO: for (QNUInt32 plab=0; plab<nLabs_of_prevNode; plab++) {
 			//for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			for (QNUInt32 plab = 0; plab < prevAdjacentSeg->getNumAvailLabs(); plab++) {
@@ -128,22 +105,11 @@ double CRF_StdSegStateNode::computeTransMatrix()
 				QNUInt32 idx = plab * this->nLabs + clab;
 				//TODO: design a feature map in which the transition matrix calculation can take different dimensions of plab (from prevNode) and clab (from current node).
 				this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(seg_ftr_buf,lambda,plab,clab);
-
-				// just for debugging
-//				cout << "[" << plab << "]=" << this->transMatrix[idx] << " ";
 			}
-
-			// just for debugging
-//			cout << endl;
-//			cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
-
 			clab++;
 
 		}
 		seg_ftr_buf += this->nFtrsPerSeg;
-
-		// just for debugging
-//		cout << "seg_ftr_buf moved forward by nFtrsPerSeg(" << nFtrsPerSeg << ")" << endl;
 	}
 	// These are the cases when the current node serves as the beginning segment of the sequence, so there is no previous node.
 	for (QNUInt32 dur = this->numPrevNodes + 1; dur <= this->nodeLabMaxDur; dur++)
@@ -151,12 +117,6 @@ double CRF_StdSegStateNode::computeTransMatrix()
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 		{
 			this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(seg_ftr_buf,lambda,clab);
-
-			// just for debugging
-//			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "plab=";
-			//cout << "clab=" << clab << endl << "TransMatrix: plab=";
-//			cout << endl;
-//			cout << "StateArray[" << clab << "]=" << this->stateArray[clab] << endl;
 
 			clab++;
 		}
@@ -174,9 +134,6 @@ double CRF_StdSegStateNode::computeTransMatrix()
  */
 double CRF_StdSegStateNode::computeAlpha()
 {
-	// just for debugging
-//	cout << "CRF_StdSegStateNode::computeAlpha(): " << endl;
-
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	this->alphaScale=0.0;
 
@@ -191,17 +148,11 @@ double CRF_StdSegStateNode::computeAlpha()
 		{
 			this->logAddAcc[0]=prev_adj_seg_alpha[0]+this->transMatrix[0+clab];
 
-			// just for debugging
-//			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl << "alphaArray = logAdd(prev alpha + trans): plab=[0]=" << this->logAddAcc[0] << " ";
-
 			double maxv=this->logAddAcc[0];
 			//TODO: for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNLabs(); plab++) {  //full implementation. But not working now because logAdd() cannot do calculation on LOG0 yet.
 			for (QNUInt32 plab = 1; plab < prevAdjacentSeg->getNumAvailLabs(); plab++) {   //faster implementation, not guaranteed to work for all classes of previous nodes.
 				//this->logAddAcc[plab]=prev_adj_seg_alpha[plab]+this->transMatrix[plab * prevAdjacentSeg->getNLabs() + clab];
 				this->logAddAcc[plab]=prev_adj_seg_alpha[plab]+this->transMatrix[plab * this->nLabs + clab];
-
-				// just for debugging
-//				cout << "[" << plab << "]=" << this->logAddAcc[plab] << " ";
 
 				if (this->logAddAcc[plab]>maxv) {
 					maxv=logAddAcc[plab];
@@ -216,14 +167,7 @@ double CRF_StdSegStateNode::computeAlpha()
 				throw runtime_error(errstr);
 				return(-1);
 			}
-			// just for debugging
-//			cout << endl << "alphaArray[" << clab << "](" << this->alphaArray[clab] << ") + stateArray[" << clab << "](" << this->stateArray[clab] << ") =";
-
 			this->alphaArray[clab]+=this->stateArray[clab];
-
-			// just for debugging
-//			cout << this->alphaArray[clab] << endl;
-
 			clab++;
 		}
 	}
@@ -233,11 +177,6 @@ double CRF_StdSegStateNode::computeAlpha()
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 		{
 			this->alphaArray[clab]=this->stateArray[clab];
-
-			// just for debugging
-//			cout << "dur=" << dur << ", lab=" << lab << ", clab=" << clab << endl;
-//			cout << "alphaArray[" << clab << "] added stateArray[" << clab << "]=" << this->stateArray[clab] << endl;
-
 			clab++;
 		}
 	}
@@ -254,24 +193,14 @@ double CRF_StdSegStateNode::computeAlpha()
  */
 double CRF_StdSegStateNode::computeFirstAlpha()
 {
-	// just for debugging
-//	cout << "CRF_StdSegStateNode::computeFirstAlpha()" << endl;
-
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	this->alphaScale = 0.0;
 
 	//numAvailLabs for the first node of the sequence is usually equal to nActualLabs (since nodeLabMaxDur==1).
 	for (QNUInt32 clab = 0; clab < this->numAvailLabs; clab++)
 	{
-		// just for debugging
-//		cout << "alphaArray[" << clab << "]=stateArray[" << clab << "]=" << this->stateArray[clab] << " ";
-
 		this->alphaArray[clab] = this->stateArray[clab];
 	}
-
-	// just for debugging
-//	cout << endl;
-
 	return this->alphaScale;
 
 }
@@ -318,9 +247,6 @@ double CRF_StdSegStateNode::computeBeta(double scale)
 //		}
 //	}
 
-	// just for debugging
-//	cout << "CRF_StdSegStateNode::computeBeta(): " << endl;
-
 	checkNumNextNodes();
 
 	// if numNextNodes == 0, this is the last node of the sequence.
@@ -338,10 +264,6 @@ double CRF_StdSegStateNode::computeBeta(double scale)
 		double* next_adj_seg_beta = nextAdjacentSeg->getBeta();
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++) {
 			this->tempBeta[nextlab] = next_adj_seg_beta[nextlab] + nextAdjacentSeg->getStateValue(nextlab);
-
-			// just for debugging
-//			cout << "tempBeta[" << nextlab << "]=" << "next_seg_beta[" << nextlab << "](" << next_adj_seg_beta[nextlab] << ") + next_seg_state_value[" << nextlab << "](" << nextAdjacentSeg->getStateValue(nextlab) << ")=" << this->tempBeta[nextlab] << endl;
-
 			nextlab++;
 		}
 	}
@@ -354,9 +276,6 @@ double CRF_StdSegStateNode::computeBeta(double scale)
 		double maxv=this->logAddAcc[0];
 		QNUInt32 nextlab = 0;
 
-		// just for debugging
-//		cout << "clab=" << clab << ", betaArray = logAdd(trans + tempBeta):" << endl;
-
 		for (QNUInt32 dur = 1; dur <= this->numNextNodes; dur++)
 		{
 			nextAdjacentSeg = this->nextNodes[dur - 1];
@@ -366,9 +285,6 @@ double CRF_StdSegStateNode::computeBeta(double scale)
 
 				//this->logAddAcc[clab]=this->transMatrix[plab*nLabs+clab]+this->tempBeta[clab];
 				this->logAddAcc[nextlab] = nextAdjacentSeg->getTransValue(clab, nextlab) + this->tempBeta[nextlab];
-
-				// just for debugging
-//				cout << " nextlab=[" << nextlab << "]=" << "trans(" << nextAdjacentSeg->getTransValue(clab, nextlab) << ") + tempBeta(" << this->tempBeta[nextlab] << ")="<< this->logAddAcc[nextlab];
 
 				if (this->logAddAcc[nextlab]>maxv) {
 					maxv=logAddAcc[nextlab];
@@ -380,9 +296,6 @@ double CRF_StdSegStateNode::computeBeta(double scale)
 			//TODO:It should be nActualLabs_of_nextNode instead of nActualLabs_of_thisNode.
 			//this->betaArray[clab]=logAdd(this->logAddAcc,maxv,this->nActualLabs * this->numNextNodes);
 			this->betaArray[clab]=logAdd(this->logAddAcc,maxv,this->nextNodeNActualLabs * this->numNextNodes);
-
-			// just for debugging
-//			cout << endl << "betaArray[" << clab << "] = logAdd(trans + tempBeta) = " << this->betaArray[clab] << endl;
 		}
 		catch (exception &e) {
 			string errstr="CRF_StdSegStateNode::computeBeta() caught exception: "+string(e.what())+" while computing beta";
@@ -429,9 +342,6 @@ double* CRF_StdSegStateNode::computeAlphaBeta(double Zx)
  */
 double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab)
 {
-	// Added by Ryan, just for debugging
-//	cout << "CRF_StdSegStateNode::computeExpF(): Very beginning!!" << endl;
-
 	checkNumPrevNodes();
 
 	double logLi=0.0;
@@ -445,28 +355,14 @@ double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, Q
 	QNUInt32 clab = 0;
 	for (QNUInt32 dur = 1; dur <= this->numPrevNodes; dur++)
 	{
-		// just for debugging
-//		cout << "dur: " << dur << endl;
-
 		CRF_StateNode* prevAdjacentSeg = this->prevNodes[this->numPrevNodes - dur];
 		double* prev_adj_seg_alpha = prevAdjacentSeg->getAlpha();
 
-		// just for debugging
-//		cout << "After getting prevAdjacentSeg." << endl;
-
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 		{
-			// just debugging
-//			cout << "First phase:: numPrevNodes: " << numPrevNodes << ", dur: " << dur << ", lab: " << lab << ", clab: " << clab << endl;
-
 			alpha_beta=expE(this->alphaArray[clab]+this->betaArray[clab]-Zx);
 			alpha_beta_tot += alpha_beta;
 			bool match=(clab==this->label);
-
-			// just for debugging
-//			if (match)
-//				cout << clab << " ";
-//				cout << "state label match: " << clab << " " << endl;
 
 			logLi+=this->crf_ptr->getFeatureMap()->computeStateExpF(seg_ftr_buf,lambda,ExpF,grad,alpha_beta,this->label,clab);
 //			//TODO: verify: this->nLabs or nLabs_of_prevNode (probably this)
@@ -485,11 +381,6 @@ double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, Q
 					alpha_beta_trans_tot+=alpha_beta;
 					match=((clab==this->label)&&(plab==prev_lab));
 
-					// just debugging
-//					if (match)
-//						cout << "(" << clab << "<-" <<  plab << ") ";
-//						cout << "transition label match: " << "(" << clab << "<-" <<  plab << ") " << endl;
-
 					// TODO: design a feature map in which the transition matrix calculation can take different dimensions of plab (from prevNode) and clab (from current node).
 					logLi+=this->crf_ptr->getFeatureMap()->computeTransExpF(seg_ftr_buf,lambda,ExpF,grad,alpha_beta,prev_lab,this->label,plab,clab);
 				}
@@ -503,18 +394,9 @@ double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, Q
 	{
 		for (QNUInt32 lab = 0; lab < this->nActualLabs; lab++)
 		{
-			// just debugging
-//			cout << "Second phase:: numPrevNodes: " << numPrevNodes << ", dur: " << dur << ", lab: " << lab << ", clab: " << clab << endl;
-
 			alpha_beta=expE(this->alphaArray[clab]+this->betaArray[clab]-Zx);
 			alpha_beta_tot += alpha_beta;
 			bool match=(clab==this->label);
-
-			// just debugging
-//			if (match)
-//				cout << clab << " ";
-//				cout << "state label match: " << clab << " " << endl;
-
 
 			logLi+=this->crf_ptr->getFeatureMap()->computeStateExpF(seg_ftr_buf,lambda,ExpF,grad,alpha_beta,this->label,clab);
 
@@ -530,9 +412,6 @@ double CRF_StdSegStateNode::computeExpF(double* ExpF, double* grad, double Zx, Q
 		// but set the alpha_beta_trans_tot to 1.0 for the check below
 		alpha_beta_trans_tot=1.0;
 	}
-
-	//just for debugging
-//	cout << "\tAlpha_beta_tot: " << alpha_beta_tot << "\tAlpha_beta_trans_tot: " << alpha_beta_trans_tot << endl;
 
 	// alpha_beta_tot and alpha_beta_trans_tot are no longer equal to 1 but less than 1 except the ending node.
 	if ((alpha_beta_tot >1.000001))  {
@@ -570,14 +449,8 @@ double CRF_StdSegStateNode::computeAlphaSum()
 	double Zx;
 	try {
 
-		// just for debugging
-//		cout << "before compute alpha sum" << endl;
-
 		//Zx=logAdd(this->alphaArray,this->nLabs);  // full implementation. But not working now because logAdd() cannot do calculation on LOG0 yet.
 		Zx=logAdd(this->alphaArray,this->numAvailLabs);
-
-		// just for debugging
-//		cout << "Zx=logAdd(this->alphaArray, " << this->numAvailLabs << ")=" << Zx << endl;
 	}
 	catch (exception& e) {
 		//changed by Ryan

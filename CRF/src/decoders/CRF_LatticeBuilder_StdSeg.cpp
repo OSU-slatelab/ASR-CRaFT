@@ -2,16 +2,13 @@
  * CRF_LatticeBuilder_StdSeg.cpp
  *
  *  Created on: Oct 16, 2011
- *      Author: hey
+ *      Author: Yanzhang (Ryan) He
  */
 
 #include "CRF_LatticeBuilder_StdSeg.h"
 CRF_LatticeBuilder_StdSeg::CRF_LatticeBuilder_StdSeg(CRF_FeatureStream* ftr_strm_in, CRF_Model* crf_in)
 	: CRF_LatticeBuilder(ftr_strm_in, crf_in)
 {
-
-	// just for debugging
-	//cout << "beginning of CRF_LatticeBuilder_StdSeg constructor." << endl;
 
 //	this->nodeList= new CRF_StateVector();
 
@@ -50,10 +47,6 @@ CRF_LatticeBuilder_StdSeg::CRF_LatticeBuilder_StdSeg(CRF_FeatureStream* ftr_strm
 //	for (QNUInt32 i=0; i<this->num_labs; i++) {
 //		this->alpha_base[i]=0.0;
 //	}
-
-	// just for debugging
-	//cout << "end of CRF_LatticeBuilder_StdSeg constructor." << endl;
-
 }
 
 CRF_LatticeBuilder_StdSeg::~CRF_LatticeBuilder_StdSeg() {
