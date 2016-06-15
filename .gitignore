@@ -1,0 +1,14 @@
+.metadata
+
+# CVS versioning data
+**/CVS
+
+# eclipse junk
+**/.cdt*
+**/.cproject
+**/.project*
+**/.settings
+
+# binary directories
+**/Debug
+**/Release
