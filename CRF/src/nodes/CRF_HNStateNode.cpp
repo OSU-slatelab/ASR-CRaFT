@@ -111,10 +111,14 @@ double CRF_HNStateNode::computeAlpha(double* prev_alpha)
 
 	return this->alphaScale;
 }
-
-double CRF_HNStateNode::computeAlphaAligned(vector<double>* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label)
+//TODO TODO TODO
+//FIXME FIXME FIXME
+//This function needs to be implemented properly.
+double CRF_HNStateNode::computeAlphaAligned(double* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label)
 {
-	if (prev_label != this->label) {
+  /* Punt on this to compile for now
+
+  if (prev_label != this->label) {
 		// We're in the first state - only do processing for the initial state
 		QNUInt32 tlab=this->label*nStates;
 		// And we can only transition from the final state of prev_label
@@ -160,7 +164,8 @@ double CRF_HNStateNode::computeFirstAlpha(double* prev_alpha)
 	this->alphaScale=0.0;
 
 	return this->alphaScale;
-
+  */
+  return nan("");
 }
 
 double CRF_HNStateNode::computeBeta(double* result_beta, double scale)

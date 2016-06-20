@@ -9,6 +9,21 @@
 **/.project*
 **/.settings
 
+# emacs junk
+**/*~
+**/#*#
+
 # binary directories
 **/Debug
 **/Release
+bin
+build
+
+# autotools generated files
+**/Makefile.in
+
+# CMake generated files
+**/Makefile
+**/CMakeFiles
+**/CMakeCache.txt
+**/cmake_install.cmake

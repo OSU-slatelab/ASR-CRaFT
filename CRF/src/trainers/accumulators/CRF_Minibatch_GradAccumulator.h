@@ -12,7 +12,7 @@
 #include "../../io/CRF_FeatureStreamManager.h"
 #include "../gradbuilders/CRF_GradBuilder.h"
 #include "../../ftrmaps/CRF_FeatureMap.h" // for QN_UINT32_MAX -- move elsewhere?
-#include <pthread>
+#include <pthread.h>
 
 class CRF_Minibatch_GradAccumulator_Thread
 {

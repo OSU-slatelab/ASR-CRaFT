@@ -10,7 +10,7 @@
 
 #include "CRF_GradAccumulator.h"
 #include "../gradbuilders/CRF_GradBuilder.h"
-#include <pthread>
+#include <pthread.h>
 
 class CRF_Pthread_GradAccumulator_Thread
 {
