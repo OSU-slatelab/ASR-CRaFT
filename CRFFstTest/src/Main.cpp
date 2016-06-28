@@ -1,13 +1,13 @@
 #include "QN_config.h"
-#include "fst/lib/fstlib.h"
+#include "fst/fstlib.h"
 
 #include "CRF.h"
-#include "CRF_FeatureStream.h"
-#include "CRF_FeatureStreamManager.h"
+#include "io/CRF_FeatureStream.h"
+#include "io/CRF_FeatureStreamManager.h"
 #include "CRF_Model.h"
-#include "CRF_StdFeatureMap.h"
+#include "ftrmaps/CRF_StdFeatureMap.h"
 #include "CRF_StdTransFeatureMap.h"
-#include "CRF_LatticeBuilder.h"
+#include "decoders/CRF_LatticeBuilder.h"
 #include "CRF_NewViterbi.h"
 #include "CRF_LabelPath.h"
 

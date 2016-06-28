@@ -23,6 +23,7 @@ libCRF_a_SOURCES = src/trainers/gradbuilders/CRF_GradBuilder.cpp \
 	src/io/CRF_MLFManager.cpp \
 	src/io/CRF_InLabStream_RandPresent.cpp \
 	src/utils/CRF_LogMath.cpp \
+	src/utils/lbfgs.c \
 	src/ftrmaps/CRF_StdSparseFeatureMap.cpp \
 	src/ftrmaps/CRF_StdFeatureMap.cpp \
 	src/ftrmaps/CRF_FeatureMap.cpp \

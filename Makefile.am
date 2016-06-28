@@ -1,2 +1,2 @@
-SUBDIRS = CRF CRFDecode CRFFstAlign CRFFstDecode CRFFstTest \
-CRFGatherStats CRFLocalPosteriors CRFLogMathTest CRFTrain CRFVectorTest
+SUBDIRS = CRF CRFDecode CRFFstDecode CRFTrain #CRFLocalPosteriors CRFGatherStats 
+#CRFFstTest CRFFstAlign CRFLogMathTest CRFVectorTest
