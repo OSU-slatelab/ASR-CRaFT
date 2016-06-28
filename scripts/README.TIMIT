@@ -1,0 +1,134 @@
+###################################################
+# step 0: prepare feature files in pfile format
+###################################################
+
+You can use your favourite tool to train the DNN features for training and test sets, e.g.
+with QuickNet, Kaldi or Theano. But the feature files need to be converted to the pfile
+format defined by QuickNet before they are fed into CRF. Here we provide an example to
+convert the Kaldi DNN posteriors to the pfile format.
+
+This assumes there exists a Kaldi directory that already runs TIMIT training and eval. E.g.
+
+cd /u/hey/exp/kaldi/timit_r4995
+
+(The commands I used to run the Kaldi TIMIT training with a DNN-based monophone system with
+fMLLR features were: run.sh; mylocal/run_dnn_fmllr_mono.sh --skip_smbr false)
+
+Then generate Kaldi DNN features and also save them in HTK format:
+(The DNN features could be posteriors or activations of any intermediate layers)
+
+mylocal/prep_bn_feats.sh \
+  --srcdata data-fmllr-tri3 \
+  --dnndir exp/dnn_fmllr_mono_pretrain-dbn_dnn \
+  --data_bn data-bn-dnn-fmllr-mono
+
+--data_bn defines the output directory, which is also the input directory to the next script below.
+
+Then convert features in HTK format to pfile format and generate the training and test feature files,
+which are used by QuickNet and our ASRCRaFT:
+
+mylocal/htk_to_pf.sh \
+  data-bn-dnn-fmllr-mono \
+  /u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_train.kaldi_dnn_fmllr_mono.48.3state.softmax.pf \
+  /u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_test.neworder.kaldi_dnn_fmllr_mono.48.3state.softmax.pf
+
+Note the training utterances order is hard-coded in htk_to_pf.sh by mylocal/timit_sisx_train.olist.kaldi_to_htk_to_pfile, which follows the same order in the training label files:
+/u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/labels/timit_train.48labs.3state.ilab
+/data/data1/hey/SegmentalCRF/data/mlp_features/olists/timit_sisx_train.olist
+
+The generated feature files are used in the config files in step 1 below.
+
+###################################################
+# step 1: create experiment config file
+###################################################
+
+Example for frame-level CRF (with transition features) on TIMIT:
+/data/data2/hey/SegmentalCRF/exp_sample/params/TIMIT_DNN_new_sil/deep.48class/frame/stdtrans.fmllr_mono_3state_input.3state_model
+
+Example for SCRF (with transition features) on TIMIT:
+/data/data2/hey/SegmentalCRF/exp_sample/params/TIMIT_DNN_new_sil/deep.48class/segmental/sample-avg-max-min-dur/stdtrans.fmllr_mono_3state_input.1state_model.PhonePost_BoundPost_ctx6_trans.dur10lab
+
+Note that the second feature stream in the segmental config file is generated from the first feature stream by padding 6 frames at the beginning and the end so that the boundary feature can be easily generated because the current feature context window at the boundary considers 6 frames to the left and 6 frames to the right. The padding is done by running the following command:
+
+feacat -i timit_train.kaldi_dnn_fmllr_mono.48.3state.softmax.pf -o timit_train.kaldi_dnn_fmllr_mono.48.3state.softmax.padded6.pf -p 6
+
+We should actually change the SCRF feature reader code so that we can generate the padding on-the-fly instead of reading it from an offline feature file.
+
+===================================================
+
+The parameters defined in these config files will be converted later by the training and decoding scripts:
+scripts/run_crf_train.latest.sh
+scripts/run_crf_fstdecode.latest.sh
+
+Run /data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail6.avg_minibatch.non_verbose/CRFTrain to see the descriptions for all the actual parameters.
+
+###################################################
+# step 2: prepare your experiment directory
+###################################################
+
+/data/data2/hey/SegmentalCRF/exp_sample/scripts/prep_exp.sh <config file> <exp dir>
+
+###################################################
+# step 3: training
+###################################################
+
+cd $your_exp_dir
+scripts/run_crf_train.latest.sh lr=<learning rate>
+
+===================================================
+
+Run scripts/run_crf_train.latest.sh for usage.
+
+The training will keep running until it finishes the number of iterations defined as ITERS in the config file.
+
+Learning rate is a critical hyper-parameter, which needs to be tuned.
+
+These are the (roughly) optimal learning rates I tuned for TIMIT:
+Frame-level CRF (stdtrans.fmllr_mono_3state_input.3state_model): 0.02
+SCRF (stdtrans.fmllr_mono_3state_input.1state_model.PhonePost_BoundPost_ctx6_trans.dur10lab): 0.1
+
+###################################################
+# step 4: decoding
+###################################################
+
+cd $your_exp_dir
+scripts/run_crf_fstdecode.latest.sh lr=<learning rate>
+
+===================================================
+
+It can be run in parallel with training. By default it will decode with all available iterations so far
+(skipping those iterations previously decoded).
+
+You could also specify the iterations to decode:
+
+scripts/run_crf_fstdecode.latest.sh lr=<learning rate> [start=<start iter>] [step=<step>] [end=<end iter>]
+
+e.g.
+scripts/run_crf_fstdecode.latest.sh lr=0.1 start=3
+scripts/run_crf_fstdecode.latest.sh lr=0.1 end=7
+scripts/run_crf_fstdecode.latest.sh lr=0.1 start=3 end=7
+scripts/run_crf_fstdecode.latest.sh lr=0.1 start=3 step=1 end=7
+
+The test sets can also be specified by the "testsets=" argument.
+
+Run scripts/run_crf_fstdecode.latest.sh for usage.
+
+###################################################
+# step 5: result
+###################################################
+
+cd $your_exp_dir
+scripts/sortResult.kaldi.sh
+
+===================================================
+
+This will collect all decoded results.
+The learning rate specific results are put, e.g. in weights.lr0.1/{cv,core,enh}_results.all.txt
+All results across learning rates are put in weights.all_lr_eta.{cv,core,enh}_results.all.txt
+
+Choose the best iteration based on the dev test performance, then report the core (or enhanced) test performance
+corresponding to that iteration.
+
+Detailed result report is in, e.g.:
+
+weights.lr0.1/cv_out.lr0.1/3iters/ctm_39phn.filt.sys
