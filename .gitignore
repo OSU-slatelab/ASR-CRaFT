@@ -4,6 +4,7 @@
 **/CVS
 
 # eclipse junk
+**/.metadata
 **/.cdt*
 **/.cproject
 **/.project*
