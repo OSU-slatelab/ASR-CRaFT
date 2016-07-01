@@ -37,13 +37,7 @@ AM_PROG_AR
 
 AC_CONFIG_FILES([CRF/Makefile
 		 CRFDecode/Makefile
-                 CRFFstAlign/Makefile
                  CRFFstDecode/Makefile
-                 CRFFstTest/Makefile
-                 CRFGatherStats/Makefile
-                 CRFLocalPosteriors/Makefile
-                 CRFLogMathTest/Makefile
                  CRFTrain/Makefile
-		 CRFVectorTest/Makefile
                  Makefile])
 AC_OUTPUT
