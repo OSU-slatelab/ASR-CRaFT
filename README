@@ -1,0 +1,45 @@
+This code is not yet ready for a source-code distribution, which means
+that if you want to build it, you should follow the "developer" instructions
+below.
+
+================
+FOR END USERS
+================
+
+TBD. This should eventually say something to the effect of, go get the
+distro and run `./configure && make && make install`.
+
+
+
+================
+FOR DEVELOPERS
+================
+
+This package has been built using autoconf version 2.68 (or higher) and
+automake version 1.15. You may be able to build it with older software, but
+it may take some coaxing. Some m4 macros were undefined when attempting to
+build using automake version 1.11, for example.
+
+Dependencies:
+ASR-CRaFT statically compiles dependencies into a library and executables.
+It requires the QuickNet3 library ([TODO: insert link here]), CBLAS (for
+example, via ATLAS [link]), and OpenFST ([link]) to build. If these libraries
+and headers are installed in non-standard locations, you may need to supply
+relevant flags to the configure script (e.g. ./configure LDFLAGS="-L/path/to/
+quicknet3/library -L/path/to/openfst/library" CPPFLAGS="-I/path/to/quicknet3/
+headers -I/path/to/openfst/headers").
+
+To build:
+Ideally, you should be able to:
+1. Clone the source
+2. Run `autoreconf` in the top-level directory
+   (you may need to run `automake --add-missing` first).
+3. Run `./configure`
+   (see above about non-standard library and header locations; also, the
+   .gitignore file is set up to allow a parallel build from a ./build/
+   directory. If you want to keep your source tree free of object files,
+   you may want to create the build/ directory, and from build/, run
+   `../configure <options>`).
+4. Run `make`.
+
+Installation (via `make install`) isn't working yet.

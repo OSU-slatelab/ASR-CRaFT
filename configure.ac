@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 LT_PREREQ([2.4.6])
-AC_PREREQ([2.69])
+AC_PREREQ([2.68])
 AC_INIT([ASR-CRaFT], [1.1], [https://github.com/OSU-slatelab])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects foreign])
 
