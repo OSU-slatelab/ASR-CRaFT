@@ -44,6 +44,8 @@ CRF_StdStateNode::~CRF_StdStateNode()
 	delete [] this->betaArray;
 	delete [] this->tempBeta;
 	delete [] this->logAddAcc;
+
+	// Ryan: why not delete alphaBetaArray?
 }
 
 
@@ -60,6 +62,7 @@ double CRF_StdStateNode::computeTransMatrix()
 	double* lambda = this->crf_ptr->getLambda();
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 		this->stateArray[clab]=this->crf_ptr->getFeatureMap()->computeStateArrayValue(this->ftrBuf,lambda,clab);
+
 		for (QNUInt32 plab=0; plab<nLabs; plab++) {
 			QNUInt32 idx=plab*nLabs+clab;
 			this->transMatrix[idx]=this->crf_ptr->getFeatureMap()->computeTransMatrixValue(this->ftrBuf,lambda,plab,clab);
@@ -93,8 +96,10 @@ double CRF_StdStateNode::computeAlpha(double* prev_alpha)
 	 		this->alphaArray[clab]=logAdd(this->logAddAcc,maxv,nLabs);
 	 	}
 	 	catch (exception &e) {
-	 		string errstr="CRF_StdStateNodeLog::computeAlpha caught exception: "+string(e.what())+" while computing alpha";
-			throw runtime_error(errstr);
+	 		//changed by Ryan
+	 		//string errstr="CRF_StdStateNodeLog::computeAlpha caught exception: "+string(e.what())+" while computing alpha";
+	 		string errstr="CRF_StdStateNode::computeAlpha() caught exception: "+string(e.what())+" while computing alpha";
+	 		throw runtime_error(errstr);
 			return(-1);
 	 	}
 	 	this->alphaArray[clab]+=this->stateArray[clab];
@@ -117,7 +122,7 @@ double CRF_StdStateNode::computeFirstAlpha(double* prev_alpha)
 
 	for (QNUInt32 clab=0; clab<nLabs; clab++) {
 	 	this->alphaArray[clab]=this->stateArray[clab];
-	 }
+	}
 	return this->alphaScale;
 
 }
@@ -157,7 +162,9 @@ double CRF_StdStateNode::computeBeta(double* result_beta, double scale)
 			result_beta[plab]=logAdd(this->logAddAcc,maxv,nLabs);
 		}
 		catch (exception &e) {
-	 		string errstr="CRF_StdStateNodeLog::computeBeta caught exception: "+string(e.what())+" while computing beta";
+			//changed by Ryan
+	 		//string errstr="CRF_StdStateNodeLog::computeBeta caught exception: "+string(e.what())+" while computing beta";
+	 		string errstr="CRF_StdStateNode::computeBeta() caught exception: "+string(e.what())+" while computing beta";
 			throw runtime_error(errstr);
 			return(-1);
 		}
@@ -242,21 +249,28 @@ double CRF_StdStateNode::computeExpF(double* ExpF, double* grad, double Zx, doub
 			}
 		}
 	}
-
 	if ((alpha_beta_tot >1.1))  {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Probability sums greater than 1.0 "+stringify(alpha_beta_tot);
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Probability sums greater than 1.0 "+stringify(alpha_beta_tot);
+		string errstr="CRF_StdStateNode::computeExpF() threw exception: Probability sums greater than 1.0 "+stringify(alpha_beta_tot);
 		throw runtime_error(errstr);
 	}
 	else if (alpha_beta_tot < 0.9) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Probability sums less than 1.0 "+stringify(alpha_beta_tot);
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Probability sums less than 1.0 "+stringify(alpha_beta_tot);
+		string errstr="CRF_StdStateNode::computeExpF() threw exception: Probability sums less than 1.0 "+stringify(alpha_beta_tot);
 		throw runtime_error(errstr);
 	}
 	else if (alpha_beta_trans_tot > 1.1) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Trans Probability sums greater than 1.0 "+stringify(alpha_beta_trans_tot);
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Trans Probability sums greater than 1.0 "+stringify(alpha_beta_trans_tot);
+		string errstr="CRF_StdStateNode::computeExpF() threw exception: Trans Probability sums greater than 1.0 "+stringify(alpha_beta_trans_tot);
 		throw runtime_error(errstr);
 	}
 	else if (alpha_beta_trans_tot < 0.9) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Trans Probability sums less than 1.0 "+stringify(alpha_beta_trans_tot);
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: Trans Probability sums less than 1.0 "+stringify(alpha_beta_trans_tot);
+		string errstr="CRF_StdStateNode::computeExpF() threw exception: Trans Probability sums less than 1.0 "+stringify(alpha_beta_trans_tot);
 		throw runtime_error(errstr);
 	}
 	return logLi;
@@ -276,7 +290,9 @@ double CRF_StdStateNode::computeAlphaSum()
 		Zx=logAdd(this->alphaArray,nLabs);
 	}
 	catch (exception& e) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		string errstr="CRF_StdStateNode::computeAlphaSum() threw exception: "+string(e.what());
 		throw runtime_error(errstr);
 	}
 	return Zx;
@@ -313,6 +329,8 @@ double CRF_StdStateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 {
 	//QNUInt32 nLabs = this->crf_ptr->getNLabs();
 	return this->transMatrix[prev_lab*nLabs+cur_lab]+this->stateArray[cur_lab];
+
+
 }
 
 /*
@@ -329,7 +347,9 @@ double CRF_StdStateNode::computeAlphaAlignedSum()
 		Zx=logAdd(&(this->alphaArrayAligned),nLabs);
 	}
 	catch (exception& e) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		string errstr="CRF_StdStateNode::computeAlphaAlignedSum() threw exception: "+string(e.what());
 		throw runtime_error(errstr);
 	}
 	return Zx;

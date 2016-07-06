@@ -11,6 +11,11 @@
  * package for compatibility with ICSI Quicknet.
  */
 
+// Added by Ryan
+#ifndef CRF_LAB_BAD
+#define CRF_LAB_BAD (0xffffffff)
+#endif
+
 #include "QuickNet.h"
 #include "QN_streams.h"
 #include "QN_seqgen.h"
@@ -40,8 +45,11 @@ protected:
 	QN_SegID segid;
 
 public:
-	CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg=0);
-	CRF_FeatureStream(QN_InFtrStream* ftr, int dbg=0);
+	// Modified by Ryan
+	// allowing for initialization of start_offset, numsegs, which is needed by the multi-threaded version
+	CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg=0, QNUInt32 offset=0, QNUInt32 segs=QN_ALL);
+	CRF_FeatureStream(QN_InFtrStream* ftr, int dbg=0, QNUInt32 offset=0, QNUInt32 segs=QN_ALL);
+
 	virtual ~CRF_FeatureStream();
 	virtual QN_SegID nextseg();
 	virtual size_t read(size_t bs, float* fb, QNUInt32* lb);
@@ -53,6 +61,9 @@ public:
 	virtual QNUInt32 num_segs();
 	virtual void display();
 	virtual void view(QNUInt32 startseg,QNUInt32 nsegs);
+
+	// Added by Ryan
+	virtual QNUInt32 num_labs();
 };
 
 #endif /*CRF_FEATURESTREAM2_H_*/

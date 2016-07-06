@@ -15,7 +15,17 @@
 CRF_LBFGSTrainer::CRF_LBFGSTrainer(CRF_Model* crf_in, CRF_FeatureStreamManager* ftr_str_mgr, char* wt_fname)
 	: CRF_Trainer(crf_in, ftr_str_mgr, wt_fname)
 {
-	this->iCounter=0;
+	// changed by Ryan. TODO: check if iCounter being larger than 0 is OK.
+	//this->iCounter=0;
+	this->iCounter=this->crf_ptr->getInitIter();
+
+	// Added by Ryan
+	// rewind the training feature stream iCounter-1 times to make sure the
+	// random sequence generator is consistent with the last iteration where
+	// the previous training stopped at.
+	for (int i = 0; i < iCounter; ++i) {
+		this->ftr_strm_mgr->trn_stream->rewind();
+	}
 }
 
 /*

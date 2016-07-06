@@ -159,6 +159,8 @@ size_t CRF_InFtrStream_RandPresent::num_frames(size_t segno)
 	return str.num_frames(segno);
 }
 
+// Commented by Ryan
+// I think the following function is BUGGY. Random stream should not be able to implement get_pos.
 /*
  * CRF_InFtrStream_RandPresent::get_pos
  *
@@ -175,6 +177,8 @@ int CRF_InFtrStream_RandPresent::get_pos(size_t* segno, size_t* frameno)
 	return this->real_seg;
 }
 
+// Commented by Ryan
+// I think the following function is BUGGY. Random stream should not be able to implement set_pos.
 /*
  * CRF_InFtrStream_RandPresent::set_pos
  *

@@ -12,6 +12,8 @@
 // maximum a 32bit integer can hold.  This should be revisited and examined.
 #define CRF_ALL 4294967295
 
+// Modified by Ryan
+// allowing for initialization of start_offset, numsegs, which is needed by the multi-threaded version
 /*
  * CRF_FeatureStream constructor
  *
@@ -20,16 +22,18 @@
  *        dbg - debugging flag
  *
  */
-CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg)
+CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, int dbg, QNUInt32 offset, QNUInt32 segs)
 	: ftr_stream(ftr),
 	  lab_stream(lab),
 	  debug(dbg),
-	  start_offset(0),
-	  numsegs(QN_ALL),
+	  start_offset(offset),
+	  numsegs(segs),
 	  segid(QN_SEGID_BAD)
 {
 }
 
+// Modified by Ryan
+// allowing for initialization of start_offset, numsegs, which is needed by the multi-threaded version
 /*
  * CRF_FeatureStream constructor
  *
@@ -39,12 +43,12 @@ CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, QN_InLabStream* lab, i
  * This constructor is used when a feature file has no associated label file
  * (i.e. during decoding).
  */
-CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, int dbg)
+CRF_FeatureStream::CRF_FeatureStream(QN_InFtrStream* ftr, int dbg, QNUInt32 offset, QNUInt32 segs)
 	: ftr_stream(ftr),
 	  lab_stream(NULL),
 	  debug(dbg),
-	  start_offset(0),
-	  numsegs(QN_ALL),
+	  start_offset(offset),
+	  numsegs(segs),
 	  segid(QN_SEGID_BAD)
 {
 }
@@ -121,7 +125,10 @@ size_t CRF_FeatureStream::read(size_t bs, float* fb, QNUInt32* lb)
 		lab_cnt=this->lab_stream->read_labs(bs,lb);
 	}
 	//cout << "Feature Count: " << ftr_cnt << "Label Count: " << lab_cnt << endl;
-	assert (ftr_cnt == lab_cnt);
+
+	//commented out by Ryan, since ftr_cnt might be larger than lab_cnt for segmental features extraction
+	//assert (ftr_cnt == lab_cnt);
+
 	/*if (ftr_cnt != lab_cnt)
 		ftr_cnt=-1;*/ // This doesn't work - size_t is unsigned - need a different indicator of failure here.
 	return ftr_cnt;
@@ -167,7 +174,13 @@ CRF_FeatureStream* CRF_FeatureStream::join(CRF_FeatureStream* in_stream)
 	QN_InFtrStream* new_stream;
 	new_stream = new QN_InFtrStream_JoinFtrs(this->debug, "join_ftrfile",
 									*(this->ftr_stream), *(in_stream->ftr_stream));
-	return new CRF_FeatureStream(new_stream,this->lab_stream);
+
+	// Modified by Ryan
+	// We need to keep the original start_offset, numsegs and segid so that
+	// the multi-threaded version is not screwed.
+	//
+	//return new CRF_FeatureStream(new_stream, this->lab_stream);
+	return new CRF_FeatureStream(new_stream, this->lab_stream, this->debug, this->start_offset, this->numsegs);
 }
 
 /*
@@ -340,4 +353,21 @@ void CRF_FeatureStream::view(QNUInt32 startseg,QNUInt32 nsegs) {
 	this->start_offset=startseg;
 	this->numsegs=nsegs;
 	this->rewind();
+}
+
+
+// Added by Ryan
+/*
+ * CRF_FeatureStream::num_labs
+ *
+ * Returns: the width of the label stream
+ */
+QNUInt32 CRF_FeatureStream::num_labs()
+{
+	if (this->lab_stream == NULL) {
+		return 0;
+	}
+	else {
+		return this->lab_stream->num_labs();
+	}
 }

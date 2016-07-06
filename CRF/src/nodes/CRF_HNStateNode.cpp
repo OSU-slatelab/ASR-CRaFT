@@ -111,8 +111,10 @@ double CRF_HNStateNode::computeAlpha(double* prev_alpha)
 
 	return this->alphaScale;
 }
-
-double CRF_HNStateNode::computeAlphaAligned(vector<double>* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label)
+//TODO TODO TODO
+//FIXME FIXME FIXME
+//This function needs to be implemented properly.
+double CRF_HNStateNode::computeAlphaAligned(double* prev_alpha, QNUInt32 prev_label, QNUInt32 next_label)
 {
 	/*
 	 * The following code has been commented out to allow for
@@ -151,8 +153,9 @@ double CRF_HNStateNode::computeAlphaAligned(vector<double>* prev_alpha, QNUInt32
 
 	}
 	return this->alphaScale;
-	*/
 	return 0.0;
+  */
+  return nan("");
 }
 
 double CRF_HNStateNode::computeFirstAlpha(double* prev_alpha)
@@ -167,7 +170,6 @@ double CRF_HNStateNode::computeFirstAlpha(double* prev_alpha)
 	this->alphaScale=0.0;
 
 	return this->alphaScale;
-
 }
 
 double CRF_HNStateNode::computeBeta(double* result_beta, double scale)
@@ -341,7 +343,9 @@ double CRF_HNStateNode::computeAlphaAlignedSum()
 		Zx=logAdd(&(this->alphaArrayAligned),nLabs);
 	}
 	catch (exception& e) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		string errstr="CRF_HNStateNode::computeAlphaAlignedSum() threw exception: "+string(e.what());
 		throw runtime_error(errstr);
 	}
 	return Zx;

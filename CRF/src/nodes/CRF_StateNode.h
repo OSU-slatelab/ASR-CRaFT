@@ -43,9 +43,27 @@ protected:
 	double alphaScale;
 	QNUInt32 nLabs;
 	double* prevAlpha;
+
+	// Added by Ryan
+	static QNUInt32 uttCurLen;
+	CRF_StateNode** prevNodes;
+	CRF_StateNode** nextNodes;
+	QNUInt32 numPrevNodes;
+	QNUInt32 numNextNodes;
+	QNUInt32 numAvailLabs;
+
 public:
+
+	// Commented by Ryan
+	// TODO: change the name of viterbiPointers to viterbiPointers_nStates and
+	//       change the name of viterbiDurs to viterbiDurs_nStates
 	vector<uint> viterbiPhnIds;
 	vector<int> viterbiPointers;
+
+	// Added by Ryan
+	vector<bool> isPhoneStartBoundary;
+	vector<uint> viterbiDurs;
+
 	CRF_StateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual ~CRF_StateNode();
 	virtual double computeTransMatrix();
@@ -76,6 +94,26 @@ public:
 	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf);
 	virtual float *getFtrBuffer();
 	virtual QNUInt32 getFtrBufferSize();
+
+	// Added by Ryan
+	static CRF_StateNode* createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab,
+			CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs,
+			QNUInt32 nextNode_nActualLabs);
+	virtual double computeAlpha();
+	virtual double computeFirstAlpha();
+	virtual double computeBeta(double scale=1.0);
+	virtual double computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab);
+	virtual void setPrevNodes(CRF_StateNode** prev_nodes_ptr, QNUInt32 numPrevNodes);
+	virtual void setNextNodes(CRF_StateNode** next_nodes_ptr, QNUInt32 numNextNodes);
+	virtual CRF_StateNode** getPrevNodes();
+	virtual CRF_StateNode** getNextNodes();
+	virtual QNUInt32 getNLabs();
+	virtual QNUInt32 getNumAvailLabs();
+	virtual double getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
+	virtual double getStateValue(QNUInt32 cur_lab, QNUInt32 dur);
+	virtual double getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur);
+	virtual double getTempBeta(QNUInt32 cur_lab, QNUInt32 dur);
+//	virtual void deleteFtrBuf();
 };
 
 #endif /*CRF_STATENODE_H_*/

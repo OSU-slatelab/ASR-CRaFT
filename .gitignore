@@ -1,0 +1,38 @@
+.metadata
+
+# CVS versioning data
+**/CVS
+
+# eclipse junk
+**/.metadata
+**/.cdt*
+**/.cproject
+**/.project*
+**/.settings
+
+# emacs junk
+**/*~
+**/#*#
+
+# binary directories
+**/Debug
+**/Release
+bin
+build
+
+# autotools generated files
+**/Makefile.in
+aclocal.m4
+ar-lib
+autom4te.cache
+compile
+configure
+depcomp
+install-sh
+missing
+
+# CMake generated files
+**/Makefile
+**/CMakeFiles
+**/CMakeCache.txt
+**/cmake_install.cmake

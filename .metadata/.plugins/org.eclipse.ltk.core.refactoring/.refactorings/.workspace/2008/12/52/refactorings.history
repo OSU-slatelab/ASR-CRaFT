@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">&#x0A;<refactoring comment="Delete resource &apos;CRFFstAlign&apos;" deleteContents="false" description="Delete resource &apos;CRFFstAlign&apos;" element1="/CRFFstAlign" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1229974581653"/>&#x0A;<refactoring comment="Delete resource &apos;CRFGatherStats&apos;" deleteContents="false" description="Delete resource &apos;CRFGatherStats&apos;" element1="/CRFGatherStats" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1229975777046"/>
-</session>

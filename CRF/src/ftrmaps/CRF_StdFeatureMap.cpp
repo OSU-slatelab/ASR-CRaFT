@@ -280,7 +280,16 @@ QNUInt32 CRF_StdFeatureMap::getNumTransFuncs(QNUInt32 plab, QNUInt32 clab)
 QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 {
 	QNUInt32 retVal=0;
-	if (clab == 0) { retVal = fno; }
+	if (clab == 0) {
+
+		// TODO: Commented by Ryan, I think this has problems when fno > 0 since it adds fno twice (here and the end of the function).
+		//          Although fno for the current only usage of this function is set to 0, we need to correct this code in case future
+		//          use of the function might set fno to non-zero value.
+		// changed by Ryan
+		//retVal = fno;
+		retVal = 0;
+
+	}
 	else {
 		if (config->numStates==1) {
 			retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs);
@@ -292,7 +301,12 @@ QNUInt32 CRF_StdFeatureMap::computeStateFeatureIdx(QNUInt32 clab, QNUInt32 fno)
 				// Next, if this is a start state, add in trans features from all previous end
 				// states AND A SELF TRANSITION
 				if (i % config->numStates == 0) {
-					retVal+=this->numActualLabels*this->numTransFuncs + 1;
+
+					// TODO: Commented by Ryan, why not retVal+=(this->numActualLabels+1)*this->numTransFuncs?
+					// changed by Ryan
+					//retVal+=this->numActualLabels*this->numTransFuncs + 1;
+					retVal += (this->numActualLabels + 1) * this->numTransFuncs;  // since the self transition also has numTransFuncs features instead of 1 feature.
+
 				}
 				else {
 					// Otherwise, add in a self transition and a transition from the previous label
@@ -342,19 +356,53 @@ QNUInt32 CRF_StdFeatureMap::computeTransFeatureIdx(QNUInt32 clab, QNUInt32 plab,
 {
 	QNUInt32 retVal=0;
 	if (config->numStates == 1) {
-		retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs + fno;
+
+		// TODO: Commented by Ryan, I think this has problems when fno > 0 since it adds fno twice (here and the end of the function).
+		//          Although fno for the current only usage of this function is set to 0, we need to correct this code in case future
+		//          use of the function might set fno to non-zero value.
+		// changed by Ryan
+		//retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs + fno;
+		retVal=clab*(this->numStateFuncs + config->numLabs*this->numTransFuncs) + this->numStateFuncs + plab*this->numTransFuncs;
+
 	}
 	else {
 		retVal=this->getStateFeatureIdx(clab);
 		retVal+=this->numStateFuncs;
 		// We're now in the right spot if plab == clab.  Otherwise we have to increment
 		if (plab != clab) {
-			retVal+=1; // Increment to the next one
+
+			// TODO: Commented by Ryan, why not retVal+=this->numTransFuncs??
+			// changed by Ryan
+			//retVal+=1; // Increment to the next one
+			retVal += this->numTransFuncs; // Skip the self-transition, since the self transition also has numTransFuncs features instead of 1 feature.
+
 			//We're now in the right spot if we have a non-start state clab
 			if (clab % config->numStates == 0) {
-				QNUInt32 real_plab = (plab+1)/config->numStates-1;
+
+				// TODO: Commented by Ryan, would real_plab = plab/config->numStates look better? And what if plab is not the final state label?
+				// changed by Ryan
+				//QNUInt32 real_plab = (plab+1)/config->numStates-1;
+				if ((plab + 1) % config->numStates != 0)
+				{
+//					string errstr="CRF_StdFeatureMap::computeTransFeatureIdx() caught exception: clab is the initial state of a phone, but plab(!=clab) is not the final state of a phone.";
+//					throw runtime_error(errstr);
+					retVal = -1;
+					return retVal;
+				}
+				QNUInt32 real_plab = plab / config->numStates; // the original one is also correct, but this one is cleaner.
+
 				retVal+=real_plab*this->numTransFuncs;
 			}
+
+			// Added by Ryan
+			// for non-start state clab, if plab!=clab and plab!=clab-1, return -1
+			else {
+				if (plab != clab - 1) {
+					retVal = -1;
+					return retVal;
+				}
+			}
+
 		}
 	}
 	retVal+=fno;
@@ -396,7 +444,10 @@ QNUInt32 CRF_StdFeatureMap::getTransFeatureIdx(QNUInt32 clab, QNUInt32 plab, QNU
  * Returns: index into the lambda vector for the state bias feature for the label clab
  */
 QNUInt32 CRF_StdFeatureMap::getStateBiasIdx(QNUInt32 clab) {
-	return getStateFeatureIdx(clab,this->numFtrFuncs-1);
+	//return getStateFeatureIdx(clab,this->numFtrFuncs-1);
+
+	//Changed by Ryan, I think it should be this:
+	return getStateFeatureIdx(clab,this->numStateFuncs-1);
 }
 
 /*
@@ -527,3 +578,145 @@ void CRF_StdFeatureMap::accumulateFeatures(float *ftr_buf,double *accumulator,QN
 }
 
 
+/*
+ * Added by Ryan
+ *
+ * CRF_StdFeatureMap::tieGradient
+ *
+ * Input: *grad - vector of gradient values
+ *        maxDur - the maximum duration for the all phone-duration labels
+ *        durFtrStart - the start index of the binary-coded features which
+ *                      are not for tying
+ *
+ * Tie gradients for tied parameters. Currently this function only applies to single
+ * state model. And the tied parameters are hardcoded as the ones for state features
+ * and transition features for the phone-duration labels with the same phone, e.g.,
+ * parameters are tied for labels ah-1, ah-2, ah-3, ..., ah-maxDur, except for the
+ * duration features, which are binary-coded features with index starting from
+ * durFtrStart.
+ *
+ *
+ */
+//void CRF_StdFeatureMap::tieGradient(double* grad, QNUInt32 maxDur, QNUInt32 durFtrStart)
+void CRF_StdFeatureMap::tieGradient(double* grad)
+{
+
+	//cout << "Tying Parameter. maxDur=" << maxDur << " durFtrStart=" << durFtrStart << endl;
+
+	if (config->numStates != 1)
+	{
+		string errstr="CRF_StdFeatureMap::tieGradient() threw exception: Currently the function of parameter tying only applies to single state models.";
+		throw runtime_error(errstr);
+	}
+
+	if (config->maxDur <= 0)
+		return;
+
+	//assert(config->numLabs % maxDur == 0);
+	//assert(config->numLabs == config->maxDur * 48);
+	if (config->numLabs % config->maxDur != 0) {
+		string errstr="CRF_StdFeatureMap::tieGradient() threw exception: numLabs and maxDur do not correspond.";
+		throw runtime_error(errstr);
+	}
+	QNUInt32 nPureLabs = config->numLabs / config->maxDur;
+	assert(nPureLabs == 48);    //this statement is just for debugging: currently the number of labels is 48. It should be commented out later.
+
+	QNUInt32 durFtrEnd = config->durFtrStart + config->maxDur;  // exclusive end
+	if (config->useStateFtrs || config->useStateBias)
+	{
+		//QNUInt32 stateParamStep = getStateFeatureIdx(1) - getStateFeatureIdx(0);
+		QNUInt32 stateParamStep = (getStateFeatureIdx(1) - getStateFeatureIdx(0)) * nPureLabs;
+		QNUInt32 clab = 0;
+		//while (clab < config->numLabs)
+		while (clab < nPureLabs)
+		{
+			for (QNUInt32 fid = 0; fid < numStateFuncs; fid++)
+			{
+				if (fid >= config->durFtrStart && fid < durFtrEnd)
+					continue;
+				QNUInt32 start = getStateFeatureIdx(clab,fid);
+				tieGradForSingleParam(grad, start, stateParamStep, config->maxDur);
+			}
+			//clab += config->maxDur;
+			clab++;
+		}
+	}
+
+	if (config->useTransFtrs || config->useTransBias)
+	{
+		//QNUInt32 clabParamStep = getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0);
+		QNUInt32 clabParamStep = (getTransFeatureIdx(1,0) - getTransFeatureIdx(0,0)) * nPureLabs;
+		QNUInt32 clab = 0;
+		//while (clab < config->numLabs)
+		while (clab < nPureLabs)
+		{
+			for (QNUInt32 plab = 0; plab < config->numLabs; plab++)
+			{
+				for (QNUInt32 fid = 0; fid < numTransFuncs; fid++)
+				{
+					if (fid >= config->durFtrStart && fid < durFtrEnd)
+						continue;
+					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
+					tieGradForSingleParam(grad, start, clabParamStep, config->maxDur);
+				}
+			}
+			//clab += config->maxDur;
+			clab++;
+		}
+		//QNUInt32 plabParamStep = getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0);
+		QNUInt32 plabParamStep = (getTransFeatureIdx(0,1) - getTransFeatureIdx(0,0)) * nPureLabs;
+		QNUInt32 plab = 0;
+		//while (plab < config->numLabs)
+		while (plab < nPureLabs)
+		{
+			for (QNUInt32 clab = 0; clab < config->numLabs; clab++)
+			{
+				for (QNUInt32 fid = 0; fid < numTransFuncs; fid++)
+				{
+					if (fid >= config->durFtrStart && fid < durFtrEnd)
+						continue;
+					QNUInt32 start = getTransFeatureIdx(clab,plab,fid);
+					tieGradForSingleParam(grad, start, plabParamStep, config->maxDur);
+				}
+			}
+			//plab += config->maxDur;
+			plab++;
+		}
+	}
+
+}
+
+/*
+ * Added by Ryan
+ *
+ * CRF_StdFeatureMap::tieGradForSingleParam
+ *
+ * Input: *grad - vector of gradient values
+ *        numTiedParam - the number of parameters to be tied for a single value
+ *        start - the start index of the series of parameters
+ *        step - the difference of the indice of each two consecutive tied parameters
+ *               in the series
+ *
+ * The subroutine for tying the gradients of a series of parameters to a single parameter.
+ * The index of parameters in the series increases with the same step value.
+ *
+ */
+void CRF_StdFeatureMap::tieGradForSingleParam(double* grad, QNUInt32 start, QNUInt32 step, QNUInt32 numTiedParam)
+{
+//	if (step <= 0)
+//		return;
+	assert(step > 0);
+	double gradSum = 0.0;
+	QNUInt32 gradID = start;
+	for (QNUInt32 i = 0; i < numTiedParam; i++)
+	{
+		gradSum += grad[gradID];
+		gradID += step;
+	}
+	gradID = start;
+	for (QNUInt32 i = 0; i < numTiedParam; i++)
+	{
+		grad[gradID] = gradSum;
+		gradID += step;
+	}
+}

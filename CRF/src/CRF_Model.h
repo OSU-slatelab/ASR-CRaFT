@@ -31,6 +31,16 @@ protected:
 	CRF_FeatureMap* featureMap;
 	QNUInt32 init_present;
 	nodetype node_type;
+
+	//Added by Ryan
+	QNUInt32 lab_max_dur;
+	// TODO: set up different nActualLabs for different kinds of nodes.
+	QNUInt32 nActualLabs;
+	modeltype model_type;
+	bool use_broken_class_label;
+	QNUInt32 init_iter;
+	double* gradSqrAcc;  // Holds the accumulated gradient square sums for AdaGrad
+
 public:
 	CRF_Model(QNUInt32 num_labs);
 	bool useLog;
@@ -49,13 +59,28 @@ public:
 	virtual void setLambdaAcc(double*);
 	virtual void resetLambda();
 	virtual bool writeToFile(const char* fname);
-	virtual bool writeToFile(const char* fname,double* lam, QNUInt32 ll);
+	virtual bool writeToFile(const char* fname, double* lam, QNUInt32 ll);
 	virtual bool readFromFile(const char* fname);
 	virtual bool readAverageFromFile(const char* fname, int present);
 	virtual void setUseLog(bool isLog);
 	virtual void setUseMask(bool isMasked);
 	virtual void setNodeType();
 	virtual nodetype getNodeType();
+
+	//Added by Ryan
+	virtual void setLabMaxDur(QNUInt32 max_duration);
+	virtual QNUInt32 getLabMaxDur();
+	virtual void setNActualLabs(QNUInt32 num_actual_labs);
+	virtual QNUInt32 getNActualLabs();
+	virtual void setModelType(modeltype mtype);
+	virtual modeltype getModelType();
+	virtual void setBrokenClassLabel(bool useBrokenClass);
+	virtual bool ifUseBrokenClassLabel();
+	virtual void setInitIter(QNUInt32 start_iter);
+	virtual QNUInt32 getInitIter();
+	virtual bool readGradSqrAccFromFile(const char* fname);
+	virtual void setGradSqrAcc(double* grad);
+	virtual double* getGradSqrAcc();
 };
 
 #endif /*CRF_H_*/

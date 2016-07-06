@@ -393,7 +393,13 @@ double CRF_StdNStateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 		return this->offDiagTransMatrix[cur_lab-1];
 	}
 	else {
-		return 0;
+		// Changed by Ryan
+		// In theory, it should return LOG0 instead of 0.
+		// But we would report error here instead.
+		//return 0;
+		string errstr="CRF_StdNStateNode::getTransValue() threw exception: Invalid transition from previous lab (="
+				+ stringify(prev_lab) + ") to current lab (=" + stringify(cur_lab) + ").";
+		throw runtime_error(errstr);
 	}
 }
 
@@ -430,7 +436,12 @@ double CRF_StdNStateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 		return this->offDiagTransMatrix[cur_lab-1]+this->stateArray[cur_lab];
 	}
 	else {
-		return LOG0;
+		// Changed by Ryan
+		// Instead of return LOG0, we would report error here.
+		//return LOG0;
+		string errstr="CRF_StdNStateNode::getFullTransValue() threw exception: Invalid transition from previous lab (="
+				+ stringify(prev_lab) + ") to current lab (=" + stringify(cur_lab) + ").";
+		throw runtime_error(errstr);
 	}
 }
 
@@ -448,7 +459,9 @@ double CRF_StdNStateNode::computeAlphaAlignedSum()
 		Zx=logAdd(&(this->alphaArrayAligned),nLabs);
 	}
 	catch (exception& e) {
-		string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		//changed by Ryan
+		//string errstr="CRF_StdStateNodeLog::computeExpF() threw exception: "+string(e.what());
+		string errstr="CRF_StdNStateNode::computeExpF() threw exception: "+string(e.what());
 		throw runtime_error(errstr);
 	}
 	return Zx;

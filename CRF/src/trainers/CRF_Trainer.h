@@ -28,7 +28,15 @@ protected:
 	CRF_FeatureStreamManager* ftr_strm_mgr;
 	int maxIters;
 	char* weight_fname;
+
+	// Added by Ryan, supporting auto-resume
+	string weight_dir;
+
 	float lr;
+
+	// Added by Ryan, learning rate decaying rate in the range of [0.0, 1.0]
+	float lr_decay_rate;
+
 	QNUInt32 uttRpt;
 	int useLogspace;
 	float gvar;
@@ -47,6 +55,15 @@ public:
 	virtual void setGaussVar(float gvar_in);
 	virtual void setLabelMask(bool useMask);
 	virtual void setObjectiveFunction(objfunctype ofunc);
+
+	// Added by Ryan, supporting auto-resume
+	virtual string getWeightDir();
+	virtual bool touchDoneFileIter(int iter);
+	virtual bool touchDoneFileFinal();
+
+	// Added by Ryan
+	virtual void setLRDecayRate(float lr_decay_rate_in);
+
 };
 
 #endif /*CRF_TRAINER_H_*/

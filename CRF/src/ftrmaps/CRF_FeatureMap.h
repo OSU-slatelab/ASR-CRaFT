@@ -36,6 +36,14 @@ struct CRF_FeatureMap_config {
 	bool useTransBias;
 	double stateBiasVal;
 	double transBiasVal;
+
+	//Added by Ryan, for parameter tying and segmental CRFs
+	//the maximum duration if labels are phone-duration combination
+	QNUInt32 maxDur;
+	//the start index of duration features (binary coded, one-hot features) if any
+	QNUInt32 durFtrStart;
+	//the number of actual labels (without duration)
+	QNUInt32 nActualLabs;
 };
 /*
  * class CRF_FeatureMap
@@ -55,6 +63,10 @@ class CRF_FeatureMap
 protected:
 	CRF_FeatureMap_config* config;
 	QNUInt32 numFtrFuncs;
+
+	//Added by Ryan
+	virtual void tieGradForSingleParam(double* grad, QNUInt32 numParam, QNUInt32 start, QNUInt32 step);
+
 public:
 	CRF_FeatureMap(QNUInt32 nlabs, QNUInt32 nfeas);
 	CRF_FeatureMap(CRF_FeatureMap_config* cnf);
@@ -77,6 +89,10 @@ public:
 	virtual QNUInt32 recalc();
 	virtual string getMapDescriptor(QNUInt32 lambdaNum);
 	virtual void accumulateFeatures(float *ftr_buf, double *accumulator, QNUInt32 lab);
+
+	//Added by Ryan
+	//virtual void tieGradient(double* grad, QNUInt32 maxDur, QNUInt32 durFtrStart);
+	virtual void tieGradient(double* grad);
 };
 
 #endif /*CRF_FEATUREMAP_H_*/

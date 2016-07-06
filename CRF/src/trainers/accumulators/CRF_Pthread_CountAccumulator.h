@@ -10,7 +10,7 @@
 #define CRF_PTHREAD_COUNTACCUMULATOR_H_
 #include "CRF_CountAccumulator.h"
 #include "../../io/CRF_FeatureStreamManager.h"
-#include <pthread>
+#include <pthread.h>
 
 class CRF_Pthread_CountAccumulator_Thread : public CRF_CountAccumulator {
 public:

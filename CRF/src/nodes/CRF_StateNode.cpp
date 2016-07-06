@@ -11,6 +11,16 @@
 #include "CRF_StdStateNode.h"
 #include "CRF_StdNStateNode.h"
 
+// Added by Ryan
+#include "CRF_StdSegStateNode.h"
+#include "CRF_StdSegStateNode_WithoutDurLab.h"
+#include "CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr.h"
+#include "CRF_StdSegNStateNode.h"
+#include "CRF_StdSegNStateNode_WithoutDurLab.h"
+//#include "CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr.h"
+
 /*
  * CRF_StateNode constructor
  *
@@ -72,6 +82,21 @@ double CRF_StateNode::computeAlpha(double* prev_alpha)
 	return 0;
 }
 
+// Added by Ryan
+/*
+ * CRF_StateNode::computeAlpha
+ *
+ * Read alpha vectors of previous nodes directly from prevNode and store the result of the alpha vector in alphaArray.
+ *
+ * Stub function.
+ * Should compute the alpha vector for the forward backward computation for this node.
+ */
+double CRF_StateNode::computeAlpha()
+{
+	return 0;
+}
+
+
 /*
  * CRF_StateNode::computeFirstAlpha
  *
@@ -82,6 +107,19 @@ double CRF_StateNode::computeAlpha(double* prev_alpha)
 double CRF_StateNode::computeFirstAlpha(double* prev_alpha)
 {
 	return this->computeAlpha(prev_alpha);
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::computeFirstAlpha
+ *
+ * Stub function.
+ * Should compute the alpha vector for this node for the special case where the node is the first
+ * node in the sequence.
+ */
+double CRF_StateNode::computeFirstAlpha()
+{
+	return this->computeAlpha();
 }
 
 /*
@@ -96,6 +134,24 @@ double CRF_StateNode::computeFirstAlpha(double* prev_alpha)
  * Should compute the beta vector for the node before this one and store it in result_beta
  */
 double CRF_StateNode::computeBeta(double* result_beta, double scale)
+{
+	return 0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::computeBeta
+ *
+ * Inputs: scale - scaling constant for result_beta array
+ *
+ * Returns:
+ *
+ * Read the beta vectors of next nodes directly from nextNode and store the result of the beta vector in betaArray.
+ *
+ * Stub function.
+ * Should compute the beta vector for the node before this one and store it in result_beta
+ */
+double CRF_StateNode::computeBeta(double scale)
 {
 	return 0;
 }
@@ -141,6 +197,27 @@ void CRF_StateNode::setTailBeta()
  *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
  */
 double CRF_StateNode::computeExpF(double* ExpF, double* grad, double Zx, double* prev_alpha, QNUInt32 prev_lab)
+{
+	return 0;
+}
+
+/*
+ * CRF_StateNode::computeExpF
+ *
+ * Inputs: *ExpF - vector to store expected values of feature functions
+ *         *grad - vector to store computed gradient values
+ *         Zx - normalization constant
+ *         prev_lab - previous node label (transition feature ExpF computation)
+ *
+ * Returns:
+ *
+ * Read alpha vectors of previous nodes directly from prevNode for use in transition feature ExpF computation.
+ *
+ * Stub function.
+ * Should compute gradient and expected values for features in this node and store them in *grad and
+ *   *ExpF vectors respectively.  State features and transition features are computed in the same function.
+ */
+double CRF_StateNode::computeExpF(double* ExpF, double* grad, double Zx, QNUInt32 prev_lab)
 {
 	return 0;
 }
@@ -206,7 +283,11 @@ double CRF_StateNode::computeAlphaAlignedSum()
 void CRF_StateNode::reset(float *fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf_in)
 {
 	//memcpy(fb,this->ftrBuf,sizeof_fb);
-	if (this->ftrBuf != NULL) { delete[] this->ftrBuf; }
+
+	if (this->ftrBuf != NULL) {
+		delete [] this->ftrBuf;
+	}
+
 	this->ftrBuf=fb;
 	this->ftrBuf_size=sizeof_fb;
 	this->label=lab;
@@ -367,11 +448,108 @@ double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab)
 
 CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab, CRF_Model* crf) {
 
+	modeltype mtype = crf->getModelType();
+	if (mtype != STDFRAME)
+	{
+		string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for segment-level model.";
+		throw runtime_error(errstr);
+	}
+
 	if (crf->getFeatureMap()->getNumStates()>1) {
 		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
 	}
 	else {
 		return new CRF_StdStateNode(fb, sizeof_fb, lab, crf);
+	}
+}
+
+// Added by Ryan
+/*
+ *  CRF_StateNode::createStateNode
+ *
+ *  Input: see constructor
+ *
+ *  Factory class: This depends on the fact that the StateVector saves its nodes between
+ *   each pass.  The calls on this function are bounded by the size of the longest sequence
+ *   being examined.
+ *
+ *   This version gives more input for use in CRF_StdSegStateNode
+ *
+ */
+CRF_StateNode* CRF_StateNode::createStateNode(float* fb, QNUInt32 sizeof_fb, QNUInt32 lab,
+			CRF_Model* crf, QNUInt32 nodeMaxDur, QNUInt32 prevNode_nLabs,
+			QNUInt32 nextNode_nActualLabs)
+{
+	if (crf->getFeatureMap()->getNumStates()>1) {
+
+		// multi-state model
+
+//		if (crf->getLabMaxDur() != 1)
+//		{
+//			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdNStateNode only works when maximum label duration is 1.";
+//			throw runtime_error(errstr);
+//		}
+//		return new CRF_StdNStateNode(fb, sizeof_fb, lab, crf);
+
+		modeltype mtype = crf->getModelType();
+
+		if (mtype == STDSEG)
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
+			throw runtime_error(errstr);
+
+			return new CRF_StdSegNStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR)
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: CRF_StdSegNStateNode_WithoutDurLab has not been implemented yet. Use CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr instead.";
+			throw runtime_error(errstr);
+
+			return new CRF_StdSegNStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
+		{
+//			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+		{
+			return new CRF_StdSegNStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for frame-level model.";
+			throw runtime_error(errstr);
+		}
+	}
+	else {
+
+		// single-state model
+
+		modeltype mtype = crf->getModelType();
+
+		if (mtype == STDSEG)
+		{
+			return new CRF_StdSegStateNode(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR)
+		{
+			return new CRF_StdSegStateNode_WithoutDurLab(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
+		{
+			return new CRF_StdSegStateNode_WithoutDurLab_WithoutTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
+		{
+			return new CRF_StdSegStateNode_WithoutDurLab_WithoutSegTransFtr(fb, sizeof_fb, lab, crf, nodeMaxDur, prevNode_nLabs, nextNode_nActualLabs);
+		}
+		else
+		{
+			string errstr="CRF_StateNode::createStateNode() caught exception: the wrong createStateNode() function being called for frame-level model.";
+			throw runtime_error(errstr);
+		}
+		//return new CRF_StdStateNode(fb, sizeof_fb, lab, crf);
 	}
 }
 
@@ -394,3 +572,135 @@ float *CRF_StateNode::getFtrBuffer() {
 QNUInt32 CRF_StateNode::getFtrBufferSize() {
 	return this->ftrBuf_size;
 }
+
+// Added by Ryan
+/*
+ * CRF_StateNode::setPrevNodes
+ *
+ * Stub function.
+ * Set the vector of accessible previous nodes and the number of them.
+ *
+ */
+void CRF_StateNode::setPrevNodes(CRF_StateNode** prev_nodes_ptr, QNUInt32 num_prev_nodes)
+{
+	this->prevNodes = prev_nodes_ptr;
+	this->numPrevNodes = num_prev_nodes;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::setNextNodes
+ *
+ * Stub function.
+ * Set the vector of accessible following nodes and the number of them.
+ *
+ */
+void CRF_StateNode::setNextNodes(CRF_StateNode** next_nodes_ptr, QNUInt32 num_next_nodes)
+{
+	this->nextNodes = next_nodes_ptr;
+	this->numNextNodes = num_next_nodes;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getPrevNodes
+ *
+ * Returns: the vector of accessible previous nodes.
+ *
+ * Accessor function for prevNodes
+ */
+CRF_StateNode** CRF_StateNode::getPrevNodes()
+{
+	return prevNodes;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getNextNodes
+ *
+ * Returns: the vector of accessible following nodes.
+ *
+ * Accessor function for nextNodes
+ */
+CRF_StateNode** CRF_StateNode::getNextNodes()
+{
+	return nextNodes;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getNLabs
+ *
+ * Returns: the number of all labels.
+ *
+ * Accessor function for nLabs
+ */
+QNUInt32 CRF_StateNode::getNLabs()
+{
+	return this->nLabs;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getNumAvailLabs
+ *
+ * Returns: the number of available labels for the current node.
+ *
+ * Accessor function for numAvailLabs
+ */
+QNUInt32 CRF_StateNode::getNumAvailLabs()
+{
+	return this->numAvailLabs;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getTransValue
+ *
+ */
+double CRF_StateNode::getTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getStateValue
+ *
+ */
+double CRF_StateNode::getStateValue(QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getFullTransValue
+ *
+ */
+double CRF_StateNode::getFullTransValue(QNUInt32 prev_lab, QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+// Added by Ryan
+/*
+ * CRF_StateNode::getTempBeta
+ *
+ */
+double CRF_StateNode::getTempBeta(QNUInt32 cur_lab, QNUInt32 dur)
+{
+	return 0.0;
+}
+
+//// Added by Ryan
+///*
+// * CRF_StateNode::deleteFtrBuf
+// *
+// */
+//void CRF_StateNode::deleteFtrBuf()
+//{
+//	if (this->ftrBuf != NULL) {
+//		delete [] this->ftrBuf;
+//	}
+//}
