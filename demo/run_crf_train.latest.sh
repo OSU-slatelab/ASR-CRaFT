@@ -181,7 +181,6 @@ echo "CRFTrain
   crf_label_size=$NUML
   ftr1_file=$FEAF1
   ftr2_file=$FEAF2
-  ftr3_file=$FEAF3
   hardtarget_file=$LABF
   train_sent_range=$START-$END
   cv_sent_range=0
@@ -194,6 +193,7 @@ echo "CRFTrain
   crf_bunch_size=$mb
   threads=$nj
   $TRAIN_ARGS" 2>&1 | tee -a $LOGF
+#  ftr3_file=$FEAF3
 
 #$train_cmd -pe smp $nj -l mem_free=${nj}G $LOGF \
 srun -c $nj --mem=$mem $nodes_opt \
@@ -202,7 +202,6 @@ CRFTrain \
   crf_label_size=$NUML \
   ftr1_file=$FEAF1 \
   ftr2_file=$FEAF2 \
-  ftr3_file=$FEAF3 \
   hardtarget_file=$LABF \
   train_sent_range=$START-$END \
   cv_sent_range=0 \
@@ -215,4 +214,7 @@ CRFTrain \
   crf_bunch_size=$mb \
   threads=$nj \
   $TRAIN_ARGS 2>&1 | tee -a $LOGF
+#  removed for demo
+#  ftr3_file=$FEAF3 \
+
 echo `date` 2>&1 | tee -a $LOGF
