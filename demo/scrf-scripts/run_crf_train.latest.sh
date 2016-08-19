@@ -4,8 +4,8 @@ input_arg=`echo $0 $@`
 
 . ./cmd.sh  # for $train_cmd
 
-. /u/drspeech/share/lib/icsiargs.sh
-ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/
+. /u/drspeech/share/lib/icsiargs.sh #TODO: change to getopt
+ASRCRAFTBASE=/u/stiff/ASR-CRaFT-built/build
 #PATH=$ASRCRAFTBBASE/v0.01h/bin/:$ASRCRAFTBASE/helper/:$PATH; export PATH
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01i/:$ASRCRAFTBASE/helper/:$PATH; export PATH
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01i/paramTying/:$ASRCRAFTBASE/helper/:$PATH; export PATH
@@ -27,8 +27,9 @@ ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail2:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail4.fixmem:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail5.adagrad_resume:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail6.avg_minibatch.non_verbose:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01x_nstate_segmental_parellel.detail6.avg_minibatch.non_verbose:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
+PATH=$ASRCRAFTBASE/CRFTrain:$PATH; export PATH
+LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-1.3.4/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 
 USAGE="Usage: 
 
