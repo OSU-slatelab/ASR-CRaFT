@@ -99,7 +99,7 @@ static struct {
 	char* avg_weight_file;
 	int avg_weight_present;
 
-	// Added by Ryan, for resume training from some existing iteration
+	// Added by Ryan, for resuming training from some existing iteration
 	int init_iter;
 
 	int crf_label_size;
@@ -110,6 +110,15 @@ static struct {
 	char* crf_objective_function;
 	char* crf_train_order;
 	float crf_lr;
+
+	// Added by Ryan, learning rate decaying rate
+	float crf_lr_decay_rate;
+
+	// Added by Ryan, for AdaGrad
+	bool crf_use_adagrad;
+	float crf_adagrad_eta;
+	char* grad_sqr_acc_file;
+
 	int crf_random_seed;
 	char* crf_featuremap;
 	char* crf_featuremap_file;
@@ -212,6 +221,15 @@ QN_ArgEntry argtab[] =
 	{ "crf_epochs", "Maximum number of epochs", QN_ARG_INT, &(config.crf_epochs) },
 	{ "crf_utt_rpt", "Block size to report progress on", QN_ARG_INT, &(config.crf_utt_rpt) },
 	{ "crf_lr", "Learning rate", QN_ARG_FLOAT, &(config.crf_lr) },
+
+	// Added by Ryan, learning rate decaying rate
+	{ "crf_lr_decay_rate", "Learning rate decaying rate", QN_ARG_FLOAT, &(config.crf_lr_decay_rate) },
+
+	// Added by Ryan, for AdaGrad
+	{ "crf_use_adagrad", "Whether to use AdaGrad", QN_ARG_BOOL, &(config.crf_use_adagrad) },
+	{ "crf_adagrad_eta", "The scaling factor (eta) for AdaGrad", QN_ARG_FLOAT, &(config.crf_adagrad_eta) },
+	{ "grad_sqr_acc_file", "Input Gradient Square Sum Accumulator File for AdaGrad", QN_ARG_STR, &(config.grad_sqr_acc_file) },
+
 	{ "crf_random_seed", "Presentation order random seed", QN_ARG_INT, &(config.crf_random_seed) },
 	{ "crf_train_method", "CRF training method (sg|lbfgs)", QN_ARG_STR, &(config.crf_train_method) },
 	{ "crf_objective_function", "Objective function for gradient training (expf|softexpf|ferr)", QN_ARG_STR, &(config.crf_objective_function) },
@@ -316,6 +334,15 @@ static void set_defaults(void) {
 	config.crf_epochs=10;
 	config.crf_utt_rpt=100;
 	config.crf_lr=0.008;
+
+	// Added by Ryan, the learning rate decaying rate is 1 by default (i.e. not decay)
+	config.crf_lr_decay_rate=1.0;
+
+	// Added by Ryan, for AdaGrad
+	config.crf_use_adagrad=false;
+	config.crf_adagrad_eta=1.0;
+	config.grad_sqr_acc_file=NULL;
+
 	config.crf_random_seed=0;
 	config.crf_train_method="sg";
 	config.crf_objective_function="expf";
@@ -420,6 +447,8 @@ int main(int argc, const char* argv[]) {
 		config.init_weight_file = NULL;
 	if (config.avg_weight_file != NULL && strcmp(config.avg_weight_file, "") == 0)
 		config.avg_weight_file = NULL;
+	if (config.grad_sqr_acc_file != NULL && strcmp(config.grad_sqr_acc_file, "") == 0)
+		config.grad_sqr_acc_file = NULL;
 
 	// Added by Ryan, for segmental CRFs
 	if (config.label_maximum_duration <= 0)
@@ -473,34 +502,7 @@ int main(int argc, const char* argv[]) {
 	CRF_FeatureStreamManager* str2=NULL;
 	CRF_FeatureStreamManager* str3=NULL;
 
-	// Added by Ryan, just for debugging
-//	cout << "crf_train_order: " << trn_seq << endl;
-
 	// modified by Ryan, for context features
-//	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file, config.hardtarget_window_offset,
-//							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
-//							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
-//							config.ftr1_delta_order, config.ftr1_delta_win,
-//							config.train_sent_range, config.cv_sent_range,
-//							NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-//	if (strcmp(config.ftr2_file,"") != 0) {
-//		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file, config.hardtarget_window_offset,
-//				(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
-//				config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
-//				config.ftr2_delta_order, config.ftr2_delta_win,
-//				config.train_sent_range, config.cv_sent_range,
-//				NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-//		str1.join(str2);
-//	}
-//	if (strcmp(config.ftr3_file,"") != 0) {
-//		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file, config.hardtarget_window_offset,
-//									(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
-//									config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
-//									config.ftr3_delta_order, config.ftr3_delta_win,
-//									config.train_sent_range, config.cv_sent_range,
-//									NULL,0,0,0,trn_seq,config.crf_random_seed,config.threads);
-//		str1.join(str3);
-//	}
 	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file, config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
 							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
@@ -598,15 +600,27 @@ int main(int argc, const char* argv[]) {
 			cerr << "ERROR! File " << config.init_weight_file << " unable to be opened for reading.  ABORT!" << endl;
 			exit(-1);
 		}
-		if ((config.avg_weight_present >0) && (config.avg_weight_file != NULL)) {
-			bool chkfile=my_crf.readAverageFromFile(config.avg_weight_file,config.avg_weight_present);
-			if (!chkfile) {
-				cerr << "ERROR! File " << config.avg_weight_file << " unable to be opened for reading.  ABORT!" << endl;
-				exit(-1);
-			}
-		}
-		else {
 
+		// Added by Ryan
+		// output the read file to see if it is the same as the original file
+//		string init_weight_file_rewrite = string(config.init_weight_file) + ".rewrite";
+//		my_crf.writeToFile(init_weight_file_rewrite.c_str());
+
+		if (config.avg_weight_present > 0) {
+			if (config.avg_weight_file != NULL) {
+				bool chkfile = my_crf.readAverageFromFile(config.avg_weight_file, config.avg_weight_present);
+				if (!chkfile) {
+					cerr << "ERROR! File " << config.avg_weight_file << " unable to be opened for reading.  ABORT!" << endl;
+					exit(-1);
+				}
+			}
+			if (config.crf_use_adagrad && config.grad_sqr_acc_file != NULL) {
+				bool chkfile = my_crf.readGradSqrAccFromFile(config.grad_sqr_acc_file);
+				if (!chkfile) {
+					cerr << "ERROR! File " << config.grad_sqr_acc_file << " unable to be opened for reading.  ABORT!" << endl;
+					exit(-1);
+				}
+			}
 		}
 
 		// Added by Ryan.
@@ -630,17 +644,41 @@ int main(int argc, const char* argv[]) {
 	default:
 		my_trainer = new CRF_SGTrainer(&my_crf,&str1,config.out_weight_file);
 		((CRF_SGTrainer *)my_trainer)->setObjectiveFunction(ofunc_type);
+
+		// Added by Ryan
+		((CRF_SGTrainer *)my_trainer)->setUseAdagrad(config.crf_use_adagrad);
+		((CRF_SGTrainer *)my_trainer)->setEta(config.crf_adagrad_eta);
+		((CRF_SGTrainer *)my_trainer)->setNThreads(config.threads);
+		((CRF_SGTrainer *)my_trainer)->setMinibatch(config.crf_bunch_size);
+		cout << "MINIBATCH SIZE: " << config.crf_bunch_size << endl;
+		cout << "NUMBER OF THREADS: " << config.threads << endl;
+
 		break;
 	}
 
 	my_trainer->setMaxIters(config.crf_epochs);
 	my_trainer->setLR(config.crf_lr);
+
+	// Added by Ryan
+	my_trainer->setLRDecayRate(config.crf_lr_decay_rate);
+
 	my_trainer->setUttRpt(config.crf_utt_rpt);
 	if (config.crf_gauss_var != 0.0) {
 		my_trainer->setGaussVar(config.crf_gauss_var);
 	}
 
 	try {
+
+		// Added by Ryan, supporting auto-resume
+		// check if the .done.train file has already existed
+		string done_file = my_trainer->getWeightDir() + "/.done.train";
+		//cout << "The done file name: " << done_file << endl;
+		if (access( done_file.c_str(), F_OK ) != -1) {
+			cout << "The done file has already existed: " << done_file << endl;
+			cout << "Finished." << endl;
+			return 0;
+		}
+
 		my_trainer->train();
 	}
 	catch (exception &e) {

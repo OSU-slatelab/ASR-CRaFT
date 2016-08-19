@@ -642,31 +642,6 @@ int main(int argc, const char* argv[]) {
 	CRF_FeatureStreamManager* str3=NULL;
 
 	// modified by Ryan, for context features
-//    CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
-//							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
-//							config.ftr1_delta_order, config.ftr1_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//	if (strcmp(config.ftr2_file,"") != 0) {
-//		str2=new CRF_FeatureStreamManager(1,"ftr2_file",config.ftr2_file,config.ftr2_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr2_width, (size_t) config.ftr2_ftr_start, (size_t) config.ftr2_ftr_count,
-//							config.window_extent, config.ftr2_window_offset, config.ftr2_window_len,
-//							config.ftr2_delta_order, config.ftr2_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//		str1.join(str2);
-//	}
-//	if (strcmp(config.ftr3_file,"") != 0) {
-//		str3=new CRF_FeatureStreamManager(1,"ftr3_file",config.ftr3_file,config.ftr3_format,config.hardtarget_file,config.hardtarget_window_offset,
-//							(size_t) config.ftr3_width, (size_t) config.ftr3_ftr_start, (size_t) config.ftr3_ftr_count,
-//							config.window_extent, config.ftr3_window_offset, config.ftr3_window_len,
-//							config.ftr3_delta_order, config.ftr3_delta_win,
-//							config.crf_eval_range, 0,
-//							NULL,0,0,0,SEQUENTIAL);
-//		str1.join(str3);
-//
-//	}
 	CRF_FeatureStreamManager str1(1,"ftr1_file",config.ftr1_file,config.ftr1_format,config.hardtarget_file,config.hardtarget_window_offset,
 							(size_t) config.ftr1_width, (size_t) config.ftr1_ftr_start, (size_t) config.ftr1_ftr_count,
 							config.window_extent, config.ftr1_window_offset, config.ftr1_window_len,
@@ -756,46 +731,28 @@ int main(int argc, const char* argv[]) {
 	}
 
 
-	// just for debugging
-	//cout << "Before new CRF_LatticeBuilder." << endl;
-
 	// changed by Ryan
 //	CRF_LatticeBuilder lb(crf_ftr_str,&my_crf);
 	CRF_LatticeBuilder* lb = NULL;
 	if (mtype == STDFRAME)
 	{
 		lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);
-
-		// just for debugging
-//		cout << "lb = new CRF_LatticeBuilder(crf_ftr_str,&my_crf);" << endl;
 	}
 	else if (mtype == STDSEG)
 	{
 		lb = new CRF_LatticeBuilder_StdSeg(crf_ftr_str,&my_crf);
-
-		// just for debugging
-//		cout << "lb = new CRF_LatticeBuilder_StdSeg(crf_ftr_str,&my_crf);" << endl;
 	}
 	else if (mtype == STDSEG_NO_DUR)
 	{
 		lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab(crf_ftr_str,&my_crf);
-
-		// just for debugging
-//		cout << "lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab(crf_ftr_str,&my_crf);" << endl;
 	}
 	else if (mtype == STDSEG_NO_DUR_NO_TRANSFTR)
 	{
 		lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr(crf_ftr_str,&my_crf);
-
-		// just for debugging
-//		cout << "lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr(crf_ftr_str,&my_crf);" << endl;
 	}
 	else if (mtype == STDSEG_NO_DUR_NO_SEGTRANSFTR)
 	{
 		lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr(crf_ftr_str,&my_crf);
-
-		// just for debugging
-//		cout << "lb = new CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr(crf_ftr_str,&my_crf);" << endl;
 	}
 	else
 	{
@@ -835,9 +792,6 @@ int main(int argc, const char* argv[]) {
 			int nodeCnt=0;
 			if (config.crf_states == 1) {
 
-				// just for debugging
-//				cout << "Before lb.buildLattice." << endl;
-
 				// Changed by Ryan
 				//lb.buildLattice(phn_lat,alignMode,lab_lat);
 //				lb.buildLattice(phn_lat,alignMode,lab_lat, false);
@@ -849,42 +803,24 @@ int main(int argc, const char* argv[]) {
 				// due to the heritance relationships!
 				if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*>(lb))
 				{
-					// just for debugging
-//					cout << "((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
-
 					((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);
 				}
 				else if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab*>(lb))
 				{
-					// just for debugging
-//					cout << "((CRF_LatticeBuilder_StdSeg_WithoutDurLab*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
-
 					((CRF_LatticeBuilder_StdSeg_WithoutDurLab*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);
 				}
 				else if (dynamic_cast<CRF_LatticeBuilder_StdSeg*>(lb))
 				{
-					// just for debugging
-//					cout << "((CRF_LatticeBuilder_StdSeg*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
-
 					((CRF_LatticeBuilder_StdSeg*)lb)->buildLattice(phn_lat,alignMode,lab_lat, false);
 				}
 				else
 				{
-					// just for debugging
-//					cout << "lb->buildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
-
 					lb->buildLattice(phn_lat,alignMode,lab_lat, false);
 				}
-
-				// just for debugging
-//				cout << "After lb.buildLattice." << endl;
 			}
 			else {
 				if (dynamic_cast<CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*>(lb))
 				{
-					// just for debugging
-//					cout << "((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->nStateBuildLattice(phn_lat,alignMode,lab_lat, false);" << endl;
-
 					nodeCnt=((CRF_LatticeBuilder_StdSeg_WithoutDurLab_WithoutSegTransFtr*)lb)->nStateBuildLattice(phn_lat,alignMode,lab_lat, false);
 				}
 				else {
@@ -937,27 +873,14 @@ int main(int argc, const char* argv[]) {
 				{
 	  				StateId state_id = siter.Value();
 
-					// just for debugging
-//					cout << "segid: " << segid << ", FST state id: " << state_id << endl;
-
 	  				//Iterates over state state_id's arcs.
 	  				for (ArcIterator<StdFst> aiter(*shortest_fst, state_id); !aiter.Done(); aiter.Next())
 					{
 	  					const StdArc &arc = aiter.Value();
 	  					labarr[frm_no]=arc.olabel-1;
-
-	  					// just for debugging
-//						cout << "segid: " << segid << ", FST arc label: " << arc.olabel-1 << ", frame no: " << frm_no << endl;
-
 	  					frm_no++;
 					}
 				}
-
-				// just for debugging
-//				for (QNUInt32 labid = 0; labid < num_labels; labid++)
-//				{
-//					cout << "labarr[" << labid << "] = " << labarr[labid] << endl;
-//				}
 
 				labout->write_labs(num_labels,labarr);
 				labout->doneseg(segid);
