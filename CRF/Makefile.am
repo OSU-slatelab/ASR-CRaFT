@@ -102,4 +102,5 @@ pkginclude_HEADERS = src/trainers/gradbuilders/CRF_NewGradBuilder.h \
 	src/decoders/CRF_ViterbiDecoder_StdSeg_NoSegTransFtr.h \
 	src/CRF.h \
 	src/CRF_Model.h
-
+libCRF_a_CPPFLAGS = -I$(QN_HEADERS)
+libCRF_a_LIBADD = $(LIBQUICKNET3) 

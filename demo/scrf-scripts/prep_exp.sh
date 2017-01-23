@@ -26,6 +26,7 @@ cd $exp_dir
 ln -s $conf conf
 ln -s $script_dir scripts
 
+#FIXME: make this portable
 cmd_path=/u/hey/src/kaldi/myrecipes/gen
 ln -s $cmd_path/cmd_slurm.sh
 ln -s $cmd_path/cmd_runpl.sh

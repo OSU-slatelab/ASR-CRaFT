@@ -8,7 +8,9 @@
  * Follows command line interface model for ICSI Quicknet.
  */
 
-#include "QN_config.h"
+#include <unistd.h>
+
+#include "quicknet3/QN_config.h"
 #include "CRF.h"
 #include "fst/fstlib.h"
 #include "CRF_Model.h"

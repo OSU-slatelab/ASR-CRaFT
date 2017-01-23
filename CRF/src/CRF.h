@@ -27,7 +27,7 @@ extern "C" {
 #include "cblas.h"
 }
 
-#include "QuickNet.h"
+#include "quicknet3/QuickNet.h"
 
 
 #include "utils/CRF_LogMath.h"

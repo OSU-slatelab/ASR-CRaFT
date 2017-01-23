@@ -16,9 +16,9 @@
 #define CRF_LAB_BAD (0xffffffff)
 #endif
 
-#include "QuickNet.h"
-#include "QN_streams.h"
-#include "QN_seqgen.h"
+#include "quicknet3/QuickNet.h"
+#include "quicknet3/QN_streams.h"
+#include "quicknet3/QN_seqgen.h"
 
 #include "../CRF.h"
 

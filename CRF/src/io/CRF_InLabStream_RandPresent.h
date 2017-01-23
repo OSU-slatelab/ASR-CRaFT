@@ -11,8 +11,8 @@
  * package for compatibility with ICSI Quicknet.
  */
 
-#include <QN_streams.h>
-#include <QN_seqgen.h>
+#include <quicknet3/QN_streams.h>
+#include <quicknet3/QN_seqgen.h>
 #include "CRF_FeatureStream.h"
 
 /*

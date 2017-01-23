@@ -5,27 +5,19 @@ set -o pipefail
 
 input_arg=`echo $0 $@`
 
-. /u/drspeech/share/lib/icsiargs.sh
+. /u/drspeech/share/lib/icsiargs.sh #TODO: switch to getopt
 
-ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/
+ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/ #TODO: set to bindir
 ICSIPATH=/u/drspeech/opt/icsi-scenic/20110715a/x86_64/bin/
-#PATH=$ASRCRAFTBBASE/v0.01h/bin/:$ASRCRAFTBASE/helper/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01i/:$ASRCRAFTBASE/helper/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01j_NewDurRep/:$ASRCRAFTBASE/helper/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01j_NewDurRep/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01k_segmental/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01l_segmental_WithoutDurLab/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01m_all_segmental_model/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01l_all_segmental_model_with_boundary_feature_fast_model/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01l_all_segmental_model_with_boundary_feature_fast_model/fast_model_no_mem_leak_with_init_iter/:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01o_individual_segmental_features/sample-avg-max-min-dur_debugNStateDecodeFst:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01o_individual_segmental_features/sample-avg-max-min-dur_debugNStateSegDecodeFst:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01u_nstate_segmental_correct_fstdecode_all_one_file:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01v_nstate_segmental_correct_maxv_all_one_file:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01w_nstate_segmental_done_file:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01.latest:$ASRCRAFTBASE/helper/:/data/data2/hey/SegmentalCRF/misc/:$ICSIPATH:$PATH; export PATH
-#LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-1.1/x86_64/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
-LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-beta-20080317/fst/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+
+#SegmentalCRF/misc needed for .pl scripts; TODO: bring into project
+PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01.latest: \
+    $ASRCRAFTBASE/helper/: \
+    /data/data2/hey/SegmentalCRF/misc/: \
+    $ICSIPATH: \
+    $PATH; export PATH #FIXME
+# should be unnecessary to set LD_LIBRARY_PATH, since rpath should be set if necessary
+#LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-beta-20080317/fst/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 
 USAGE="Usage:
 
@@ -260,6 +252,7 @@ for i in `seq $start $step $end`; do
 	crf_transftr_end=$TRANS_FTR_END \
 	$DECODE_ARGS" 2>&1 | tee -a $LOGF
 
+      #TODO: cmd.sh
       srun -c $nj --mem=$mem $nodes_opt \
       CRFFstDecode \
 	ftr1_file=$DATASET_FEAF1 \

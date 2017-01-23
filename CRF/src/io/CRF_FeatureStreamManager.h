@@ -11,7 +11,7 @@
  * package for compatibility with ICSI Quicknet.
  */
 
-#include <QuickNet.h>
+#include <quicknet3/QuickNet.h>
 #include <iostream>
 #include <stdio.h>
 

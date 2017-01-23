@@ -30,9 +30,15 @@ configure
 depcomp
 install-sh
 missing
+config.guess
+config.sub
 
 # CMake generated files
 **/Makefile
 **/CMakeFiles
 **/CMakeCache.txt
 **/cmake_install.cmake
+
+#gnulib files
+/config.rpath
+

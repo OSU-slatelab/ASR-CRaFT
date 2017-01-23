@@ -11,12 +11,37 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects foreign])
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
+gl_EARLY
 AC_PROG_RANLIB
 AM_PROG_AR
 # libtool
 # LT_INIT([dlopen])
 
 # Checks for libraries.
+
+# gnulib
+gl_INIT
+#AC_CONFIG_MACRO_DIRS([m4])
+
+AC_LIB_LINKFLAGS([quicknet3])
+AC_LIB_LINKFLAGS([fst])
+QN_HEADERS=`echo $LIBQUICKNET3 | sed 's_lib/libquicknet3.a$_include/quicknet3_g'`
+AC_SUBST([QN_HEADERS])
+
+echo "CPPFLAGS"
+echo $CPPFLAGS
+echo $INCQUICKNET3
+
+AC_ARG_WITH([kaldi-timit-s5],
+	    AS_HELP_STRING([--with-kaldi-timit-s5=DIR],
+	    [optional directory location of an installed kaldi timit s5 experiment, for running the demo]),
+	    [],
+	    [with_kaldi_timit_s5=no])
+TIMITDIR=
+AS_IF([test "x$with_kaldi_timit_s5" != xno],
+	    [AC_SUBST([TIMITDIR], [$with_kaldi_timit_s5])])
+
+echo $TIMITDIR
 
 # Checks for header files.
 #AC_CHECK_HEADERS([malloc.h memory.h stdlib.h string.h sys/time.h])
@@ -32,12 +57,15 @@ AM_PROG_AR
 #AC_FUNC_MALLOC
 #AC_CHECK_FUNCS([gettimeofday memset sqrt])
 
-# for libtool
-#AC_CONFIG_MACRO_DIRS([m4])
 
+# for libtool
+
+#		 lib/Makefile
 AC_CONFIG_FILES([CRF/Makefile
 		 CRFDecode/Makefile
                  CRFFstDecode/Makefile
                  CRFTrain/Makefile
-                 Makefile])
+		 demo/Makefile
+		 demo/kaldi-mods/Makefile
+		 Makefile])
 AC_OUTPUT
