@@ -22,16 +22,22 @@ build
 
 # autotools generated files
 **/Makefile.in
-aclocal.m4
-ar-lib
-autom4te.cache
-compile
-configure
-depcomp
-install-sh
-missing
-config.guess
-config.sub
+**/aclocal.m4
+**/ar-lib
+**/autom4te.cache
+**/compile
+**/configure
+**/depcomp
+**/install-sh
+**/missing
+**/config.guess
+**/config.sub
+**/config.log
+**/config.status
+**/.deps/
+**/stamp-h1
+**/config.h
+**/config.h.in
 
 # CMake generated files
 **/Makefile
@@ -40,5 +46,11 @@ config.sub
 **/cmake_install.cmake
 
 #gnulib files
-/config.rpath
-
+**/config.rpath
+**/m4/gnulib-comp.m4
+**/m4/gnulib-common.m4
+**/m4/00gnulib.m4
+**/m4/gnulib-tool.m4
+**/m4/lib-ld.m4
+**/m4/lib-link.m4
+**/m4/lib-prefix.m4
