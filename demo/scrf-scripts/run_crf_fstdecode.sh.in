@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+. @timitdir@/cmd.sh  # for $train_cmd
+
 input_arg=`echo $0 $@`
 
 #. /u/drspeech/share/lib/icsiargs.sh # replaced by getopt
@@ -185,6 +187,8 @@ if [ -z "$mem" ]; then
   echo "mem is set to default: $mem"
 fi
 
+memarg="mem_free=$mem"
+
 [ ! -z "$nodes" ] && nodes_opt="-w $nodes" || nodes_opt=
 
 if [ -z "$autoresume" ]; then
@@ -352,8 +356,8 @@ for i in `seq $start $step $end`; do
 	crf_transftr_end=$TRANS_FTR_END \
 	$DECODE_ARGS" 2>&1 | tee -a $LOGF
 
-      #TODO: cmd.sh
-      srun -c $nj --mem=$mem $nodes_opt \
+      #srun -c $nj --mem=$mem $nodes_opt \
+      $train_cmd -pe smp $nj -l $memarg $nodes_opt $LOGF \
       CRFFstDecode \
 	ftr1_file=$DATASET_FEAF1 \
 	ftr1_window_len=$FEAF1_WINLEN \
@@ -383,7 +387,7 @@ for i in `seq $start $step $end`; do
 	crf_stateftr_end=$STATE_FTR_END \
 	crf_transftr_start=$TRANS_FTR_START \
 	crf_transftr_end=$TRANS_FTR_END \
-	$DECODE_ARGS 2>&1 | tee -a $LOGF
+	$DECODE_ARGS 2>&1 #| tee -a $LOGF
       echo `date` 2>&1 | tee -a $LOGF
 
     fi # if [ "$skipdecode" == 0 ]

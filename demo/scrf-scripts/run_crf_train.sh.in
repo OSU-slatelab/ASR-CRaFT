@@ -2,9 +2,9 @@
 
 input_arg=`echo $0 $@`
 
-. ./cmd.sh  # for $train_cmd
+. @timitdir@/cmd.sh  # for $train_cmd
 
-. /u/drspeech/share/lib/icsiargs.sh #TODO: change to getopt
+#. /u/drspeech/share/lib/icsiargs.sh #supplanted by getopt
 #ASRCRAFTBASE=/u/stiff/ASR-CRaFT-built/build # Not needed; executables installed to bin
 #PATH=$ASRCRAFTBASE/CRFTrain:$PATH; export PATH ## No longer needed; executables installed to bin
 # should now be unnecessary to set LD_LIBRARY_PATH, since executables have rpath set if necessary
@@ -203,6 +203,8 @@ if [ -z "$mem" ]; then
   echo "mem is set to default: $mem"
 fi
 
+memarg="mem_free=$mem"
+
 [ ! -z "$nodes" ] && nodes_opt="-w $nodes" || nodes_opt=
 
 if [ ! -z "$lr" ]; then
@@ -288,8 +290,8 @@ echo "CRFTrain
   $TRAIN_ARGS" 2>&1 | tee -a $LOGF
 #  ftr3_file=$FEAF3
 
-#$train_cmd -pe smp $nj -l mem_free=${nj}G $LOGF \
-srun -c $nj --mem=$mem $nodes_opt \
+#srun -c $nj --mem=$mem $nodes_opt \
+$train_cmd -pe smp $nj -l $memarg $nodes_opt $LOGF \
 CRFTrain \
   out_weight_file=$WF \
   crf_label_size=$NUML \
@@ -306,7 +308,7 @@ CRFTrain \
   use_broken_class_label=$USEBROKENCLASSLABEL \
   crf_bunch_size=$mb \
   threads=$nj \
-  $TRAIN_ARGS 2>&1 | tee -a $LOGF
+  $TRAIN_ARGS 2>&1 #| tee -a $LOGF
 #  removed for demo
 #  ftr3_file=$FEAF3 \
 
