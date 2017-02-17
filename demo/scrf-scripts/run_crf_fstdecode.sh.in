@@ -10,7 +10,6 @@ input_arg=`echo $0 $@`
 #ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/ #not needed; assuming installation put executables on PATH
 #ICSIPATH=/u/drspeech/opt/icsi-scenic/20110715a/x86_64/bin/ #ditto
 
-#SegmentalCRF/misc needed for .pl scripts; TODO: bring into project
 #PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01.latest: \
     #$PATH; export PATH # No longer needed; PATH = PATH.
     # /data/data2/hey/SegmentalCRF/misc/: # was on PATH; not needed since scripts are installed
@@ -46,13 +45,13 @@ $0
   --testsets=[\"cv core\"(default)|cv|dt|et|core|enh|...]
   --nj=[number of jobs, default is 1]
   --mem=[memory requirement, default=nj*938 (MB), optional]
-  --nodes=[machines to allocate the jobs, e.g. feldspar, optional]
+  --nodes=[machines/hosts to allocate the jobs, optional]
   --autoresume=[1(default)|0]
   --skipdecode=[0(default)|1]
   -h  [print this help message]
 "
 
-parsed_opts= `getopt -o h --long argfile::,lr::,wt_pre::,segmodel::,start::,end::,step::,testsets::,nj::,\
+parsed_opts= `getopt -o h --long argfile::,lr::,eta::,wt_pre::,segmodel::,start::,end::,step::,testsets::,nj::,\
 mem::,nodes::,autoresume::,skipdecode:: -n "$0" -- "$@"`
 eval set -- "$parsed_opts"
 
@@ -70,6 +69,11 @@ while true; do
 	    case "$2" in
 		"") shift 2 ;;
 		*) lr=$2; shift 2 ;;
+	    esac ;;
+	--eta)
+	    case "$2" in
+		"") shift 2 ;;
+		*) eta=$2; shift 2 ;;
 	    esac ;;
 	--wt_pre)
 	    case "$2" in
@@ -384,35 +388,18 @@ for i in `seq $start $step $end`; do
 
     fi # if [ "$skipdecode" == 0 ]
 
-    #perl vit2mlf.pl olist=$OLIST vit=$OUTF > $MLF
-
     echo "$SEGMODEL"
     dur_opt=
     #if [ "$SEGMODEL" == "stdseg" -o "$SEGMODEL" == "stdseg_no_dur" -o "$SEGMODEL" == "stdseg_no_dur_no_transftr" -o "$SEGMODEL" == "stdseg_no_dur_no_segtransftr" ]; then
     if [ $MAXDUR -eq 1 ]; then
       labcat -ip ilab -op ascii $OUTF > $OUTPHNTXT
     else
-      labcat -ip ilab -op ascii $OUTF | ilab_PhnDur2Phn.pl -m $PHNDURLABMAP > $OUTPHNTXT
-      labcat -ip ilab -op ascii $OUTF | ilab_PhnDur2Dur.pl -m $PHNDURLABMAP > $OUTDURTXT
+      labcat -ip ilab -op ascii $OUTF | @pkglibexecdir@/util/ilab_PhnDur2Phn.pl -m $PHNDURLABMAP > $OUTPHNTXT
+      labcat -ip ilab -op ascii $OUTF | @pkglibexecdir@/util/ilab_PhnDur2Dur.pl -m $PHNDURLABMAP > $OUTDURTXT
       dur_opt="-d $OUTDURTXT"
     fi
-    #ilab2mlf.pl -s $SYMSF -o $DATASET_OLIST < $OUTPHNTXT > $MLF
-    timit_score.new.sh -s $SYMSF -o $DATASET_OLIST -n $NSTATES $dur_opt $dataset $OUTPHNTXT
 
-    #if [ $NSTATES == "3" ]; then
-    #  #mapresults_3state_1state.pl <$MLF | map54to39.pl >$MAP39MLF
-    #  mapresults_3state_1state.pl <$MLF >$SINGLESTATEMLF
-    #elif [ $NSTATES == "1" ]; then
-    #  ln -fsn `basename $MLF` $SINGLESTATEMLF
-    #else
-    #  echo "Error: NSTATES ($NSTATES) not equal to 1 or 3." 1>&2
-    #  exit 1
-    #fi
-
-    ##map54to39.pl $MLF >$MAP39MLF
-    #map54to39.pl $SINGLESTATEMLF >$MAP39MLF
-
-    #HResults -I $DATASET_REFMLF /dev/null $MAP39MLF > $ODIR/${dataset}_results.txt
+    @pkglibexecdir@/util/timit_score.sh -s $SYMSF -o $DATASET_OLIST -n $NSTATES $dur_opt $dataset $OUTPHNTXT
 
     touch $ODIR/.done
 

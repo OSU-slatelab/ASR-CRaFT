@@ -5,36 +5,151 @@ input_arg=`echo $0 $@`
 . ./cmd.sh  # for $train_cmd
 
 . /u/drspeech/share/lib/icsiargs.sh #TODO: change to getopt
-ASRCRAFTBASE=/u/stiff/ASR-CRaFT-built/build #TODO: set to bindir
-PATH=$ASRCRAFTBASE/CRFTrain:$PATH; export PATH
+#ASRCRAFTBASE=/u/stiff/ASR-CRaFT-built/build # Not needed; executables installed to bin
+#PATH=$ASRCRAFTBASE/CRFTrain:$PATH; export PATH ## No longer needed; executables installed to bin
 # should now be unnecessary to set LD_LIBRARY_PATH, since executables have rpath set if necessary
 #LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-1.3.4/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+
+argfile=
+lr=
+lr_decay=
+eta=
+wt_pre=
+SEGMODEL=
+autoresume=
+mb=
+nj=
+mem=
+nodes=
+init_weight=
+avg_weight=
+grad_sqr_acc=
+present=
+start_iter=
 
 USAGE="Usage: 
 
 $0 
-  argfile=[arg file, default=./conf]
-  lr=[learning rate]
-  lr_decay=[learning rate decaying factor, default=1.0]
-  eta=[AdaGrad scaling factor, default=1.0. Only one of eta and lr can be set, based on whether to use AdaGrad.]
-  wt_pre=[weight dir prefix, default=./weights]
-  SEGMODEL=[stdframe(default)|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr|stdseg_no_dur_no_segtransftr]
-  autoresume=[1(default)|0]
-  mb=[minibatch size, default is 1]
-  nj=[number of jobs, default is 1]
-  mem=[memory requirement, default=nj*938 (MB), optional]
-  nodes=[machines to allocate the jobs, e.g. feldspar, optional]
-  init_weight=[init weight file, optional]
-  avg_weight=[avg_weight_file, optional]
-  grad_sqr_acc=[grad_sqr_acc_file, optional]
-  present=[avg_weight_presentation, optional]
-  start_iter=[starting training iteration, optional]
+  --argfile=[arg file, default=./conf]
+  --lr=[learning rate]
+  --lr_decay=[learning rate decaying factor, default=1.0]
+  --eta=[AdaGrad scaling factor, default=1.0. Only one of eta and lr can be set, based on whether to use AdaGrad.]
+  --wt_pre=[weight dir prefix, default=./weights]
+  --segmodel=[stdframe(default)|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr|stdseg_no_dur_no_segtransftr]
+  --autoresume=[1(default)|0]
+  --mb=[minibatch size, default is 1]
+  --nj=[number of jobs, default is 1]
+  --mem=[memory requirement, default=nj*938 (MB), optional]
+  --nodes=[machines to allocate the jobs, e.g. feldspar, optional]
+  --init_weight=[init weight file, optional]
+  --avg_weight=[avg_weight_file, optional]
+  --grad_sqr_acc=[grad_sqr_acc_file, optional]
+  --present=[avg_weight_presentation, optional]
+  --start_iter=[starting training iteration, optional]
+  -h [print this help message]
 "
 
-if [ ! -z "$1" ] && [ "$1" == "-h" ]; then
-  echo "$USAGE"
-  exit 1
-fi
+parsed_opts= `getopt -o h --long argfile::,lr::,lr_decay::,eta::,wt_pre::,segmodel::,autoresume::,mb::,nj::,\
+mem::,nodes::,init_weight::,avg_weight::,grad_sqr_acc::,present::,start_iter:: -n "$0" -- "$@"`
+eval set -- "$parsed_opts"
+
+while true; do
+    case "$1" in
+	-h)
+	    echo "$USAGE"
+	    exit ;;
+	--argfile)
+	    case "$2" in
+		"") shift 2 ;;
+		*) argfile=$2; shift 2 ;;
+	    esac ;;
+	--lr)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lr=$2; shift 2 ;;
+	    esac ;;
+	--lr_decay)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lr_decay=$2; shift 2 ;;
+	    esac ;;
+	--eta)
+	    case "$2" in
+		"") shift 2 ;;
+		*) eta=$2; shift 2 ;;
+	    esac ;;
+	--wt_pre)
+	    case "$2" in
+		"") shift 2 ;;
+		*) wt_pre=$2; shift 2 ;;
+	    esac ;;
+	--segmodel)
+	    case "$2" in
+		"") shift 2 ;;
+		*) SEGMODEL=$2; shift 2 ;;
+	    esac ;;
+	--autoresume)
+	    case "$2" in
+		"") shift 2 ;;
+		*) autoresume=$2; shift 2 ;;
+	    esac ;;
+	--mb)
+	    case "$2" in
+		"") shift 2 ;;
+		*) mb=$2; shift 2 ;;
+	    esac ;;
+	--nj)
+	    case "$2" in
+		"") shift 2 ;;
+		*) nj=$2; shift 2 ;;
+	    esac ;;
+	--mem)
+	    case "$2" in
+		"") shift 2 ;;
+		*) mem=$2; shift 2 ;;
+	    esac ;;
+	--nodes)
+	    case "$2" in
+		"") shift 2 ;;
+		*) nodes=$2; shift 2 ;;
+	    esac ;;
+	--init_weight)
+	    case "$2" in
+		"") shift 2 ;;
+		*) init_weight=$2; shift 2 ;;
+	    esac ;;
+	--avg_weight)
+	    case "$2" in
+		"") shift 2 ;;
+		*) avg_weight=$2; shift 2 ;;
+	    esac ;;
+	--grad_sqr_acc)
+	    case "$2" in
+		"") shift 2 ;;
+		*) grad_sqr_acc=$2; shift 2 ;;
+	    esac ;;
+	--present)
+	    case "$2" in
+		"") shift 2 ;;
+		*) present=$2; shift 2 ;;
+	    esac ;;
+	--start_iter)
+	    case "$2" in
+		"") shift 2 ;;
+		*) start_iter=$2; shift 2 ;;
+	    esac ;;
+	--)
+	    shift; break;;
+	*)
+	    echo "Unknown option $1"; exit 1 ;;
+    esac
+done
+
+
+#if [ ! -z "$1" ] && [ "$1" == "-h" ]; then
+#  echo "$USAGE"
+#  exit 1
+#fi
 
 if [ -z "$argfile" ]; then
   argfile=conf
@@ -108,7 +223,6 @@ LOGF=$WBASE/crf.sgtrain.log
 TrainingResumeParam=
 if [ -z $init_weight ] && [ -z $avg_weight ]; then
   if [ -z $start_iter ] && [ $autoresume -eq 1 ]; then
-    #start_iter=`/data/data2/hey/SegmentalCRF/misc/getStartIterForTrain.sh WBASE=$WBASE WFPREFIX=$WFPREFIX`
     iter=0
     while [ 1 ]; do
       if [ ! -f $WBASE/.done.train.i$iter ]; then
@@ -138,7 +252,6 @@ if [ -z $init_weight ] && [ -z $avg_weight ]; then
           fi
         fi
 
-        #TrainingResumeParam=`/data/data2/hey/SegmentalCRF/misc/getTrainingResumeParam.pl -w $WF -s $start_iter -n $utts_per_iter`
         TrainingResumeParam="init_weight_file=$init_weight avg_weight_file=$avg_weight avg_weight_present=$present grad_sqr_acc_file=$grad_sqr_acc init_iter=$start_iter"
       fi
     fi
