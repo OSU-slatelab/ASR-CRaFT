@@ -5,43 +5,139 @@ set -o pipefail
 
 input_arg=`echo $0 $@`
 
-. /u/drspeech/share/lib/icsiargs.sh #TODO: switch to getopt
+#. /u/drspeech/share/lib/icsiargs.sh # replaced by getopt
 
-ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/ #TODO: set to bindir
-ICSIPATH=/u/drspeech/opt/icsi-scenic/20110715a/x86_64/bin/
+#ASRCRAFTBASE=/u/drspeech/opt/ASR-CRaFT/ #not needed; assuming installation put executables on PATH
+#ICSIPATH=/u/drspeech/opt/icsi-scenic/20110715a/x86_64/bin/ #ditto
 
 #SegmentalCRF/misc needed for .pl scripts; TODO: bring into project
-PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01.latest: \
-    $ASRCRAFTBASE/helper/: \
-    /data/data2/hey/SegmentalCRF/misc/: \
-    $ICSIPATH: \
-    $PATH; export PATH #FIXME
+#PATH=/data/data2/hey/SegmentalCRF/bin/ASR-CRaFT_v0.01.latest: \
+    #$PATH; export PATH # No longer needed; PATH = PATH.
+    # /data/data2/hey/SegmentalCRF/misc/: # was on PATH; not needed since scripts are installed
 # should be unnecessary to set LD_LIBRARY_PATH, since rpath should be set if necessary
 #LD_LIBRARY_PATH=/u/drspeech/opt/OpenFst-beta-20080317/fst/lib/:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+
+argfile=
+lr=
+eta=
+wt_pre=
+SEGMODEL=
+start=
+end=
+step=
+testsets=
+nj=
+mem=
+nodes=
+autoresume=
+skipdecode=
 
 USAGE="Usage:
 
 $0
-  argfile=[arg file, default=./conf]
-  lr=[learning rate]
-  eta=[AdaGrad scaling factor, default=1.0. Only one of eta and lr can be set, based on whether to use AdaGrad.]
-  wt_pre=[weight dir]
-  SEGMODEL=[stdframe(default)|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr|stdseg_no_dur_no_segtransftr]
-  start=[start iter, default=0]
-  end=[end iter, default=the last available iteration]
-  step=[iter step, default=1]
-  testsets=[\"cv core\"(default)|cv|dt|et|core|enh|...]
-  nj=[number of jobs, default is 1]
-  mem=[memory requirement, default=nj*938 (MB), optional]
-  nodes=[machines to allocate the jobs, e.g. feldspar, optional]
-  autoresume=[1(default)|0]
-  skipdecode=[0(default)|1]
+  --argfile=[arg file, default=./conf]
+  --lr=[learning rate]
+  --eta=[AdaGrad scaling factor, default=1.0. Only one of eta and lr can be set, based on whether to use AdaGrad.]
+  --wt_pre=[weight dir]
+  --segmodel=[stdframe(default)|stdseg|stdseg_no_dur|stdseg_no_dur_no_transftr|stdseg_no_dur_no_segtransftr]
+  --start=[start iter, default=0]
+  --end=[end iter, default=the last available iteration]
+  --step=[iter step, default=1]
+  --testsets=[\"cv core\"(default)|cv|dt|et|core|enh|...]
+  --nj=[number of jobs, default is 1]
+  --mem=[memory requirement, default=nj*938 (MB), optional]
+  --nodes=[machines to allocate the jobs, e.g. feldspar, optional]
+  --autoresume=[1(default)|0]
+  --skipdecode=[0(default)|1]
+  -h  [print this help message]
 "
 
-if [ ! -z "$1" ] && [ "$1" == "-h" ]; then
-  echo "$USAGE"
-  exit
-fi
+parsed_opts= `getopt -o h --long argfile::,lr::,wt_pre::,segmodel::,start::,end::,step::,testsets::,nj::,\
+mem::,nodes::,autoresume::,skipdecode:: -n "$0" -- "$@"`
+eval set -- "$parsed_opts"
+
+while true; do
+    case "$1" in
+	-h)
+	    echo "$USAGE"
+	    exit ;;
+	--argfile)
+	    case "$2" in
+		"") shift 2 ;;
+		*) argfile=$2; shift 2 ;;
+	    esac ;;
+	--lr)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lr=$2; shift 2 ;;
+	    esac ;;
+	--wt_pre)
+	    case "$2" in
+		"") shift 2 ;;
+		*) wt_pre=$2; shift 2 ;;
+	    esac ;;
+	--segmodel)
+	    case "$2" in
+		"") shift 2 ;;
+		*) SEGMODEL=$2; shift 2 ;;
+	    esac ;;
+	--start)
+	    case "$2" in
+		"") shift 2 ;;
+		*) start=$2; shift 2 ;;
+	    esac ;;
+	--end)
+	    case "$2" in
+		"") shift 2 ;;
+		*) end=$2; shift 2 ;;
+	    esac ;;
+	--step)
+	    case "$2" in
+		"") shift 2 ;;
+		*) step=$2; shift 2 ;;
+	    esac ;;
+	--testsets)
+	    case "$2" in
+		"") shift 2 ;;
+		*) testsets=$2; shift 2 ;;
+	    esac ;;
+	--nj)
+	    case "$2" in
+		"") shift 2 ;;
+		*) nj=$2; shift 2 ;;
+	    esac ;;
+	--mem)
+	    case "$2" in
+		"") shift 2 ;;
+		*) mem=$2; shift 2 ;;
+	    esac ;;
+	--nodes)
+	    case "$2" in
+		"") shift 2 ;;
+		*) nodes=$2; shift 2 ;;
+	    esac ;;
+	--autoresume)
+	    case "$2" in
+		"") shift 2 ;;
+		*) autoresume=$2; shift 2 ;;
+	    esac ;;
+	--skipdecode)
+	    case "$2" in
+		"") shift 2 ;;
+		*) skipdecode=$2; shift 2 ;;
+	    esac ;;
+	--)
+	    shift; break;;
+	*)
+	    echo "Unknown option $1"; exit 1 ;;
+    esac
+done
+
+
+#if [ ! -z "$1" ] && [ "$1" == "-h" ]; then
+#  echo "$USAGE"
+#  exit
+#fi
 
 if [ -z "$argfile" ]; then
   argfile=conf
