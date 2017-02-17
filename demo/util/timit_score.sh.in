@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+. @timitdir@/path.sh # needed for KALDI_ROOT, used for hubscr.pl in sctk
+
 function HELP {
   echo "Usage: $0 [options] <dataset [cv|dt|core|enh]> <phn_ilab_ascii>"
   echo "options: -s symlist (required)"
@@ -73,7 +75,7 @@ dataset=$1
 ilab=$2
 
 if [ ! -f $ilab ]; then
-  echo "Error: file not exit: $ilab"
+  echo "Error: file does not exist: $ilab"
   exit 1
 fi
 
@@ -93,28 +95,35 @@ else
 fi
 
 echo "ilab2ctm.pl -s $symlist -o $olist $dur_opt $ilab > $dir/$prefix.ctm"
-ilab2ctm.pl -s $symlist -o $olist $dur_opt $ilab > $dir/$prefix.ctm
+@pkglibexecdir@/util/ilab2ctm.pl -s $symlist -o $olist $dur_opt $ilab > $dir/$prefix.ctm
 out_ctm=$prefix.ctm
 if [ "$numstate" == 3 ]; then
-  $script_dir/map_ctm_3state_1state.pl < $dir/$prefix.ctm > $dir/$prefix.1state.ctm
+  @pkglibexecdir@/util/map_ctm_3state_1state.pl < $dir/$prefix.ctm > $dir/$prefix.1state.ctm
   out_ctm=$prefix.1state.ctm
 fi
 
 pushd $dir
 
-$script_dir/timit_norm_trans.pl -i $out_ctm -m $script_dir/timit_score_new/phones.60-48-39.map -from 48 -to 39 > $prefix.map39.ctm
+@timitdir@/local/timit_norm_trans.pl -i $out_ctm -m @timitdir@/conf/phones.60-48-39.map -from 48 -to 39 > $prefix.map39.ctm
 ln -fsn $prefix.map39.ctm ctm_39phn
 
-cp -p $script_dir/timit_score_new/glm_39phn ./
+cp -p @timitdir@/data/test/glm ./glm_39phn
 
-ref=$script_dir/timit_score_new/$dataset/stm_39phn
+setmap=
+case $dataset in
+    core) setmap=test ;;
+    dt|cv) setmap=dev ;;
+    enh) setmap=enh ;;
+esac
+
+ref=@timitdir@/data/$setmap/stm
 if [ ! -f $ref ]; then
   echo "$0 Error: reference file does not exist: $ref" 1>&2
   exit 1
 fi
-cp -p $ref ./
+cp -p $ref ./stm_39phn
 
-hubscr_dir=$script_dir/sctk/bin
+hubscr_dir=$KALDI_ROOT/tools/sctk/bin
 $hubscr_dir/hubscr.pl -p $hubscr_dir -V -l english -h hub5 -g glm_39phn -r stm_39phn ctm_39phn
 
 tail -n 10 ctm_39phn.filt.sys
