@@ -9,7 +9,7 @@
 #include "CRF_NewGradBuilder.h"
 #include "CRF_NewGradBuilder_StdSeg.h"
 #include "CRF_NewGradBuilder_StdSeg_BrokenClass.h"
-#include "CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_NewGradBuilder_StdSeg_NoDur_NoTrans.h"
 //#include "CRF_NewGradBuilderSoft.h"
 //#include "CRF_FerrGradBuilder.h"
 
@@ -120,7 +120,7 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
 				throw runtime_error(errstr);
 			} else {
-				gbuild = new CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(crf_ptr);
+				gbuild = new CRF_NewGradBuilder_StdSeg_NoDur_NoTrans(crf_ptr);
 			}
 		} else {
 			gbuild = new CRF_NewGradBuilder(crf_ptr);
@@ -150,7 +150,7 @@ CRF_GradBuilder* CRF_GradBuilder::create(CRF_Model *crf_ptr, objfunctype ofunc)
 				string errstr="CRF_GradBuilder::create() caught exception: STDSEG_NO_DUR_NO_TRANSFTR model cannot use broken class label yet.";
 				throw runtime_error(errstr);
 			} else {
-				gbuild = new CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(crf_ptr);
+				gbuild = new CRF_NewGradBuilder_StdSeg_NoDur_NoTrans(crf_ptr);
 			}
 		} else {
 			gbuild = new CRF_NewGradBuilder(crf_ptr);

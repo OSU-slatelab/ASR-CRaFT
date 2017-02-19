@@ -5,7 +5,7 @@ libCRF_a_SOURCES = src/trainers/gradbuilders/CRF_GradBuilder.cpp \
 	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg.cpp \
 	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg_BrokenClass.cpp \
 	src/trainers/gradbuilders/CRF_FerrGradBuilder.cpp \
-	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.cpp \
+	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg_NoDur_NoTrans.cpp \
 	src/trainers/accumulators/CRF_GradAccumulator.cpp \
 	src/trainers/accumulators/CRF_CountAccumulator.cpp \
 	src/trainers/accumulators/CRF_Pthread_GradAccumulator.cpp \
@@ -50,7 +50,7 @@ libCRF_a_SOURCES = src/trainers/gradbuilders/CRF_GradBuilder.cpp \
 	src/CRF_Model.cpp
 pkginclude_HEADERS = src/trainers/gradbuilders/CRF_NewGradBuilder.h \
 	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg.h \
-	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h \
+	src/trainers/gradbuilders/CRF_NewGradBuilder_StdSeg_NoDur_NoTrans.h \
 	src/trainers/gradbuilders/CRF_FerrGradBuilder.h \
 	src/trainers/gradbuilders/CRF_NewGradBuilderSoft.h \
 	src/trainers/gradbuilders/CRF_GradBuilder.h \

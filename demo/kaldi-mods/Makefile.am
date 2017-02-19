@@ -15,7 +15,6 @@ nobase_dist_timit_SCRIPTS = \
 	mylocal/timit_format_data.sh \
 	mysteps/decode_fmllr.sh \
 	mysteps/make_bn_feats.sh
-CLEANFILES = $(nobase_dist_timit_SCRIPTS)
 
 *.sh : $@
 	chmod +x $@

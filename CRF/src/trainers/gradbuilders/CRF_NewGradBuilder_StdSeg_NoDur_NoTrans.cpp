@@ -1,11 +1,11 @@
 /*
- * CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.cpp
+ * CRF_NewGradBuilder_StdSeg_NoDur_NoTrans.cpp
  *
  *  Created on: Dec 1, 2011
  *      Author: Yanzhang (Ryan) He
  */
 
-#include "CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr.h"
+#include "CRF_NewGradBuilder_StdSeg_NoDur_NoTrans.h"
 
 #include <sys/time.h>
 #include <ctime>
@@ -41,19 +41,19 @@ int64 GetTimeMicroSec64()
 	return ret;
 }
 
-CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr(CRF_Model* crf_in)
+CRF_NewGradBuilder_StdSeg_NoDur_NoTrans::CRF_NewGradBuilder_StdSeg_NoDur_NoTrans(CRF_Model* crf_in)
 	: CRF_NewGradBuilder_StdSeg(crf_in)
 {
 
 }
 
-CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::~CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr()
+CRF_NewGradBuilder_StdSeg_NoDur_NoTrans::~CRF_NewGradBuilder_StdSeg_NoDur_NoTrans()
 {
-	cerr << "CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr destructor" << endl;
+	cerr << "CRF_NewGradBuilder_StdSeg_NoDur_NoTrans destructor" << endl;
 }
 
 /*
- * CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient
+ * CRF_NewGradBuilder_StdSeg_NoDur_NoTrans::buildGradient
  *
  * Input: *ftr_stream - input feature stream
  *        *grad - gradient vector return value
@@ -62,7 +62,7 @@ CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::~CRF_NewGradBuilder_Std
  * Computes the gradient given the current CRF model and the features in ftr_strm and returns it in
  * grad.  Zx_out contains the normalization constant for the current sequence.
  */
-double CRF_NewGradBuilder_StdSeg_WithoutDurLab_WithoutTransFtr::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)
+double CRF_NewGradBuilder_StdSeg_NoDur_NoTrans::buildGradient(CRF_FeatureStream* ftr_strm, double* grad, double* Zx_out)
 {
 	QNUInt32 lambda_len = this->crf->getLambdaLen();
 
