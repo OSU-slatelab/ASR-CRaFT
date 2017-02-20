@@ -41,10 +41,8 @@ TIMITDIR=
 AS_IF([test "x$with_kaldi_timit_s5" != xno],
 	    [AC_SUBST([TIMITDIR], [$with_kaldi_timit_s5])])
 
-echo $TIMITDIR
-
 # Checks for header files.
-#AC_CHECK_HEADERS([malloc.h memory.h stdlib.h string.h sys/time.h])
+AC_CHECK_HEADERS([malloc.h memory.h stdlib.h string.h])
 #AC_CHECK_HEADERS([QuickNet.h])
 # Checks for typedefs, structures, and compiler characteristics.
 #AC_CHECK_HEADER_STDBOOL

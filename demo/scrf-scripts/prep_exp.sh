@@ -27,8 +27,8 @@ ln -s $conf conf
 ln -s $script_dir scripts
 
 #FIXME: make this portable
-cmd_path=/u/hey/src/kaldi/myrecipes/gen
-ln -s $cmd_path/cmd_slurm.sh
-ln -s $cmd_path/cmd_runpl.sh
-ln -s cmd_slurm.sh cmd.sh
-ln -s $cmd_path/utils myutils
+#cmd_path=/u/hey/src/kaldi/myrecipes/gen
+#ln -s $cmd_path/cmd_slurm.sh
+#ln -s $cmd_path/cmd_runpl.sh
+#ln -s cmd_slurm.sh cmd.sh  ### not needed; now sourcing cmd.sh from kaldi installation
+#ln -s $cmd_path/utils myutils ### not used?

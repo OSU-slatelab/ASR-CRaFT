@@ -1,9 +1,86 @@
 #!/bin/bash
 
-. /u/drspeech/share/lib/icsiargs.sh
-
-#echo "Usage: $0 lrstart=[start learning rate] lrend=[end learning rate] lrstep=[learning rate step] wt_pre=[weight directory, optional]"
+USAGE="Usage: $0 lrstart=[start learning rate] lrend=[end learning rate] lrstep=[learning rate step] wt_pre=[weight directory, optional]"
 #exit;
+
+lrstart=
+lrend=
+lrstep=
+lr_range=
+etastart=
+etaend=
+etastep=
+eta_range=
+wt_pre=
+dataset=
+
+parsed_opts= `getopt -o h --long lrstart::,lrend::,lrstep::,lr_range::,\
+etastart::,etaend::,etastep::,eta_range::,wt_pre::,dataset:: \
+-n "$0" -- "$@"`
+eval set -- "$parsed_opts"
+
+while true; do
+    case "$1" in
+	-h)
+	    echo "$USAGE"
+	    exit ;;
+	--lrstart)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lrstart=$2; shift 2 ;;
+	    esac ;;
+	--lrend)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lrend=$2; shift 2 ;;
+	    esac ;;
+	--lrstep)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lrstep=$2; shift 2 ;;
+	    esac ;;
+	--lr_range)
+	    case "$2" in
+		"") shift 2 ;;
+		*) lr_range=$2; shift 2 ;;
+	    esac ;;
+	--etastart)
+	    case "$2" in
+		"") shift 2 ;;
+		*) etastart=$2; shift 2 ;;
+	    esac ;;
+	--etaend)
+	    case "$2" in
+		"") shift 2 ;;
+		*) etaend=$2; shift 2 ;;
+	    esac ;;
+	--etastep)
+	    case "$2" in
+		"") shift 2 ;;
+		*) etastep=$2; shift 2 ;;
+	    esac ;;
+	--eta_range)
+	    case "$2" in
+		"") shift 2 ;;
+		*) eta_range=$2; shift 2 ;;
+	    esac ;;
+	--wt_pre)
+	    case "$2" in
+		"") shift 2 ;;
+		*) wt_pre=$2; shift 2 ;;
+	    esac ;;
+	--dataset)
+	    case "$2" in
+		"") shift 2 ;;
+		*) dataset=$2; shift 2 ;;
+	    esac ;;
+	--)
+	    shift; break;;
+	*)
+	    echo "Unknown option $1"; exit 1 ;;
+    esac
+done
+	
 
 if [ -z "$lrstart" ] && [ -z "$lr_range" ]; then
   lr_range="0.0005 `seq 0.001 0.001 0.009 | tr '\n' ' '` `seq 0.01 0.01 0.09 | tr '\n' ' '` `seq 0.1 0.1 0.9 | tr '\n' ' '`"

@@ -1,4 +1,6 @@
 SUBDIRS = kaldi-mods
+bin_SCRIPTS = \
+	scrf-timit-demo.sh
 nobase_dist_pkglibexec_SCRIPTS = \
 	scrf-scripts/prep_exp.sh \
 	scrf-scripts/sortResult.kaldi.sh \
@@ -25,8 +27,9 @@ EXTRA_DIST = \
 	scrf-scripts/run_crf_fstdecode.sh.in \
 	scrf-scripts/run_crf_train.sh.in \
 	util/timit_score.sh.in \
-	segmental-timit-demo.cfg.in
-CLEANFILES = $(nobase_pkglibexec_SCRIPTS) $(pkgdata_DATA)
+	segmental-timit-demo.cfg.in \
+	scrf-timit-demo.sh.in
+CLEANFILES = $(nobase_pkglibexec_SCRIPTS) $(pkgdata_DATA) $(bin_SCRIPTS)
 
 subs= sed -e 's,[@]timitdir[@],$(TIMITDIR),g' \
 	-e 's,[@]pkglibexecdir[@],$(pkglibexecdir),g' \
@@ -46,6 +49,9 @@ util/timit_score.sh : util/timit_score.sh.in
 
 segmental-timit-demo.cfg : segmental-timit-demo.cfg.in
 	$(subs) < $(srcdir)/segmental-timit-demo.cfg.in > segmental-timit-demo.cfg
+
+scrf-timit-demo.sh : scrf-timit-demo.sh.in
+	$(subs) < $(srcdir)/scrf-timit-demo.sh.in > scrf-timit-demo.sh
 
 *.sh : $@
 	chmod +x $@

@@ -50,22 +50,18 @@ TRAIN_ARGS=$CRF_ARGS
 
 PHNDURLABMAP=@pkgdatadir@/timit-aux/phn-dur-lab-map-timit.txt
 
-FEAF1= # $kaldi_directory/$generated_pf_training_file #TODO: get name from demo script
-#/u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_train.kaldi_dnn_fmllr_mono.48.3state.$FTYPE.pf
-FEAF2= # $kaldi_directory/$padded_version_of_training_file #TODO: get name from demo script
-#/u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_train.kaldi_dnn_fmllr_mono.48.3state.$FTYPE.padded6.pf
-#FEAF3=/data/data1/hey/SegmentalCRF/data/mlp_features/boundary/phone/ph.$FTYPE.padded6.pf
+FEAF1= @timitdir@/data-pf/timit-train.pf
+FEAF2= @timitdir@/data-pf/timit-train.pad6.pf 
+#FEAF3= #omitted for demo
 LABF= @pkgdatadir@/timit-aux/timit_train.48labs.ilab 
 OLIST= @pkgdatadir@/timit-aux/timit_sisx_train.olist
 REFMLF= @pkgdatadir@/timit-aux/timit_train.mlf 
 START=0
 END=3695
 
-CV_FEAF1= # $kaldi_directory/$generated_pf_test_file #TODO: get name from demo script
-#/u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_test.neworder.kaldi_dnn_fmllr_mono.48.3state.$FTYPE.pf
-CV_FEAF2= # $kaldi_directory/$padded_version_of_test_file #TODO: get name from demo script
-#/u/hey/exp/SegmentalCRF/data/kaldi_dnn_features_timit.new_sil/48class/1Kx6_smbr/timit_test.neworder.kaldi_dnn_fmllr_mono.48.3state.$FTYPE.padded6.pf
-#CV_FEAF3=/data/data1/hey/SegmentalCRF/data/mlp_features/boundary/phone/test.ph.$FTYPE.padded6.pf
+CV_FEAF1= @timitdir@/data-pf/timit-test.pf
+CV_FEAF2= @timitdir@/data-pf/timit-test.pad6.pf
+#CV_FEAF3= #omitted for demo
 CV_OLIST= @pkgdatadir@/timit-aux/timit_sisx_test.dt_set.neworder.olist 
 CV_REFMLF= @pkgdatadir@/timit-aux/timit_test39.mlf 
 CV_START=0
