@@ -10,7 +10,7 @@ with research in mind, as opposed to production speech recognition.
 ## For End Users
 
 A source distribution packaged with autotools is available for download
-[here][https://cse.osu.edu/~stiff/asr-craft-1.1.tar.gz]. Download it to
+[here](https://cse.osu.edu/~stiff/asr-craft-1.1.tar.gz). Download it to
 a location of your choice and deflate (e.g. with `tar xvfz`).
 
 From the top-level directory (containing this README and the script
@@ -25,9 +25,9 @@ make install
 Note, however, the following caveats:
 
 Compilation depends on two external libraries for linking:
-[OpenFST][http://www.openfst.org/twiki/bin/view/FST/WebHome], 
-[Quicknet3][http://www1.icsi.berkeley.edu/Speech/qn.html], and
-[cblas][http://www.netlib.org/blas/]. If these are not installed in
+[OpenFST](http://www.openfst.org/twiki/bin/view/FST/WebHome), 
+[Quicknet3](http://www1.icsi.berkeley.edu/Speech/qn.html), and
+[cblas](http://www.netlib.org/blas/). If these are not installed in
 standard locations (e.g. /usr/lib/) on your target system, the configure
 script provides flags as a convenience for specifying their location,
 `--with-libquicknet3-prefix=DIR` and `--with-libfst-prefix=DIR` (see
@@ -36,7 +36,7 @@ script provides flags as a convenience for specifying their location,
 This package also comes with an optionally-installed demonstration
 of its Segmental CRF capabilities, for the TIMIT phone-recognition
 task. This demonstration depends on the existence of a functional
-installation of the [Kaldi toolkit][http://kaldi-asr.org/] and the TIMIT
+installation of the [Kaldi toolkit](http://kaldi-asr.org/) and the TIMIT
 dataset. If the location of the Kaldi TIMIT example recipe directory is
 provided at configure time via the `--with-kaldi-timit-s5=DIR` argument,
 the demonstration scripts will be installed. *NOTE: this will silently
@@ -70,10 +70,12 @@ setting appropriate rpath variables for the compiled executables. Thus,
 for development you will have to install gnulib-tool and invoke it as
 described in ${topsrcdir}/m4/gnulib-cache.m4. [Note that the gnulib source
 code contained in this package is distributed under the GPL in accordance
-with the [Autoconf exception][https://www.gnu.org/licenses/autoconf-exception-3.0.en.html].
+with the [Autoconf exception](https://www.gnu.org/licenses/autoconf-exception-3.0.en.html).
 
-To build:
+### To build
+
 Ideally, you should be able to:
+
 1. Clone the source
 2. Run `autoreconf` in the top-level directory
    (you may need to run `automake --add-missing` first).
