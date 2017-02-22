@@ -1,4 +1,4 @@
-SUBDIRS = CRF CRFDecode CRFFstDecode CRFTrain
+SUBDIRS = CRF CRFDecode CRFFstDecode CRFTrain feacat
 if WITH_DEMO
 SUBDIRS += demo
 endif

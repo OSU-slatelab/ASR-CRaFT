@@ -26,8 +26,19 @@ AC_CONFIG_MACRO_DIRS([m4])
 
 AC_LIB_LINKFLAGS([quicknet3])
 AC_LIB_LINKFLAGS([fst])
-QN_HEADERS=`echo $LIBQUICKNET3 | sed 's_lib/libquicknet3.a$_include/quicknet3_g'`
+
+QN_LIBFILE=
+QN_HEADERS=
+AS_IF([test "x$ac_cv_libquicknet3_prefix" != "x"],
+	    [QN_HEADERS="$LIBQUICKNET3_PREFIX/include/quicknet3";
+	    QN_LIBFILE="$LIBQUICKNET3_PREFIX/lib/libquicknet3.a"],
+	    AS_IF([test -f "/usr/lib/libquicknet3.a"],
+ 	    		[QN_HEADERS="/usr/include/quicknet3";
+			QN_LIBFILE="/usr/lib/libquicknet3.a"],
+			[QN_HEADERS="/usr/local/include/quicknet3";
+			QN_LIBFILE="/usr/local/lib/libquicknet3.a"]))
 AC_SUBST([QN_HEADERS])
+AC_SUBST([QN_LIBFILE])
 
 #echo "CPPFLAGS"
 #echo $CPPFLAGS
