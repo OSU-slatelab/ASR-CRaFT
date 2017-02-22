@@ -5,7 +5,6 @@ AC_PREREQ([2.68])
 AC_INIT([ASR-CRaFT], [1.1], [https://github.com/OSU-slatelab])
 AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects foreign])
 
-#AC_CONFIG_SRCDIR([CRFTrain/src/Main.cpp])
 #AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -25,12 +24,31 @@ gl_INIT
 
 AC_LIB_LINKFLAGS([quicknet3])
 AC_LIB_LINKFLAGS([fst])
-QN_HEADERS=`echo $LIBQUICKNET3 | sed 's_lib/libquicknet3.a$_include/quicknet3_g'`
-AC_SUBST([QN_HEADERS])
+# check $ac_cv_libquicknet3_prefix; if not set, libquicknet3
+# was found in /usr/lib or /usr/local/lib (latter of which is its
+# default install location). Set QN_HEADERS accordingly. Don't want
+# to source QNConfig.sh since it defines $prefix, which might hose
+# the configure script. This whole thing seems hacky, but I'm just
+# working with what quicknet gives me.
 
-#echo "CPPFLAGS"
-#echo $CPPFLAGS
-#echo $INCQUICKNET3
+# also, we need the actual file of the quicknet library for linking,
+# since ar doesn't seem to like if automake passes it linker flags.
+
+QN_LIBFILE=
+QN_HEADERS=
+AS_IF([test "x$ac_cv_libquicknet3_prefix" != "x"],
+	    [QN_HEADERS="$LIBQUICKNET3_PREFIX/include/quicknet3";
+	    QN_LIBFILE="$LIBQUICKNET3_PREFIX/lib/libquicknet3.a"],
+	    AS_IF([test -f "/usr/lib/libquicknet3.a"],
+ 	    		[QN_HEADERS="/usr/include/quicknet3";
+			QN_LIBFILE="/usr/lib/libquicknet3.a"],
+			[QN_HEADERS="/usr/local/include/quicknet3";
+			QN_LIBFILE="/usr/local/lib/libquicknet3.a"]))
+AC_SUBST([QN_HEADERS])
+AC_SUBST([QN_LIBFILE])
+
+#echo $LIBQUICKNET3
+#echo $LIBQUICKNET3_PREFIX
 
 AC_ARG_WITH([kaldi-timit-s5],
 	    AS_HELP_STRING([--with-kaldi-timit-s5=DIR],
