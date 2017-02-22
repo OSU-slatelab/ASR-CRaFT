@@ -58,7 +58,7 @@ AC_ARG_WITH([kaldi-timit-s5],
 TIMITDIR=
 AS_IF([test "x$with_kaldi_timit_s5" != xno],
 	    [AC_SUBST([TIMITDIR], [$with_kaldi_timit_s5])])
-
+AM_CONDITIONAL([WITH_DEMO], [test "x$with_kaldi_timit_s5" != "xno"])
 # Checks for header files.
 AC_CHECK_HEADERS([malloc.h memory.h stdlib.h string.h])
 #AC_CHECK_HEADERS([QuickNet.h])

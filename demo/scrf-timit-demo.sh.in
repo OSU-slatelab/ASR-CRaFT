@@ -1,5 +1,8 @@
 #!/bin/bash
 
+if [$# -ne 1]; then
+    echo "Usage: $0 <exp_dir> (required; location for storing experiment files)"
+fi
 exp_dir= $1
 
 ###################################################
@@ -11,7 +14,7 @@ exp_dir= $1
 # format defined by QuickNet before they are fed into CRF. Here we provide an example to
 # convert the Kaldi DNN posteriors to the pfile format.
 
-cd @timitdir@
+pushd @timitdir@
 
 ./run.sh
 ./mylocal/run_dnn_fmllr_mono.sh --skip_smbr false
@@ -67,6 +70,7 @@ feacat -i data-pf/timit-test.pf -o data-pf/timit-test.pad6.pf -p 6
 # script, and in that directory creates a symlink to the directory
 # containing the built and installed scripts referenced below.
 
+popd
 @pkglibexecdir@/scrf-scripts/prep_exp.sh \
   @pkgdata@/segmental-timit-demo.cfg \
   $exp_dir
@@ -75,7 +79,7 @@ feacat -i data-pf/timit-test.pf -o data-pf/timit-test.pad6.pf -p 6
 # step 3: training
 ###################################################
 
-cd $exp_dir
+pushd $exp_dir
 scripts/run_crf_train.sh lr=<learning rate> #& #run in bkg to speed up decode?
 
 # Run @pkglibexecdir@/scrf-scripts/run_crf_train.sh for usage.
