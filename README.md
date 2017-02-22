@@ -24,7 +24,7 @@ make install
 
 Note, however, the following caveats:
 
-Compilation depends on two external libraries for linking:
+Compilation depends on three external libraries for linking:
 [OpenFST](http://www.openfst.org/twiki/bin/view/FST/WebHome), 
 [Quicknet3](http://www1.icsi.berkeley.edu/Speech/qn.html), and
 [cblas](http://www.netlib.org/blas/). If these are not installed in
@@ -64,7 +64,7 @@ example, via ATLAS), and OpenFST (see above) to build. If these libraries
 and headers are installed in non-standard locations, locations can be
 provided to the configure script as described above for end-users.
 
-The configure script depends on [gnulib][https://www.gnu.org/software/gnulib/]
+The configure script depends on [gnulib](https://www.gnu.org/software/gnulib/)
 for a couple of m4 macros to facilitate finding library dependencies and
 setting appropriate rpath variables for the compiled executables. Thus,
 for development you will have to install gnulib-tool and invoke it as
@@ -84,7 +84,7 @@ Ideally, you should be able to:
    .gitignore file is set up to allow a parallel build from a ./build/
    directory. If you want to keep your source tree free of object files,
    you may want to create the build/ directory, and from build/, run
-   `../configure <options>`).
+   `../configure [options]`).
 4. Run `make`.
 5. Run `make install`.
 6. Optionally, run `make dist` to package a new source distribution.
