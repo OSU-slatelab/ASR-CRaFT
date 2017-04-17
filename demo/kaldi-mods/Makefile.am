@@ -10,11 +10,13 @@ nobase_dist_timit_SCRIPTS = \
 	run.sh \
 	mylocal/htk_to_pf.sh \
 	mylocal/prep_bn_feats.sh \
+	mylocal/run_dnn.sh \
 	mylocal/run_dnn_fmllr_mono.sh \
 	mylocal/timit_data_prep.sh \
 	mylocal/timit_format_data.sh \
 	mysteps/decode_fmllr.sh \
-	mysteps/make_bn_feats.sh
+	mysteps/make_bn_feats.sh \
+	mysteps/make_denlats.sh
 
 *.sh : $@
 	chmod +x $@

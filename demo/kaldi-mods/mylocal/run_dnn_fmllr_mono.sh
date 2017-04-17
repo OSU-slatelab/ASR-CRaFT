@@ -112,7 +112,7 @@ if [ "$skip_smbr" == "false" ]; then
       touch ${srcdir}_ali/.done
     fi
     if [ ! -f ${srcdir}_denlats/.done ]; then
-      steps/nnet/make_denlats.sh --nj 20 --cmd "$decode_cmd" --acwt $acwt --mono true \
+      mysteps/make_denlats.sh --nj 20 --cmd "$decode_cmd" --acwt $acwt --mono true \
 	--lattice-beam 10.0 --beam 18.0 \
 	$data/train data/lang $srcdir ${srcdir}_denlats || exit 1;
       touch ${srcdir}_denlats/.done
