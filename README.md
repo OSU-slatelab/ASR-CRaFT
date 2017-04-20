@@ -7,10 +7,21 @@ with research in mind, as opposed to production speech recognition.
 
 # Installation
 
+## Dependencies
+
+- OpenFST (dynamically linked)
+- Quicknet3 (statically linked)
+- cblas (dynamically linked)
+- Kaldi installation (demo)
+- TIMIT dataset (demo)
+- autoconf 2.68 (development build)
+- automake 1.15 (development build)
+- gnulib/gnulib-tool (development build)
+
 ## For End Users
 
 A source distribution packaged with autotools is available for download
-[here](https://cse.osu.edu/~stiff/asr-craft-1.1.tar.gz). Download it to
+[here](https://cse.osu.edu/~stiff/software/asr-craft-1.1.tar.gz). Download it to
 a location of your choice and deflate (e.g. with `tar xvfz`).
 
 From the top-level directory (containing this README and the script
@@ -70,7 +81,7 @@ setting appropriate rpath variables for the compiled executables. Thus,
 for development you will have to install gnulib-tool and invoke it as
 described in ${topsrcdir}/m4/gnulib-cache.m4. [Note that the gnulib source
 code contained in this package is distributed under the GPL in accordance
-with the [Autoconf exception](https://www.gnu.org/licenses/autoconf-exception-3.0.en.html).
+with the [Autoconf exception](https://www.gnu.org/licenses/autoconf-exception-3.0.en.html)].
 
 ### To build
 
