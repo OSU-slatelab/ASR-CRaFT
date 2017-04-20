@@ -53,8 +53,10 @@ provided at configure time via the `--with-kaldi-timit-s5=DIR` argument,
 the demonstration scripts will be installed. *NOTE: this will silently
 overwrite the run.sh installed in that directory. Any important work in
 that file should be backed up before installation of this package.*
-After installation, you will have to modify the run.sh script to point
-to the correct location of your TIMIT data directory. With the demo
+If you install the demo by specifying an argument to --with-kaldi-timit-s5,
+you must also specify the location of the TIMIT dataset, using
+--with-timit-data=DIR. DIR should be the top-level directory, containing
+test/, train/, doc/, and readme.doc. With the demo
 scripts installed, you can then run the script `scrf-timit-demo.sh` (which
 should have been installed to ${prefix}/bin). `scrf-timit-demo.sh` takes
 a single argument which is the name of a directory of your choosing,

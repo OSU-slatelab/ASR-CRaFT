@@ -37,7 +37,7 @@ echo ===========================================================================
 
 #timit=/export/corpora5/LDC/LDC93S1/timit/TIMIT # @JHU
 #timit=/mnt/matylda2/data/TIMIT/timit # @BUT
-timit=/u/drspeech/data/timit # @OSU
+timit=@timitdatadir@
 
 #local/timit_data_prep.sh $timit || exit 1
 # added the support to the enhanced test set

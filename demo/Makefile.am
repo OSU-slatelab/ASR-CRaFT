@@ -32,6 +32,7 @@ EXTRA_DIST = \
 CLEANFILES = $(nobase_pkglibexec_SCRIPTS) $(pkgdata_DATA) $(bin_SCRIPTS)
 
 subs= sed -e 's,[@]timitdir[@],$(TIMITDIR),g' \
+	-e 's,[@]timitdatadir[@],$(TIMITDATADIR),g' \
 	-e 's,[@]pkglibexecdir[@],$(pkglibexecdir),g' \
 	-e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
 

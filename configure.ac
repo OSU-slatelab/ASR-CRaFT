@@ -58,6 +58,15 @@ AC_ARG_WITH([kaldi-timit-s5],
 TIMITDIR=
 AS_IF([test "x$with_kaldi_timit_s5" != xno],
 	    [AC_SUBST([TIMITDIR], [$with_kaldi_timit_s5])])
+
+AC_ARG_WITH([timit-data],
+	    AS_HELP_STRING([--with-timit-data=DIR],
+	    [location of TIMIT source data, for demo; required if using --with-kaldi-timit-s5]),
+	    [],
+	    [])
+TIMITDATADIR=
+AS_IF([test "x$with_kaldi_timit_s5" != xno],
+	    [AC_SUBST([TIMITDATADIR], [$with_timit_data])])
 AM_CONDITIONAL([WITH_DEMO], [test "x$with_kaldi_timit_s5" != "xno"])
 # Checks for header files.
 AC_CHECK_HEADERS([malloc.h memory.h stdlib.h string.h])
