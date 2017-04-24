@@ -36,14 +36,20 @@ AC_LIB_LINKFLAGS([fst])
 
 QN_LIBFILE=
 QN_HEADERS=
-AS_IF([test "x$ac_cv_libquicknet3_prefix" != "x"],
-	    [QN_HEADERS="$LIBQUICKNET3_PREFIX/include/quicknet3";
-	    QN_LIBFILE="$LIBQUICKNET3_PREFIX/lib/libquicknet3.a"],
+AS_IF([test "x$ac_cv_libquicknet3_libs" != "x-lquicknet3"],
+	    [QN_LIBFILE=$LIBQUICKNET3;
+	    QN_HEADERS=${LIBQUICKNET3%lib/libquicknet3.a}include/quicknet3],
 	    AS_IF([test -f "/usr/lib/libquicknet3.a"],
  	    		[QN_HEADERS="/usr/include/quicknet3";
 			QN_LIBFILE="/usr/lib/libquicknet3.a"],
 			[QN_HEADERS="/usr/local/include/quicknet3";
 			QN_LIBFILE="/usr/local/lib/libquicknet3.a"]))
+
+## removed from first AS_IF			
+#	    [QN_HEADERS="$LIBQUICKNET3_PREFIX/include/quicknet3";
+#	    QN_LIBFILE="$LIBQUICKNET3_PREFIX/lib/libquicknet3.a"],
+
+
 AC_SUBST([QN_HEADERS])
 AC_SUBST([QN_LIBFILE])
 
