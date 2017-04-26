@@ -28,7 +28,8 @@ EXTRA_DIST = \
 	scrf-scripts/run_crf_train.sh.in \
 	util/timit_score.sh.in \
 	segmental-timit-demo.cfg.in \
-	scrf-timit-demo.sh.in
+	scrf-timit-demo.sh.in \
+	README.TIMIT
 CLEANFILES = $(nobase_pkglibexec_SCRIPTS) $(pkgdata_DATA) $(bin_SCRIPTS)
 
 subs= sed -e 's,[@]timitdir[@],$(TIMITDIR),g' \
