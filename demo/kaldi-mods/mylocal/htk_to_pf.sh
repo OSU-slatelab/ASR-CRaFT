@@ -15,6 +15,12 @@ script_dir=`dirname $0`
 if [[ ! $script_dir =~ ^/ ]]; then
   script_dir=`pwd`/$script_dir;  # relative path -> absolute path
 fi
+if [[ ! $train_outfile =~ ^/ ]]; then
+  $train_outfile=`pwd`/$train_outfile;  # relative path -> absolute path
+fi
+if [[ ! $test_outfile =~ ^/ ]]; then
+  $test_outfile=`pwd`/$test_outfile;  # relative path -> absolute path
+fi
 
 if [ ! -d $dir ]; then
   echo "Error: directory not exist: $dir"
