@@ -49,7 +49,7 @@ $0
   -h [print this help message]
 "
 
-parsed_opts= `getopt -o h --long argfile::,lr::,lr_decay::,eta::,wt_pre::,segmodel::,autoresume::,mb::,nj::,\
+parsed_opts=`getopt -o h --long argfile::,lr::,lr_decay::,eta::,wt_pre::,segmodel::,autoresume::,mb::,nj::,\
 mem::,nodes::,init_weight::,avg_weight::,grad_sqr_acc::,present::,start_iter:: -n "$0" -- "$@"`
 eval set -- "$parsed_opts"
 
