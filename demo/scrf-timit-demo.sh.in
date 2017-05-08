@@ -72,7 +72,7 @@ feacat -i data-pf/timit-test.pf -o data-pf/timit-test.pad6.pf -p 6
 
 popd
 @pkglibexecdir@/scrf-scripts/prep_exp.sh \
-  @pkgdata@/segmental-timit-demo.cfg \
+  @pkgdatadir@/segmental-timit-demo.cfg \
   $exp_dir
 
 ###################################################
