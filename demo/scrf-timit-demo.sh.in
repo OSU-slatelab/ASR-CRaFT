@@ -80,7 +80,7 @@ popd
 ###################################################
 
 pushd $exp_dir
-scripts/run_crf_train.sh lr=<learning rate> #& #run in bkg to speed up decode?
+scripts/run_crf_train.sh --lr=<learning rate> #& #run in bkg to speed up decode?
 
 # Run @pkglibexecdir@/scrf-scripts/run_crf_train.sh for usage.
 
@@ -96,7 +96,7 @@ scripts/run_crf_train.sh lr=<learning rate> #& #run in bkg to speed up decode?
 # step 4: decoding
 ###################################################
 
-scripts/run_crf_fstdecode.sh lr=<learning rate>
+scripts/run_crf_fstdecode.sh --lr=<learning rate>
 
 # It can be run in parallel with training. By default it will decode
 # with all available iterations so far (skipping those iterations
